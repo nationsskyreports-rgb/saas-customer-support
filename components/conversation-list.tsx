@@ -108,23 +108,18 @@ export function ConversationList({ selectedId, onSelect }: ConversationListProps
   return (
     <div className="flex flex-col h-full">
       {/* Filter Tabs */}
-      <div className="flex gap-1 p-3 border-b border-gray-200">
+      <div className="flex gap-2 p-4 border-b border-gray-200">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+            className={`px-4 py-1.5 rounded whitespace-nowrap text-sm font-semibold transition-colors ${
               activeTab === tab.id
                 ? 'bg-nos-gold text-white'
-                : 'bg-transparent text-gray-600 hover:bg-gray-100'
+                : 'bg-transparent text-gray-600 border border-gray-200 hover:bg-nos-gold/5 hover:border-nos-gold hover:text-nos-gold'
             }`}
           >
-            {tab.label}
-            <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${
-              activeTab === tab.id ? 'bg-white/30' : 'bg-nos-gold/20 text-nos-gold'
-            }`}>
-              {tab.count}
-            </span>
+            {tab.label} ({tab.count})
           </button>
         ))}
       </div>

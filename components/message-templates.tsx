@@ -50,7 +50,7 @@ const templates = [
 ]
 
 const categories = [
-  { id: 'all', label: 'All Templates' },
+  { id: 'all', label: 'All' },
   { id: 'greeting', label: 'Greeting' },
   { id: 'order', label: 'Order' },
   { id: 'policy', label: 'Policy' },
@@ -93,10 +93,10 @@ export function MessageTemplates() {
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
-            className={`px-4 py-2 rounded-lg whitespace-nowrap font-medium text-sm transition-colors ${
+            className={`px-4 py-1.5 rounded whitespace-nowrap font-semibold text-sm transition-colors ${
               selectedCategory === cat.id
                 ? 'bg-nos-gold text-white'
-                : 'bg-nos-light-gold text-foreground hover:bg-nos-gold/20'
+                : 'bg-transparent text-gray-600 border border-gray-200 hover:bg-nos-gold/5 hover:border-nos-gold hover:text-nos-gold'
             }`}
           >
             {cat.label}
