@@ -43,7 +43,7 @@ export function Sidebar() {
       title: 'INBOX',
       items: [
         { href: '/inbox', label: 'My Chats', icon: MessageCircle },
-        { href: '/inbox', label: 'All Conversations', icon: Clock },
+        { href: '/inbox/all', label: 'All Conversations', icon: Clock },
         { href: '/monitoring', label: 'Monitoring', icon: Eye },
       ],
     },
@@ -93,11 +93,11 @@ export function Sidebar() {
   }
 
   return (
-    <div className="fixed left-0 h-screen w-60 bg-nos-gold text-white flex flex-col border-r border-white/10" style={{ backgroundColor: '#C0992F', top: '3px' }}>
+    <div className="fixed left-0 h-screen w-60 text-white flex flex-col border-r border-white/10" style={{ backgroundColor: '#C0992F', top: '3px' }}>
 
       {/* Logo/Header */}
       <div className="flex items-center gap-2 p-4 border-b border-white/15">
-        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-xs text-nos-gold">
+        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-xs" style={{ color: '#C0992F' }}>
           NO
         </div>
         <span className="font-semibold text-sm text-white">Nations Of Sky</span>
@@ -117,7 +117,9 @@ export function Sidebar() {
               <div className="space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon
-                  const isActive = pathname === item.href
+                  const isActive = item.href === '/inbox'
+                    ? pathname === '/inbox'
+                    : pathname === item.href || pathname.startsWith(item.href + '/')
                   return (
                     <Link
                       key={item.href}
