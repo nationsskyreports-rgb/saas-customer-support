@@ -43,7 +43,7 @@ export function Sidebar() {
       title: 'INBOX',
       items: [
         { href: '/inbox', label: 'My Chats', icon: MessageCircle },
-        { href: '/conversations', label: 'All Conversations', icon: Clock },
+        { href: '/inbox', label: 'All Conversations', icon: Clock },
         { href: '/monitoring', label: 'Monitoring', icon: Eye },
       ],
     },

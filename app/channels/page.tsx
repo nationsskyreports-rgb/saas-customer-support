@@ -1,215 +1,252 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Settings, Trash2, MessageCircle, Heart, Radio } from 'lucide-react'
-import { mockChannels } from '@/lib/mock-data'
+import { Settings, RefreshCw, MessageCircle, ToggleLeft, ToggleRight, X } from 'lucide-react'
+
+const channels = [
+  {
+    id: 1,
+    name: 'Nations Of Sky',
+    type: 'WhatsApp',
+    phone: '+20215555',
+    availability: true,
+    callCenter: 'Available',
+    createdAt: '01/01/2020',
+  },
+  {
+    id: 2,
+    name: 'NOS Marketing',
+    type: 'WhatsApp',
+    phone: '201106973901',
+    availability: true,
+    callCenter: 'Available',
+    createdAt: '01/01/2020',
+  },
+]
 
 export default function ChannelsPage() {
-  const [channels] = useState(mockChannels)
-  const [showModal, setShowModal] = useState(false)
-  const [selectedChannel, setSelectedChannel] = useState<string | null>(null)
+  const [channelList, setChannelList] = useState(channels)
   const [showSettings, setShowSettings] = useState(false)
+  const [selectedChannel, setSelectedChannel] = useState<typeof channels[0] | null>(null)
+  const [assignMode, setAssignMode] = useState<'auto' | 'manual'>('auto')
+  const [maxChats, setMaxChats] = useState(5)
+  const [welcomeMsg, setWelcomeMsg] = useState('Welcome to Nations Of Sky support! How can we help you today?')
+  const [awayMsg, setAwayMsg] = useState('We are currently away. Our team will get back to you shortly.')
 
-  const getChannelIcon = (type: string) => {
-    switch (type) {
-      case 'whatsapp':
-        return <MessageCircle className="w-6 h-6 text-green-500" />
-      case 'instagram':
-        return <Heart className="w-6 h-6 text-pink-500" />
-      case 'facebook':
-        return <Radio className="w-6 h-6 text-blue-500" />
-      default:
-        return <MessageCircle className="w-6 h-6 text-gray-500" />
-    }
+  const toggleAvailability = (id: number) => {
+    setChannelList(prev =>
+      prev.map(ch => ch.id === id ? { ...ch, availability: !ch.availability } : ch)
+    )
+  }
+
+  const openSettings = (channel: typeof channels[0]) => {
+    setSelectedChannel(channel)
+    setShowSettings(true)
   }
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Meta Channels</h1>
-          <p className="text-muted-foreground mt-1">Connect and manage WhatsApp, Instagram, and Facebook channels</p>
-        </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors font-medium"
-        >
-          <Plus className="w-4 h-4" />
-          Connect Channel
-        </button>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Meta Channels</h1>
+        <p className="text-gray-500 mt-1">Manage your WhatsApp Business channels</p>
       </div>
 
-      {/* Channels Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {channels.map((channel) => (
-          <div
-            key={channel.id}
-            className="bg-card rounded-lg p-6 border border-border shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-secondary rounded-lg flex items-center justify-center">
-                  {getChannelIcon(channel.type)}
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground">{channel.name}</h3>
-                  <p className="text-xs text-muted-foreground capitalize">{channel.type}</p>
-                </div>
-              </div>
-              <div
-                className={`inline-flex px-2 py-1 rounded-full text-xs font-bold ${
-                  channel.status === 'active'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-red-100 text-red-700'
-                }`}
-              >
-                {channel.status.charAt(0).toUpperCase() + channel.status.slice(1)}
-              </div>
-            </div>
-
-            <div className="space-y-2 mb-4 p-3 bg-secondary rounded-lg">
-              <div className="flex justify-between items-start">
-                <span className="text-xs text-muted-foreground">Connected</span>
-                <span className="text-xs font-medium text-foreground">{channel.connectedAt}</span>
-              </div>
-              {channel.phoneNumber && (
-                <div className="flex justify-between items-start">
-                  <span className="text-xs text-muted-foreground">Phone Number</span>
-                  <span className="text-xs font-medium text-foreground font-mono">{channel.phoneNumber}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setSelectedChannel(channel.id)
-                  setShowSettings(true)
-                }}
-                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 border border-border rounded-lg hover:bg-secondary transition-colors text-sm font-medium text-foreground"
-              >
-                <Settings className="w-4 h-4" />
-                Settings
-              </button>
-              <button className="px-3 py-2 border border-border rounded-lg hover:bg-secondary transition-colors">
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </button>
-            </div>
-          </div>
-        ))}
+      {/* Table */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-900 text-white">
+              <th className="px-6 py-3 text-left text-sm font-semibold">Channel ID</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Channel Name</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Channel Type Name</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Creation Time</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Channel Identifier</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Availability</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Call Center Availability</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {channelList.map((ch) => (
+              <tr key={ch.id} className="hover:bg-amber-50 transition-colors">
+                <td className="px-6 py-4 text-sm text-gray-900">{ch.id}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-sm font-medium text-gray-900">{ch.name}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="px-2.5 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
+                    {ch.type}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-500">{ch.createdAt} | 12:00 AM</td>
+                <td className="px-6 py-4 text-sm font-mono text-gray-900">{ch.phone}</td>
+                <td className="px-6 py-4">
+                  <button
+                    onClick={() => toggleAvailability(ch.id)}
+                    className="flex items-center gap-1.5"
+                  >
+                    {ch.availability ? (
+                      <span className="flex items-center gap-1.5 px-3 py-1 bg-teal-500 text-white text-xs font-bold rounded-full">
+                        Yes
+                        <span className="w-3 h-3 bg-white rounded-full opacity-80" />
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 px-3 py-1 bg-gray-300 text-gray-700 text-xs font-bold rounded-full">
+                        No
+                        <span className="w-3 h-3 bg-white rounded-full opacity-80" />
+                      </span>
+                    )}
+                  </button>
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-700">{ch.callCenter}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => openSettings(ch)}
+                      className="flex items-center gap-1.5 text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      Sync Templates
+                    </button>
+                    <span className="text-gray-300">|</span>
+                    <button
+                      onClick={() => openSettings(ch)}
+                      className="flex items-center gap-1.5 text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors"
+                    >
+                      <Settings className="w-3.5 h-3.5" />
+                      Set Call Center Availability
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-
-      {/* Connect Channel Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-card rounded-lg p-6 w-full max-w-md shadow-lg">
-            <h2 className="text-xl font-bold text-foreground mb-4">Connect New Channel</h2>
-            <div className="space-y-3">
-              <button className="w-full flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-secondary transition-colors">
-                <MessageCircle className="w-6 h-6 text-green-500" />
-                <div className="text-left">
-                  <p className="font-medium text-foreground">WhatsApp</p>
-                  <p className="text-xs text-muted-foreground">Connect your WhatsApp Business Account</p>
-                </div>
-              </button>
-              <button className="w-full flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-secondary transition-colors">
-                <Heart className="w-6 h-6 text-pink-500" />
-                <div className="text-left">
-                  <p className="font-medium text-foreground">Instagram</p>
-                  <p className="text-xs text-muted-foreground">Connect your Instagram Business Account</p>
-                </div>
-              </button>
-              <button className="w-full flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-secondary transition-colors">
-                <Radio className="w-6 h-6 text-blue-500" />
-                <div className="text-left">
-                  <p className="font-medium text-foreground">Facebook</p>
-                  <p className="text-xs text-muted-foreground">Connect your Facebook Page</p>
-                </div>
-              </button>
-              <button
-                onClick={() => setShowModal(false)}
-                className="w-full mt-4 px-4 py-2 text-foreground border border-border rounded-lg hover:bg-secondary transition-colors font-medium"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Settings Drawer */}
       {showSettings && selectedChannel && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50">
-          <div className="bg-card w-full max-w-md rounded-t-lg p-6 shadow-lg border-t border-border">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-foreground">Channel Settings</h2>
+        <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
+          <div className="w-96 h-full bg-white shadow-2xl flex flex-col">
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Channel Settings</h2>
+                <p className="text-xs text-gray-500">{selectedChannel.name}</p>
+              </div>
               <button
-                onClick={() => {
-                  setShowSettings(false)
-                  setSelectedChannel(null)
-                }}
-                className="text-muted-foreground hover:text-foreground"
+                onClick={() => setShowSettings(false)}
+                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                ✕
+                <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
 
-            <div className="space-y-4">
+            {/* Drawer Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+              {/* Channel Name */}
               <div>
-                <label className="text-sm font-medium text-foreground block mb-2">Channel Name</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Channel Name</label>
                 <input
                   type="text"
-                  defaultValue={channels.find((c) => c.id === selectedChannel)?.name}
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 text-foreground bg-secondary"
+                  defaultValue={selectedChannel.name}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
                 />
               </div>
 
+              {/* Phone (readonly) */}
               <div>
-                <label className="text-sm font-medium text-foreground block mb-2">Status</label>
-                <select className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 text-foreground bg-secondary">
-                  <option>Active</option>
-                  <option>Inactive</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground block mb-2">Webhook URL</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone Number</label>
                 <input
                   type="text"
-                  placeholder="https://your-domain.com/webhook"
-                  className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 text-foreground bg-secondary"
+                  value={selectedChannel.phone}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                 />
               </div>
 
+              <hr className="border-gray-200" />
+
+              {/* Welcome Message */}
               <div>
-                <label className="text-sm font-medium text-foreground block mb-2">Auto-Reply Template</label>
-                <select className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 text-foreground bg-secondary">
-                  <option>None</option>
-                  <option>Default Welcome</option>
-                  <option>Business Hours</option>
-                </select>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Welcome Message</label>
+                <textarea
+                  value={welcomeMsg}
+                  onChange={e => setWelcomeMsg(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
+                />
               </div>
 
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => {
-                    setShowSettings(false)
-                    setSelectedChannel(null)
-                  }}
-                  className="flex-1 px-4 py-2 text-foreground border border-border rounded-lg hover:bg-secondary transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setShowSettings(false)
-                    setSelectedChannel(null)
-                  }}
-                  className="flex-1 px-4 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 transition-colors font-medium"
-                >
-                  Save Changes
-                </button>
+              {/* Away Message */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Away Message</label>
+                <textarea
+                  value={awayMsg}
+                  onChange={e => setAwayMsg(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
+                />
               </div>
+
+              {/* Assignment Mode */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Assignment Mode</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={assignMode === 'auto'}
+                      onChange={() => setAssignMode('auto')}
+                      className="accent-amber-500"
+                    />
+                    <span className="text-sm text-gray-700">Auto-assign</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={assignMode === 'manual'}
+                      onChange={() => setAssignMode('manual')}
+                      className="accent-amber-500"
+                    />
+                    <span className="text-sm text-gray-700">Manual</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Max Chats */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Max Chats per Agent</label>
+                <input
+                  type="number"
+                  value={maxChats}
+                  onChange={e => setMaxChats(Number(e.target.value))}
+                  min={1}
+                  max={20}
+                  className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                />
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div className="px-6 py-4 border-t border-gray-200 flex gap-3">
+              <button
+                onClick={() => setShowSettings(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
+                style={{ backgroundColor: '#C0992F' }}
+              >
+                Save Settings
+              </button>
             </div>
           </div>
         </div>
