@@ -101,32 +101,30 @@ export function ConversationList({ selectedId, onSelect }: ConversationListProps
   const tabs = [
     { id: 'all', label: 'All', count: 8 },
     { id: 'mine', label: 'Mine', count: 3 },
-    { id: 'unassigned', label: 'Unassigned', count: 0 },
-    { id: 'pending', label: 'Pending', count: 3 },
+    { id: 'unassigned', label: 'Unassigned', count: 2 },
+    { id: 'pending', label: 'Pending', count: 1 },
   ]
 
   return (
     <div className="flex flex-col h-full">
       {/* Filter Tabs */}
-      <div className="flex gap-2 p-4 border-b border-gray-200 overflow-x-auto">
+      <div className="flex gap-1 p-3 border-b border-gray-200">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
+            className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
               activeTab === tab.id
                 ? 'bg-nos-gold text-white'
                 : 'bg-transparent text-gray-600 hover:bg-gray-100'
             }`}
           >
             {tab.label}
-            {(tab.id === 'all' || tab.id === 'mine') && tab.count > 0 && (
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                activeTab === tab.id ? 'bg-white/20' : 'bg-nos-gold/20 text-nos-gold'
-              }`}>
-                {tab.count}
-              </span>
-            )}
+            <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${
+              activeTab === tab.id ? 'bg-white/30' : 'bg-nos-gold/20 text-nos-gold'
+            }`}>
+              {tab.count}
+            </span>
           </button>
         ))}
       </div>
@@ -138,16 +136,19 @@ export function ConversationList({ selectedId, onSelect }: ConversationListProps
           key={conv.id}
           onClick={() => onSelect(conv.id)}
           className={cn(
-            'w-full text-left p-4 hover:bg-muted/50 transition-colors border-l-2',
+            'w-full text-left p-4 hover:bg-gray-50 transition-colors border-l-2 relative',
             selectedId === conv.id
-              ? 'bg-muted border-l-primary'
+              ? 'bg-gray-100 border-l-nos-gold'
               : 'border-l-transparent'
           )}
         >
-          <div className="flex items-start gap-3 mb-2">
-            <div className="relative mt-1">
+          {/* WhatsApp Icon - Top Left */}
+          <div className="absolute top-3 left-3 w-2 h-2 rounded-full bg-green-500" title="WhatsApp" />
+
+          <div className="flex items-start gap-3 mb-2 pl-3">
+            <div className="relative flex-shrink-0">
               <Avatar className="h-10 w-10">
-                <AvatarFallback className="bg-primary/20 text-foreground text-sm font-semibold">
+                <AvatarFallback className="bg-nos-gold/20 text-nos-gold text-sm font-semibold">
                   {conv.avatar}
                 </AvatarFallback>
               </Avatar>
@@ -160,7 +161,7 @@ export function ConversationList({ selectedId, onSelect }: ConversationListProps
               <p className="font-semibold text-sm text-foreground truncate">
                 {conv.customer}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-gray-500">
                 {conv.phone}
               </p>
             </div>
@@ -168,9 +169,19 @@ export function ConversationList({ selectedId, onSelect }: ConversationListProps
               {conv.timestamp}
             </span>
           </div>
-          <p className="text-sm text-muted-foreground truncate pl-13">
+          <p className="text-sm text-muted-foreground truncate pl-16">
             {conv.lastMessage}
           </p>
+
+          {/* Channel Label */}
+          <p className="text-xs text-gray-400 truncate pl-16 mt-1">
+            Nations Of Sky
+          </p>
+
+          {/* Agent Avatar - Bottom Right */}
+          <div className="absolute bottom-3 right-4 w-5 h-5 rounded-full bg-nos-gold text-white flex items-center justify-center text-xs font-semibold">
+            SJ
+          </div>
         </button>
       ))}
       </div>

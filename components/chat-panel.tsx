@@ -97,23 +97,21 @@ export function ChatPanel({ conversationId }: ChatPanelProps) {
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Topbar */}
-      <div className="flex items-center justify-between h-15 border-b border-gray-200 px-4 flex-shrink-0">
+      <div className="flex items-center justify-between h-16 border-b border-gray-200 px-4 flex-shrink-0">
         {/* Left: Contact Info */}
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-nos-gold/20 text-nos-gold font-semibold text-sm">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
+          <div className="w-10 h-10 rounded-full bg-nos-gold text-white flex items-center justify-center font-semibold text-sm">
+            {initials}
+          </div>
           <div>
             <p className="font-semibold text-sm text-foreground">{info?.customer}</p>
-            <p className="text-xs text-gray-500">{info?.phone}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-xs text-gray-500">{info?.phone}</p>
+              <span className="px-2 py-0.5 bg-nos-teal text-white text-xs font-semibold rounded-full">
+                Nations Of Sky
+              </span>
+            </div>
           </div>
-        </div>
-
-        {/* Center: Channel Badge */}
-        <div className="bg-nos-teal text-white px-3 py-1 rounded-full text-xs font-medium">
-          Nations Of Sky
         </div>
 
         {/* Right: Action Buttons */}

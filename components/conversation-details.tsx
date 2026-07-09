@@ -114,8 +114,8 @@ interface ConversationDetailsProps {
 export function ConversationDetails({ conversationId }: ConversationDetailsProps) {
   const details = conversationDetails[conversationId]
   const [conversationOpen, setConversationOpen] = useState(true)
-  const [notesOpen, setNotesOpen] = useState(false)
-  const [historyOpen, setHistoryOpen] = useState(false)
+  const [notesOpen, setNotesOpen] = useState(true)
+  const [historyOpen, setHistoryOpen] = useState(true)
 
   if (!details) return null
 
@@ -210,16 +210,17 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
           {notesOpen && (
             <div className="space-y-3">
               <textarea
-                placeholder="Add a note..."
-                className="w-full px-3 py-2 rounded-lg border border-yellow-200 bg-yellow-50 text-sm resize-none focus:outline-none"
-                rows={3}
+                placeholder="Add internal note..."
+                className="w-full px-2 py-2 rounded-lg border border-yellow-300 bg-yellow-100 text-sm resize-none focus:outline-none focus:border-nos-gold"
+                rows={2}
+                style={{ backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }}
               />
               <button className="px-3 py-1.5 text-sm bg-nos-gold text-white rounded hover:bg-nos-gold/90 transition-colors font-medium">
-                Add Note
+                + Add Note
               </button>
-              <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-3 text-sm">
-                <p className="text-yellow-900">Customer has VIP status, handle with priority</p>
-                <p className="text-xs text-yellow-700 mt-1">Sarah Johnson • 2 hours ago</p>
+              <div className="rounded-lg p-3 text-sm" style={{ backgroundColor: '#FEF9C3' }}>
+                <p className="text-gray-900">Customer has VIP status, handle with priority</p>
+                <p className="text-xs text-gray-600 mt-1">Sarah Johnson · 10:25 AM</p>
               </div>
             </div>
           )}
@@ -236,19 +237,25 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
           </button>
           {historyOpen && (
             <div className="space-y-2">
-              <button className="w-full text-left p-3 border border-border rounded-lg hover:bg-yellow-50 transition-colors">
-                <p className="text-sm font-medium text-foreground">Jun 15, 2026</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">resolved</span>
-                  <span className="text-xs text-gray-600">8 messages</span>
+              <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-between group">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Jun 15, 2026</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs bg-nos-teal text-white px-2 py-0.5 rounded-full">resolved</span>
+                    <span className="text-xs text-gray-600">8 messages</span>
+                  </div>
                 </div>
+                <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-gray-600" style={{ transform: 'rotate(90deg)' }} />
               </button>
-              <button className="w-full text-left p-3 border border-border rounded-lg hover:bg-yellow-50 transition-colors">
-                <p className="text-sm font-medium text-foreground">May 3, 2026</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded">closed</span>
-                  <span className="text-xs text-gray-600">3 messages</span>
+              <button className="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-between group">
+                <div>
+                  <p className="text-sm font-medium text-foreground">May 3, 2026</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs bg-gray-400 text-white px-2 py-0.5 rounded-full">closed</span>
+                    <span className="text-xs text-gray-600">3 messages</span>
+                  </div>
                 </div>
+                <ChevronUp className="w-4 h-4 text-gray-400 group-hover:text-gray-600" style={{ transform: 'rotate(90deg)' }} />
               </button>
             </div>
           )}
