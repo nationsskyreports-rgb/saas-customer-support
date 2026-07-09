@@ -119,7 +119,7 @@ export function ChatPanel({ conversationId }: ChatPanelProps) {
           <button className="px-3 py-1.5 text-sm font-medium text-foreground bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors">
             Snooze
           </button>
-          <button className="px-3 py-1.5 text-sm font-medium text-white bg-nos-teal rounded hover:bg-nos-teal/90 transition-colors">
+          <button style={{ backgroundColor: '#00B69B', color: '#FFFFFF', borderRadius: '6px', padding: '6px 14px' }} className="text-sm font-medium hover:opacity-90 transition-colors">
             Resolve
           </button>
           <button className="px-3 py-1.5 text-sm font-medium text-foreground bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors">
@@ -142,19 +142,35 @@ export function ChatPanel({ conversationId }: ChatPanelProps) {
             {displayMessages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex ${msg.sender === 'agent' ? 'justify-end' : 'justify-start'}`}
+                className={`flex w-full ${msg.sender === 'agent' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-xs px-4 py-2 rounded-lg ${
+                  style={
                     msg.sender === 'agent'
-                      ? 'bg-nos-gold text-white'
-                      : 'bg-gray-100 text-foreground'
-                  }`}
+                      ? {
+                          backgroundColor: '#C0992F',
+                          color: '#FFFFFF',
+                          borderRadius: '18px 18px 4px 18px',
+                          padding: '10px 14px',
+                          maxWidth: '65%',
+                          display: 'block',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
+                        }
+                      : {
+                          backgroundColor: '#F1F5F9',
+                          color: '#1F2937',
+                          borderRadius: '18px 18px 18px 4px',
+                          padding: '10px 14px',
+                          maxWidth: '65%',
+                          display: 'block',
+                        }
+                  }
                 >
-                  <p className="text-sm">{msg.text}</p>
-                  <p className={`text-xs mt-1 ${
-                    msg.sender === 'agent' ? 'text-white/70' : 'text-gray-600'
-                  }`}>
+                  <p className="text-sm" style={{ color: msg.sender === 'agent' ? '#FFFFFF' : '#1F2937' }}>{msg.text}</p>
+                  <p
+                    className="text-xs mt-1"
+                    style={{ color: msg.sender === 'agent' ? '#9CA3AF' : '#6B7280', fontSize: '11px', textAlign: msg.sender === 'agent' ? 'right' : 'left' }}
+                  >
                     {msg.time}
                   </p>
                 </div>

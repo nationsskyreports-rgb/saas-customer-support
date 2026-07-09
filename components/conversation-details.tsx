@@ -120,7 +120,7 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
   if (!details) return null
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
+    <div className="flex flex-col h-full overflow-y-auto" style={{ minWidth: '280px', overflowX: 'hidden' }}>
       <div className="p-6 space-y-6">
         {/* Customer Header */}
         <div>
@@ -164,7 +164,7 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
             <div className="space-y-4">
               <div>
                 <p className="text-xs text-muted-foreground mb-2">Assigned Agent</p>
-                <select className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white">
+                <select className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white" style={{ minWidth: '240px', textOverflow: 'ellipsis' }}>
                   <option>Sarah Johnson</option>
                   <option>John Smith</option>
                   <option>Emily Davis</option>
@@ -172,7 +172,7 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-2">Team</p>
-                <select className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white">
+                <select className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white" style={{ minWidth: '240px', textOverflow: 'ellipsis' }}>
                   <option>Customer Service</option>
                   <option>Sales</option>
                   <option>Support</option>
@@ -181,14 +181,14 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
               <div>
                 <p className="text-xs text-muted-foreground mb-2">Priority</p>
                 <div className="flex gap-2">
-                  <button className="px-3 py-1.5 text-sm border border-border rounded hover:bg-gray-50 transition-colors">Normal</button>
-                  <button className="px-3 py-1.5 text-sm border border-border rounded hover:bg-gray-50 transition-colors">High</button>
-                  <button className="px-3 py-1.5 text-sm bg-nos-gold text-white rounded transition-colors">Urgent</button>
+                  <button className="px-3 py-1.5 text-sm border border-border rounded hover:bg-gray-50 transition-colors whitespace-nowrap">Normal</button>
+                  <button className="px-3 py-1.5 text-sm border border-border rounded hover:bg-gray-50 transition-colors whitespace-nowrap">High</button>
+                  <button className="px-3 py-1.5 text-sm bg-nos-gold text-white rounded transition-colors whitespace-nowrap">Urgent</button>
                 </div>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground mb-2">Log Category</p>
-                <select className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white">
+                <select className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-white" style={{ minWidth: '240px', textOverflow: 'ellipsis' }}>
                   <option>General Inquiry</option>
                   <option>Technical Issue</option>
                   <option>Billing</option>
