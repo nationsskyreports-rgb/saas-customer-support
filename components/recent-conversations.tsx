@@ -1,3 +1,8 @@
+'use client'
+
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+
 const recentConversations = [
   {
     id: 1,
@@ -43,16 +48,22 @@ function getStatusColor(status: string) {
 }
 
 export function RecentConversations() {
+  const router = useRouter()
+
   return (
     <div className="bg-card border border-border rounded-lg p-6">
-      <div className="mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-foreground">Recent Conversations</h3>
+        <Link href="/conversations" className="text-sm font-semibold text-nos-gold hover:text-nos-gold/80 transition-colors">
+          View All
+        </Link>
       </div>
       <div className="space-y-3">
         {recentConversations.map((conv) => (
-          <div
+          <button
             key={conv.id}
-            className="p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+            onClick={() => router.push(`/inbox?conversationId=${conv.id}`)}
+            className="w-full p-3 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer text-left"
           >
             <div className="flex items-start justify-between mb-1">
               <p className="font-medium text-sm text-foreground">{conv.customer}</p>
@@ -62,7 +73,7 @@ export function RecentConversations() {
             </div>
             <p className="text-xs text-muted-foreground mb-2">{conv.phone}</p>
             <p className="text-xs text-muted-foreground">{conv.time}</p>
-          </div>
+          </button>
         ))}
       </div>
     </div>

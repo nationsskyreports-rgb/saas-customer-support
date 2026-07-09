@@ -237,7 +237,7 @@ export const mockContacts: Contact[] = [
 export const mockChannels: Channel[] = [
   {
     id: 'channel-1',
-    name: 'Main Support',
+    name: 'Nations Of Sky',
     type: 'whatsapp',
     status: 'active',
     connectedAt: '2024-01-01',
@@ -245,8 +245,8 @@ export const mockChannels: Channel[] = [
   },
   {
     id: 'channel-2',
-    name: 'Instagram DM',
-    type: 'instagram',
+    name: 'NOS Marketing',
+    type: 'whatsapp',
     status: 'active',
     connectedAt: '2024-01-15',
   },
