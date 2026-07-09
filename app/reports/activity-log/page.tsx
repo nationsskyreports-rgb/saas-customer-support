@@ -74,11 +74,40 @@ export default function ActivityLogPage() {
         {filterTypes.map((filter) => (
           <button
             key={filter}
-            className={`px-4 py-1.5 rounded whitespace-nowrap font-semibold text-sm transition-colors ${
+            style={
               filter === 'All'
-                ? 'bg-nos-gold text-white'
-                : 'bg-transparent text-gray-600 border border-gray-200 hover:bg-nos-gold/5 hover:border-nos-gold hover:text-nos-gold'
-            }`}
+                ? {
+                    backgroundColor: '#C0992F',
+                    color: '#FFFFFF',
+                    border: '2px solid #C0992F',
+                    borderRadius: '6px',
+                    padding: '6px 16px',
+                    fontWeight: '600',
+                    opacity: '1',
+                    visibility: 'visible',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    whiteSpace: 'nowrap',
+                    fontSize: '14px',
+                    transitionDuration: '200ms',
+                  }
+                : {
+                    backgroundColor: '#FFFFFF',
+                    color: '#6B7280',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '6px',
+                    padding: '6px 16px',
+                    fontWeight: '600',
+                    opacity: '1',
+                    visibility: 'visible',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    whiteSpace: 'nowrap',
+                    fontSize: '14px',
+                    transitionDuration: '200ms',
+                  }
+            }
+            className="transition-colors"
           >
             {filter}
           </button>

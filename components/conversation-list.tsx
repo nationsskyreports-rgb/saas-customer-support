@@ -113,11 +113,40 @@ export function ConversationList({ selectedId, onSelect }: ConversationListProps
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-1.5 rounded whitespace-nowrap text-sm font-semibold transition-colors ${
+            style={
               activeTab === tab.id
-                ? 'bg-nos-gold text-white'
-                : 'bg-transparent text-gray-600 border border-gray-200 hover:bg-nos-gold/5 hover:border-nos-gold hover:text-nos-gold'
-            }`}
+                ? {
+                    backgroundColor: '#C0992F',
+                    color: '#FFFFFF',
+                    border: '2px solid #C0992F',
+                    borderRadius: '6px',
+                    padding: '6px 16px',
+                    fontWeight: '600',
+                    opacity: '1',
+                    visibility: 'visible',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    whiteSpace: 'nowrap',
+                    fontSize: '14px',
+                    transitionDuration: '200ms',
+                  }
+                : {
+                    backgroundColor: '#FFFFFF',
+                    color: '#6B7280',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '6px',
+                    padding: '6px 16px',
+                    fontWeight: '600',
+                    opacity: '1',
+                    visibility: 'visible',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    whiteSpace: 'nowrap',
+                    fontSize: '14px',
+                    transitionDuration: '200ms',
+                  }
+            }
+            className="transition-colors hover:bg-nos-gold/5 hover:border-nos-gold hover:text-nos-gold"
           >
             {tab.label} ({tab.count})
           </button>
