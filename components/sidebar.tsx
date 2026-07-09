@@ -37,47 +37,52 @@ export function Sidebar() {
 
   const navSections: NavSection[] = [
     {
-      title: 'Analytics',
+      title: 'ANALYTICS',
       items: [
-        { href: '/dashboard', label: 'Overview', icon: BarChart3 },
+        { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
+      ],
+    },
+    {
+      title: 'INBOX',
+      items: [
+        { href: '/inbox', label: 'My Chats', icon: MessageCircle },
+        { href: '/conversations', label: 'All Conversations', icon: Clock },
         { href: '/monitoring', label: 'Monitoring', icon: Eye },
-        { href: '/reports', label: 'Reports', icon: TrendingUp },
       ],
     },
     {
-      title: 'Inbox',
-      items: [
-        { href: '/inbox', label: 'Conversations', icon: MessageCircle },
-        { href: '/conversations', label: 'History', icon: Clock },
-      ],
-    },
-    {
-      title: 'Administration',
+      title: 'ADMINISTRATION',
       items: [
         { href: '/agents', label: 'Agents', icon: Users },
-        { href: '/agent-statuses', label: 'Agent Statuses', icon: UserCheck },
         { href: '/teams', label: 'Teams', icon: Package },
         { href: '/groups', label: 'Groups', icon: Users },
+        { href: '/agent-statuses', label: 'Agent Statuses', icon: UserCheck },
+        { href: '/messages', label: 'Pre-defined Messages', icon: MessageSquare },
+        { href: '/log-categories', label: 'Log Category Types', icon: FileText },
       ],
     },
     {
-      title: 'Channels',
+      title: 'CHANNELS',
       items: [
         { href: '/channels', label: 'Meta Channels', icon: PhoneCall },
       ],
     },
     {
-      title: 'Messages',
+      title: 'MESSAGES',
       items: [
-        { href: '/templates', label: 'Templates', icon: MessageSquare },
+        { href: '/conversations', label: 'Conversations History', icon: Clock },
         { href: '/campaigns', label: 'Campaigns', icon: Send },
-        { href: '/messages', label: 'Pre-defined', icon: Zap },
+        { href: '/templates', label: 'Templates', icon: LayoutGrid },
       ],
     },
     {
-      title: 'Settings',
+      title: 'REPORTS',
       items: [
-        { href: '/settings', label: 'Settings', icon: Settings },
+        { href: '/reports/overview', label: 'Overview Report', icon: BarChart3 },
+        { href: '/reports/agent-performance', label: 'Agent Performance', icon: TrendingUp },
+        { href: '/reports/chat-report', label: 'Chat Report', icon: MessageCircle },
+        { href: '/reports/delivery-report', label: 'Delivery Report', icon: Send },
+        { href: '/reports/activity-log', label: 'Activity Log', icon: Clock },
       ],
     },
   ]
@@ -101,14 +106,14 @@ export function Sidebar() {
       <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
         {!isCollapsed && (
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-sidebar-accent flex items-center justify-center font-bold text-xs">
+            <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-xs text-nos-gold">
               NO
             </div>
-            <span className="font-semibold text-sm">Nations Of Sky</span>
+            <span className="font-semibold text-sm text-white">Nations Of Sky</span>
           </div>
         )}
         {isCollapsed && (
-          <div className="w-8 h-8 rounded-lg bg-sidebar-accent flex items-center justify-center font-bold text-xs">
+          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-xs text-nos-gold">
             NO
           </div>
         )}
@@ -131,7 +136,7 @@ export function Sidebar() {
             {!isCollapsed && (
               <button
                 onClick={() => toggleSection(section.title)}
-                className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-white uppercase opacity-60 hover:opacity-100 transition-opacity tracking-wider"
               >
                 <span>{section.title}</span>
               </button>
@@ -148,8 +153,8 @@ export function Sidebar() {
                       className={cn(
                         'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 text-sm',
                         isActive
-                          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                          : 'text-sidebar-foreground hover:bg-sidebar-accent/10'
+                          ? 'bg-white text-nos-gold border-l-4 border-white font-semibold'
+                          : 'text-white hover:bg-white/15'
                       )}
                       title={isCollapsed ? item.label : undefined}
                     >
@@ -166,7 +171,7 @@ export function Sidebar() {
 
       {/* Logout Button */}
       <div className="p-3 border-t border-sidebar-border">
-        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-accent/10 transition-colors text-sm text-sidebar-foreground" title={isCollapsed ? 'Logout' : undefined}>
+        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/15 transition-colors text-sm text-white" title={isCollapsed ? 'Logout' : undefined}>
           <LogOut className="w-5 h-5 flex-shrink-0" />
           {!isCollapsed && <span>Logout</span>}
         </button>

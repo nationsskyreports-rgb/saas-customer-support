@@ -1,4 +1,4 @@
-import { BarChart3, MessageCircle, Users, Clock } from 'lucide-react'
+import { MessageCircle, Users, Clock, Star } from 'lucide-react'
 import { DashboardCard } from '@/components/dashboard-card'
 import { MetricsChart } from '@/components/metrics-chart'
 import { RecentConversations } from '@/components/recent-conversations'
@@ -6,41 +6,45 @@ import { RecentConversations } from '@/components/recent-conversations'
 export default function DashboardPage() {
   return (
     <div className="p-8 space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back! Here&apos;s your support overview.</p>
+      {/* Welcome Banner */}
+      <div className="bg-nos-light-gold border-l-4 border-nos-gold rounded-lg p-6">
+        <h1 className="text-2xl font-bold text-foreground">Welcome to Nations Of Sky Support Platform</h1>
+        <p className="text-foreground/70 mt-2">Manage your customer conversations efficiently across all channels.</p>
       </div>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <DashboardCard
           title="Total Conversations"
-          value="1,284"
-          change="+12.5%"
+          value="3,847"
+          change="+12%"
           icon={MessageCircle}
-          color="bg-primary/10"
+          iconColor="text-nos-gold"
+          trendPositive
         />
         <DashboardCard
           title="Active Agents"
-          value="8"
-          change="+1"
+          value="12"
+          change="+3"
           icon={Users}
-          color="bg-accent/10"
+          iconColor="text-nos-teal"
+          trendPositive
         />
         <DashboardCard
           title="Avg Response Time"
           value="2m 14s"
-          change="-8%"
+          change="-5%"
           icon={Clock}
-          color="bg-green-100"
+          iconColor="text-blue-500"
+          trendPositive
         />
         <DashboardCard
           title="Customer Satisfaction"
           value="94%"
-          change="+2%"
-          icon={BarChart3}
-          color="bg-blue-100"
+          change="+8%"
+          icon={Star}
+          iconColor="text-amber-500"
+          trendPositive
         />
       </div>
 

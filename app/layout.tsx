@@ -46,7 +46,7 @@ export default function RootLayout({
       <body className={`${geistSans.className} antialiased`}>
         <Sidebar />
         <TopNav />
-        <main className="ml-60 mt-16 bg-background">
+        <main className="ml-60 mt-17 bg-background">
           {children}
         </main>
         {process.env.NODE_ENV === 'production' && <Analytics />}

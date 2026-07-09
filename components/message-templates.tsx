@@ -7,44 +7,44 @@ import { Button } from '@/components/ui/button'
 const templates = [
   {
     id: 1,
-    title: 'Welcome Message',
+    title: 'Greeting',
     category: 'greeting',
-    content: 'Hello! Thank you for reaching out. How can we help you today?',
+    content: 'Hello! Welcome to Nations Of Sky support. How can I help you today?',
     usageCount: 342,
   },
   {
     id: 2,
-    title: 'Order Status',
+    title: 'Order Follow-up',
     category: 'order',
-    content: 'Your order is being processed and will ship within 24 hours. You&apos;ll receive a tracking number via email.',
+    content: "We're following up on your recent order. Is there anything we can help with?",
     usageCount: 521,
   },
   {
     id: 3,
-    title: 'Return Policy',
+    title: 'Policy Info',
     category: 'policy',
-    content: 'We offer returns within 30 days of purchase. Please visit our returns page or contact support for assistance.',
+    content: 'For more information about our policies, please visit our website or contact support.',
     usageCount: 198,
   },
   {
     id: 4,
-    title: 'Payment Issue',
+    title: 'Billing',
     category: 'billing',
-    content: 'I apologize for the payment issue. Let me check your account right away and resolve this for you.',
+    content: 'Regarding your billing inquiry, our team will review and get back to you shortly.',
     usageCount: 87,
   },
   {
     id: 5,
-    title: 'Closing Message',
+    title: 'Closing',
     category: 'closing',
-    content: 'Is there anything else I can help you with today? Thank you for choosing us!',
+    content: 'Thank you for contacting NOS. Have a great day!',
     usageCount: 456,
   },
   {
     id: 6,
     title: 'Escalation',
     category: 'escalation',
-    content: 'I&apos;ll escalate this to our specialist team. Someone will follow up with you within 2 hours.',
+    content: "I'm escalating your case to our specialist team who will contact you shortly.",
     usageCount: 124,
   },
 ]
@@ -61,14 +61,14 @@ const categories = [
 
 function getCategoryColor(category: string) {
   const colors: Record<string, string> = {
-    greeting: 'bg-blue-100 text-blue-800',
-    order: 'bg-purple-100 text-purple-800',
-    policy: 'bg-amber-100 text-amber-800',
-    billing: 'bg-red-100 text-red-800',
-    closing: 'bg-green-100 text-green-800',
-    escalation: 'bg-pink-100 text-pink-800',
+    greeting: 'bg-nos-gold/10 text-nos-gold',
+    order: 'bg-nos-gold/10 text-nos-gold',
+    policy: 'bg-nos-gold/10 text-nos-gold',
+    billing: 'bg-nos-gold/10 text-nos-gold',
+    closing: 'bg-nos-gold/10 text-nos-gold',
+    escalation: 'bg-nos-gold/10 text-nos-gold',
   }
-  return colors[category] || 'bg-gray-100 text-gray-800'
+  return colors[category] || 'bg-nos-gold/10 text-nos-gold'
 }
 
 export function MessageTemplates() {
@@ -95,8 +95,8 @@ export function MessageTemplates() {
             onClick={() => setSelectedCategory(cat.id)}
             className={`px-4 py-2 rounded-lg whitespace-nowrap font-medium text-sm transition-colors ${
               selectedCategory === cat.id
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-foreground hover:bg-muted/80'
+                ? 'bg-nos-gold text-white'
+                : 'bg-nos-light-gold text-foreground hover:bg-nos-gold/20'
             }`}
           >
             {cat.label}
@@ -107,24 +107,24 @@ export function MessageTemplates() {
       {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTemplates.map((template) => (
-          <div key={template.id} className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow">
+          <div key={template.id} className="bg-white border border-border rounded-xl p-6 hover:shadow-md transition-shadow">
             {/* Header */}
             <div className="flex items-start justify-between mb-3">
               <div>
                 <h3 className="font-semibold text-foreground mb-2">{template.title}</h3>
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${getCategoryColor(template.category)}`}>
+                <span className={`text-xs px-3 py-1 rounded-full font-semibold ${getCategoryColor(template.category)}`}>
                   {template.category}
                 </span>
               </div>
             </div>
 
             {/* Content */}
-            <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
               {template.content}
             </p>
 
             {/* Stats */}
-            <p className="text-xs text-muted-foreground mb-4">
+            <p className="text-xs text-muted-foreground mb-4 pb-4 border-b border-border">
               Used {template.usageCount} times
             </p>
 
@@ -132,16 +132,16 @@ export function MessageTemplates() {
             <div className="flex gap-2">
               <button
                 onClick={() => handleCopy(template.content, template.id)}
-                className="flex-1 p-2 hover:bg-muted rounded-lg transition-colors flex items-center justify-center gap-1 text-sm"
+                className="flex-1 p-2 hover:bg-nos-light-gold rounded-lg transition-colors flex items-center justify-center gap-1 text-sm text-foreground font-medium"
               >
                 <Copy className="w-4 h-4" />
                 {copiedId === template.id ? 'Copied!' : 'Copy'}
               </button>
-              <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-                <Edit className="w-4 h-4 text-muted-foreground" />
+              <button className="p-2 hover:bg-nos-light-gold rounded-lg transition-colors">
+                <Edit className="w-4 h-4 text-foreground" />
               </button>
               <button className="p-2 hover:bg-red-50 rounded-lg transition-colors">
-                <Trash2 className="w-4 h-4 text-red-600" />
+                <Trash2 className="w-4 h-4 text-red-500" />
               </button>
             </div>
           </div>

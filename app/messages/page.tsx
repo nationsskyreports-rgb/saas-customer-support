@@ -17,13 +17,13 @@ export default function MessagesPage() {
           <h1 className="text-3xl font-bold text-foreground">Pre-defined Messages</h1>
           <p className="text-muted-foreground mt-1">Create and manage message templates for quick responses</p>
         </div>
-        <Button
+        <button
           onClick={() => setIsCreateOpen(true)}
-          className="gap-2"
+          className="bg-nos-gold text-white px-4 py-2 rounded-lg hover:bg-nos-gold/90 transition-colors flex items-center gap-2 font-semibold"
         >
           <Plus className="w-4 h-4" />
           New Template
-        </Button>
+        </button>
       </div>
 
       {/* Templates Grid */}

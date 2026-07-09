@@ -51,31 +51,31 @@ export default function OverviewReportPage() {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-card rounded-lg p-6 border border-border">
+        <div className="bg-white rounded-xl p-6 border border-border">
           <p className="text-sm text-muted-foreground mb-2">Total Conversations</p>
-          <p className="text-3xl font-bold text-foreground">970</p>
-          <p className="text-xs text-green-600 mt-1">↑ 12% from last week</p>
+          <p className="text-3xl font-bold text-foreground">3,847</p>
+          <p className="text-xs text-green-600 mt-1">↑ 12% from last month</p>
         </div>
-        <div className="bg-card rounded-lg p-6 border border-border">
+        <div className="bg-white rounded-xl p-6 border border-border">
           <p className="text-sm text-muted-foreground mb-2">Resolved</p>
-          <p className="text-3xl font-bold text-foreground">888</p>
-          <p className="text-xs text-green-600 mt-1">91.5% resolution rate</p>
+          <p className="text-3xl font-bold text-foreground">3,210</p>
+          <p className="text-xs text-green-600 mt-1">83.4% resolution rate</p>
         </div>
-        <div className="bg-card rounded-lg p-6 border border-border">
+        <div className="bg-white rounded-xl p-6 border border-border">
           <p className="text-sm text-muted-foreground mb-2">Avg Response Time</p>
-          <p className="text-3xl font-bold text-foreground">2m 45s</p>
-          <p className="text-xs text-green-600 mt-1">↓ 8% improvement</p>
+          <p className="text-3xl font-bold text-foreground">2m 14s</p>
+          <p className="text-xs text-green-600 mt-1">↓ 5% improvement</p>
         </div>
-        <div className="bg-card rounded-lg p-6 border border-border">
+        <div className="bg-white rounded-xl p-6 border border-border">
           <p className="text-sm text-muted-foreground mb-2">Customer Satisfaction</p>
-          <p className="text-3xl font-bold text-foreground">4.6★</p>
-          <p className="text-xs text-green-600 mt-1">534 ratings</p>
+          <p className="text-3xl font-bold text-nos-gold">4.8★</p>
+          <p className="text-xs text-nos-gold font-semibold mt-1">1,456 ratings</p>
         </div>
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-card rounded-lg p-6 border border-border">
+        <div className="bg-white rounded-xl p-6 border border-border">
           <h3 className="text-lg font-bold text-foreground mb-4">Conversations Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={weeklyData}>
@@ -88,7 +88,7 @@ export default function OverviewReportPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-card rounded-lg p-6 border border-border">
+        <div className="bg-white rounded-xl p-6 border border-border">
           <h3 className="text-lg font-bold text-foreground mb-4">Customer Satisfaction Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={satisfactionData}>
@@ -103,12 +103,12 @@ export default function OverviewReportPage() {
       </div>
 
       {/* Breakdown Table */}
-      <div className="bg-card rounded-lg border border-border overflow-hidden">
+      <div className="bg-white rounded-xl border border-border overflow-hidden">
         <div className="p-6 border-b border-border">
           <h3 className="text-lg font-bold text-foreground">Daily Breakdown</h3>
         </div>
         <table className="w-full">
-          <thead className="bg-secondary border-b border-border">
+          <thead className="bg-nos-light-gold border-b border-border">
             <tr>
               <th className="px-6 py-3 text-left text-sm font-bold text-foreground">Day</th>
               <th className="px-6 py-3 text-left text-sm font-bold text-foreground">Conversations</th>
@@ -119,7 +119,7 @@ export default function OverviewReportPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {weeklyData.map((row) => (
-              <tr key={row.day} className="hover:bg-secondary/50 transition-colors">
+              <tr key={row.day} className="hover:bg-nos-light-gold transition-colors">
                 <td className="px-6 py-4 text-sm font-medium text-foreground">{row.day}</td>
                 <td className="px-6 py-4 text-sm text-foreground">{row.conversations}</td>
                 <td className="px-6 py-4 text-sm text-green-600 font-medium">{row.resolved}</td>
