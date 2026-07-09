@@ -32,7 +32,7 @@ interface NavSection {
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const [expandedSections, setExpandedSections] = useState<string[]>(['analytics', 'inbox', 'admin'])
+  const [expandedSections, setExpandedSections] = useState<string[]>(['ANALYTICS', 'INBOX', 'ADMINISTRATION', 'CHANNELS', 'MESSAGES', 'REPORTS'])
   const pathname = usePathname()
 
   const navSections: NavSection[] = [
@@ -98,12 +98,12 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        'fixed left-0 top-0 h-screen bg-sidebar text-sidebar-foreground transition-all duration-300 ease-out flex flex-col border-r border-sidebar-border',
+        'fixed left-0 top-1 h-screen bg-nos-gold text-white transition-all duration-300 ease-out flex flex-col border-r border-white/10',
         isCollapsed ? 'w-16' : 'w-64'
       )}
     >
       {/* Logo/Header */}
-      <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
+      <div className="flex items-center justify-between p-4 border-b border-white/15">
         {!isCollapsed && (
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-xs text-nos-gold">
@@ -151,10 +151,10 @@ export function Sidebar() {
                       key={item.href}
                       href={item.href}
                       className={cn(
-                        'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 text-sm',
+                        'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors duration-200 text-sm font-medium',
                         isActive
-                          ? 'bg-white text-nos-gold border-l-4 border-white font-semibold'
-                          : 'text-white hover:bg-white/15'
+                          ? 'bg-white/20 text-white border-l-3 border-white'
+                          : 'text-white hover:bg-white/12'
                       )}
                       title={isCollapsed ? item.label : undefined}
                     >
@@ -170,7 +170,7 @@ export function Sidebar() {
       </nav>
 
       {/* Logout Button */}
-      <div className="p-3 border-t border-sidebar-border">
+      <div className="p-3 border-t border-white/15">
         <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/15 transition-colors text-sm text-white" title={isCollapsed ? 'Logout' : undefined}>
           <LogOut className="w-5 h-5 flex-shrink-0" />
           {!isCollapsed && <span>Logout</span>}

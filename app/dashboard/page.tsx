@@ -7,9 +7,9 @@ export default function DashboardPage() {
   return (
     <div className="p-8 space-y-8">
       {/* Welcome Banner */}
-      <div className="bg-nos-light-gold border-l-4 border-nos-gold rounded-lg p-6">
-        <h1 className="text-2xl font-bold text-foreground">Welcome to Nations Of Sky Support Platform</h1>
-        <p className="text-foreground/70 mt-2">Manage your customer conversations efficiently across all channels.</p>
+      <div className="bg-nos-light-gold border-l-4 border-nos-gold rounded-xl p-6">
+        <h1 className="text-2xl font-bold" style={{ color: '#92400E' }}>Welcome to Nations Of Sky Support Platform</h1>
+        <p className="mt-2" style={{ color: '#B45309' }}>Manage your customer conversations efficiently across all channels.</p>
       </div>
 
       {/* Key Metrics */}
