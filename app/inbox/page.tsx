@@ -11,9 +11,8 @@ export default function InboxPage() {
 
   return (
     <div className="h-screen flex flex-col">
-      {/* Header */}
       <div className="p-6 border-b border-border bg-white">
-        <h1 className="text-2xl font-bold text-foreground mb-4">Inbox</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-4">My Chats</h1>
         <div className="relative">
           <Search className="absolute left-3 top-3 w-5 h-5 text-muted-foreground" />
           <input
@@ -23,23 +22,17 @@ export default function InboxPage() {
           />
         </div>
       </div>
-
-      {/* 3-Panel Layout */}
       <div className="flex-1 flex gap-0 overflow-hidden">
-        {/* Panel 1: Conversation List */}
         <div className="w-80 border-r border-border bg-white overflow-y-auto flex-shrink-0">
           <ConversationList
             selectedId={selectedConversationId}
             onSelect={setSelectedConversationId}
+            defaultTab="mine"
           />
         </div>
-
-        {/* Panel 2: Chat */}
         <div className="flex-1 bg-background flex flex-col overflow-hidden">
           <ChatPanel conversationId={selectedConversationId} />
         </div>
-
-        {/* Panel 3: Details */}
         <div className="w-80 border-l border-border bg-white overflow-y-auto flex-shrink-0">
           <ConversationDetails conversationId={selectedConversationId} />
         </div>
