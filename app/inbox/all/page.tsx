@@ -22,12 +22,12 @@ export default function AllConversationsPage() {
           />
         </div>
       </div>
-
       <div className="flex-1 flex gap-0 overflow-hidden">
         <div className="w-80 border-r border-border bg-white overflow-y-auto flex-shrink-0">
           <ConversationList
             selectedId={selectedConversationId}
             onSelect={setSelectedConversationId}
+            defaultTab="all"
           />
         </div>
         <div className="flex-1 bg-background flex flex-col overflow-hidden">
