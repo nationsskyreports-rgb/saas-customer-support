@@ -21,8 +21,7 @@ export function TopNav() {
 
   return (
     <>
-      <div className="fixed top-0 left-0 right-0 h-0.5 bg-nos-gold z-50" />
-      <div className="fixed top-0.5 left-60 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-40">
+      <div className="fixed left-60 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-40" style={{ top: '3px' }}>
       {/* Left side - Page title would go here */}
       <div className="flex-1" />
 
@@ -79,8 +78,8 @@ export function TopNav() {
         </div>
 
         {/* Agent Avatar and Name */}
-        <div className="flex items-center gap-2 pl-4 border-l border-gray-200">
-          <div className="w-9 h-9 rounded-full bg-nos-gold text-white font-semibold flex items-center justify-center text-sm">
+        <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+          <div style={{ width: '36px', height: '36px', marginRight: '8px', backgroundColor: '#C0992F', borderRadius: '50%' }} className="text-white flex items-center justify-center font-semibold text-sm">
             KR
           </div>
           <span className="text-sm font-medium text-gray-600">Kareem Rashad</span>

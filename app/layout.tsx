@@ -44,9 +44,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-background">
       <body className={`${geistSans.className} antialiased`}>
+        <div style={{ height: '3px', backgroundColor: '#C0992F', width: '100%', position: 'fixed', top: 0, left: 0, zIndex: 60 }} />
         <Sidebar />
         <TopNav />
-        <main className="ml-60 mt-16 bg-gray-50">
+        <main className="ml-60 bg-gray-50" style={{ marginTop: 'calc(3px + 4rem)' }}>
           {children}
         </main>
         {process.env.NODE_ENV === 'production' && <Analytics />}

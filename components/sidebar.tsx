@@ -16,8 +16,10 @@ import {
   LayoutGrid,
   FileText,
   Eye,
-  UserCheck,
+  CircleDot,
   Package,
+  Zap,
+  Tag,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -49,11 +51,11 @@ export function Sidebar() {
       title: 'ADMINISTRATION',
       items: [
         { href: '/agents', label: 'Agents', icon: Users },
-        { href: '/teams', label: 'Teams', icon: Package },
-        { href: '/groups', label: 'Groups', icon: Users },
-        { href: '/agent-statuses', label: 'Agent Statuses', icon: UserCheck },
-        { href: '/messages', label: 'Pre-defined Messages', icon: MessageSquare },
-        { href: '/log-categories', label: 'Log Category Types', icon: FileText },
+        { href: '/teams', label: 'Teams', icon: Users },
+        { href: '/groups', label: 'Groups', icon: LayoutGrid },
+        { href: '/agent-statuses', label: 'Agent Statuses', icon: CircleDot },
+        { href: '/messages', label: 'Pre-defined Messages', icon: Zap },
+        { href: '/log-categories', label: 'Log Category Types', icon: Tag },
       ],
     },
     {
@@ -91,7 +93,7 @@ export function Sidebar() {
   }
 
   return (
-    <div className="fixed left-0 top-0 h-screen w-60 bg-nos-gold text-white flex flex-col border-r border-white/10" style={{ backgroundColor: '#C0992F' }}>
+    <div className="fixed left-0 h-screen w-60 bg-nos-gold text-white flex flex-col border-r border-white/10" style={{ backgroundColor: '#C0992F', top: '3px' }}>
 
       {/* Logo/Header */}
       <div className="flex items-center gap-2 p-4 border-b border-white/15">
