@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Settings, Trash2, MessageCircle, Instagram, Radio } from 'lucide-react'
+import { Plus, Settings, Trash2, MessageCircle, Heart, Radio } from 'lucide-react'
 import { mockChannels } from '@/lib/mock-data'
 
 export default function ChannelsPage() {
@@ -15,7 +15,7 @@ export default function ChannelsPage() {
       case 'whatsapp':
         return <MessageCircle className="w-6 h-6 text-green-500" />
       case 'instagram':
-        return <Instagram className="w-6 h-6 text-pink-500" />
+        return <Heart className="w-6 h-6 text-pink-500" />
       case 'facebook':
         return <Radio className="w-6 h-6 text-blue-500" />
       default:
@@ -113,7 +113,7 @@ export default function ChannelsPage() {
                 </div>
               </button>
               <button className="w-full flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-secondary transition-colors">
-                <Instagram className="w-6 h-6 text-pink-500" />
+                <Heart className="w-6 h-6 text-pink-500" />
                 <div className="text-left">
                   <p className="font-medium text-foreground">Instagram</p>
                   <p className="text-xs text-muted-foreground">Connect your Instagram Business Account</p>
