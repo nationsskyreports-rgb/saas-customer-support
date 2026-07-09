@@ -9,8 +9,8 @@ const geistSans = Geist({ subsets: ['latin'] })
 const geistMono = Geist_Mono({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Support Hub - WhatsApp Customer Support SaaS',
-  description: 'Multi-agent WhatsApp customer support platform',
+  title: 'Nations Of Sky - Customer Support Platform',
+  description: 'Multi-agent customer support platform with WhatsApp integration',
   generator: 'v0.app',
   icons: {
     icon: [
