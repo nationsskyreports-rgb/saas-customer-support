@@ -1,21 +1,21 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Send, Zap, Smile, Paperclip, MoreVertical } from 'lucide-react'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
 const messages = {
   1: [
     { id: 1, sender: 'customer', text: 'Hi, I need help with my order', time: '10:30 AM' },
-    { id: 2, sender: 'agent', text: 'Hello! I&apos;d be happy to help. What&apos;s your order number?', time: '10:31 AM' },
-    { id: 3, sender: 'customer', text: 'It&apos;s #ORD-12345', time: '10:32 AM' },
-    { id: 4, sender: 'agent', text: 'Thank you. I found your order. It&apos;s currently being processed and will ship tomorrow.', time: '10:33 AM' },
+    { id: 2, sender: 'agent', text: "Hello! I'd be happy to help. What's your order number?", time: '10:31 AM' },
+    { id: 3, sender: 'customer', text: 'It\'s #ORD-12345', time: '10:32 AM' },
+    { id: 4, sender: 'agent', text: 'Thank you. I found your order. It\'s currently being processed and will ship tomorrow.', time: '10:33 AM' },
     { id: 5, sender: 'customer', text: 'Thanks for your help!', time: '10:34 AM' },
   ],
   2: [
     { id: 1, sender: 'customer', text: 'Can you help with my order?', time: '2:15 PM' },
     { id: 2, sender: 'agent', text: 'Of course! What seems to be the issue?', time: '2:16 PM' },
-    { id: 3, sender: 'customer', text: 'I haven&apos;t received it yet', time: '2:17 PM' },
+    { id: 3, sender: 'customer', text: 'I haven\'t received it yet', time: '2:17 PM' },
   ],
   3: [
     { id: 1, sender: 'customer', text: 'I received the wrong item', time: '5:20 PM' },
@@ -44,6 +44,17 @@ const messages = {
     { id: 3, sender: 'customer', text: 'I received my order, thanks!', time: '2:32 PM' },
   ],
 } as Record<number, Array<{ id: number; sender: string; text: string; time: string }>>
+
+const conversationInfo = {
+  1: { customer: 'Ahmed Hassan', phone: '+20 123 456 7890' },
+  2: { customer: 'Fatima Al-Rashid', phone: '+20 987 654 3210' },
+  3: { customer: 'Mohammed Karim', phone: '+20 555 123 4567' },
+  4: { customer: 'Layla Ibrahim', phone: '+20 444 987 6543' },
+  5: { customer: 'Khalid Hassan', phone: '+20 333 555 7777' },
+  6: { customer: 'Noor Saleh', phone: '+20 222 888 9999' },
+  7: { customer: 'Zainab Rashid', phone: '+20 111 444 5555' },
+  8: { customer: 'Hassan Ahmed', phone: '+20 666 777 8888' },
+} as Record<number, { customer: string; phone: string }>
 
 interface ChatPanelProps {
   conversationId: number
@@ -80,8 +91,48 @@ export function ChatPanel({ conversationId }: ChatPanelProps) {
     }
   }
 
+  const info = conversationInfo[conversationId]
+  const initials = info?.customer.split(' ').map(n => n[0]).join('') || 'AA'
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white">
+      {/* Topbar */}
+      <div className="flex items-center justify-between h-15 border-b border-gray-200 px-4 flex-shrink-0">
+        {/* Left: Contact Info */}
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback className="bg-nos-gold/20 text-nos-gold font-semibold text-sm">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-semibold text-sm text-foreground">{info?.customer}</p>
+            <p className="text-xs text-gray-500">{info?.phone}</p>
+          </div>
+        </div>
+
+        {/* Center: Channel Badge */}
+        <div className="bg-nos-teal text-white px-3 py-1 rounded-full text-xs font-medium">
+          Nations Of Sky
+        </div>
+
+        {/* Right: Action Buttons */}
+        <div className="flex items-center gap-2">
+          <button className="px-3 py-1.5 text-sm font-medium text-foreground bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+            Snooze
+          </button>
+          <button className="px-3 py-1.5 text-sm font-medium text-white bg-nos-teal rounded hover:bg-nos-teal/90 transition-colors">
+            Resolve
+          </button>
+          <button className="px-3 py-1.5 text-sm font-medium text-foreground bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+            Close
+          </button>
+          <button className="p-1.5 text-gray-600 hover:bg-gray-100 rounded transition-colors">
+            <MoreVertical className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {displayMessages.length === 0 ? (
@@ -98,13 +149,13 @@ export function ChatPanel({ conversationId }: ChatPanelProps) {
                 <div
                   className={`max-w-xs px-4 py-2 rounded-lg ${
                     msg.sender === 'agent'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-foreground'
+                      ? 'bg-nos-gold text-white'
+                      : 'bg-gray-100 text-foreground'
                   }`}
                 >
                   <p className="text-sm">{msg.text}</p>
                   <p className={`text-xs mt-1 ${
-                    msg.sender === 'agent' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                    msg.sender === 'agent' ? 'text-white/70' : 'text-gray-600'
                   }`}>
                     {msg.time}
                   </p>
@@ -116,23 +167,34 @@ export function ChatPanel({ conversationId }: ChatPanelProps) {
         )}
       </div>
 
-      {/* Input */}
-      <div className="border-t border-border p-4 bg-white">
-        <div className="flex gap-2">
-          <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-            <Plus className="w-5 h-5 text-muted-foreground" />
+      {/* Input Bar */}
+      <div className="border-t border-gray-200 bg-white" style={{ height: '64px', padding: '0 16px' }}>
+        <div className="flex items-center gap-3 h-full">
+          {/* Left Icon Buttons */}
+          <button className="p-2 text-gray-600 hover:text-nos-gold transition-colors" title="Pre-defined messages">
+            <Zap className="w-5 h-5" />
           </button>
+          <button className="p-2 text-gray-600 hover:text-nos-gold transition-colors" title="Emoji">
+            <Smile className="w-5 h-5" />
+          </button>
+          <button className="p-2 text-gray-600 hover:text-nos-gold transition-colors" title="Attachment">
+            <Paperclip className="w-5 h-5" />
+          </button>
+
+          {/* Textarea */}
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-            rows={2}
+            className="flex-1 h-full py-2 resize-none border-0 outline-none bg-transparent text-foreground placeholder-gray-400 font-normal text-sm"
+            style={{ fontFamily: 'inherit' }}
           />
+
+          {/* Send Button */}
           <button
             onClick={handleSend}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
+            className="flex-shrink-0 w-10 h-10 rounded-full bg-nos-gold text-white hover:bg-nos-gold/90 transition-colors flex items-center justify-center"
           >
             <Send className="w-5 h-5" />
           </button>

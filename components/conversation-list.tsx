@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
 
@@ -95,8 +96,43 @@ interface ConversationListProps {
 }
 
 export function ConversationList({ selectedId, onSelect }: ConversationListProps) {
+  const [activeTab, setActiveTab] = useState('all')
+
+  const tabs = [
+    { id: 'all', label: 'All', count: 8 },
+    { id: 'mine', label: 'Mine', count: 3 },
+    { id: 'unassigned', label: 'Unassigned', count: 0 },
+    { id: 'pending', label: 'Pending', count: 3 },
+  ]
+
   return (
-    <div className="divide-y divide-border">
+    <div className="flex flex-col h-full">
+      {/* Filter Tabs */}
+      <div className="flex gap-2 p-4 border-b border-gray-200 overflow-x-auto">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
+              activeTab === tab.id
+                ? 'bg-nos-gold text-white'
+                : 'bg-transparent text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            {tab.label}
+            {(tab.id === 'all' || tab.id === 'mine') && tab.count > 0 && (
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                activeTab === tab.id ? 'bg-white/20' : 'bg-nos-gold/20 text-nos-gold'
+              }`}>
+                {tab.count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Conversation List */}
+      <div className="flex-1 divide-y divide-border overflow-y-auto">
       {conversations.map((conv) => (
         <button
           key={conv.id}
@@ -137,6 +173,7 @@ export function ConversationList({ selectedId, onSelect }: ConversationListProps
           </p>
         </button>
       ))}
+      </div>
     </div>
   )
 }
