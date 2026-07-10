@@ -220,13 +220,98 @@
   background-color: rgba(192, 153, 47, 0.08) !important;
 }
 
-/* Badge overrides — keep colored badges readable */
-.dark .bg-green-100 { background-color: rgba(34, 197, 94, 0.15) !important; }
-.dark .bg-yellow-100 { background-color: rgba(234, 179, 8, 0.15) !important; }
-.dark .bg-red-100 { background-color: rgba(239, 68, 68, 0.15) !important; }
-.dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.15) !important; }
-.dark .bg-purple-100 { background-color: rgba(168, 85, 247, 0.15) !important; }
-.dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.15) !important; }
+/* Badge overrides — keep colored badges readable in dark */
+.dark .bg-green-100 { background-color: rgba(34, 197, 94, 0.2) !important; }
+.dark .bg-yellow-100 { background-color: rgba(234, 179, 8, 0.2) !important; }
+.dark .bg-red-100 { background-color: rgba(239, 68, 68, 0.2) !important; }
+.dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.2) !important; }
+.dark .bg-purple-100 { background-color: rgba(168, 85, 247, 0.2) !important; }
+.dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.2) !important; }
+
+/* Badge text — force lighter colors in dark mode */
+.dark .text-green-800 { color: #4ADE80 !important; }
+.dark .text-green-700 { color: #4ADE80 !important; }
+.dark .text-green-600 { color: #4ADE80 !important; }
+.dark .text-yellow-800 { color: #FACC15 !important; }
+.dark .text-yellow-700 { color: #FACC15 !important; }
+.dark .text-yellow-600 { color: #FACC15 !important; }
+.dark .text-red-800 { color: #F87171 !important; }
+.dark .text-red-700 { color: #F87171 !important; }
+.dark .text-red-600 { color: #F87171 !important; }
+.dark .text-blue-800 { color: #60A5FA !important; }
+.dark .text-blue-700 { color: #60A5FA !important; }
+.dark .text-purple-800 { color: #C084FC !important; }
+.dark .text-purple-700 { color: #C084FC !important; }
+.dark .text-amber-800 { color: #FCD34D !important; }
+
+/* Dark mode — table th/header text */
+.dark th {
+  color: #9CA3AF !important;
+}
+
+/* Rounded-full pill badges in dark */
+.dark .bg-gray-100.text-gray-700 {
+  background-color: rgba(107, 114, 128, 0.2) !important;
+  color: #D1D5DB !important;
+}
+
+/* Status indicator pills */
+.dark .bg-gray-100 {
+  background-color: #374151 !important;
+}
+
+/* Top stats pills */
+.dark .bg-white.border.border-gray-200.rounded-full {
+  background-color: #1F2937 !important;
+  border-color: #4B5563 !important;
+}
+
+/* Dropdown menus */
+.dark .bg-white.border.border-gray-200.rounded-lg.shadow-lg {
+  background-color: #1F2937 !important;
+  border-color: #4B5563 !important;
+}
+
+/* Card borders */
+.dark .border.border-gray-200.rounded-xl {
+  border-color: #374151 !important;
+}
+
+/* Dividers */
+.dark .divide-gray-100 > * + * {
+  border-color: #374151 !important;
+}
+
+/* Ghost buttons */
+.dark .border-gray-200.rounded-lg {
+  border-color: #4B5563 !important;
+  color: #D1D5DB !important;
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: #374151 !important;
+}
+
+/* Topbar icons */
+.dark .text-gray-700 {
+  color: #D1D5DB !important;
+}
+
+/* Welcome banner in dark */
+.dark [style*="border-left"] {
+  border-color: #D4A843 !important;
+}
+
+/* Chart tooltips */
+.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: #1F2937 !important;
+  border-color: #374151 !important;
+}
+
+/* Tab active — keep visible */
+.dark [style*="background-color: rgb(192, 153, 47)"] {
+  color: #FFFFFF !important;
+}
 
 /* Scrollbar */
 .dark ::-webkit-scrollbar { width: 6px; }
