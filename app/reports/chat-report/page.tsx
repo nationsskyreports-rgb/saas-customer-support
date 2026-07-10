@@ -1,7 +1,5 @@
 'use client'
 
-import { Clock, MessageCircle, User, DollarSign } from 'lucide-react'
-
 export default function ChatReportPage() {
   const hourlyData = Array.from({ length: 24 }, (_, i) => ({
     hour: `${i}:00`,
@@ -11,9 +9,9 @@ export default function ChatReportPage() {
 
   const topConversations = [
     { id: 1, contact: 'Ahmed Hassan', phone: '+20 123 456 7890', agent: 'Sarah Ahmed', duration: '18m 32s', messages: 24, channel: 'WhatsApp' },
-    { id: 2, contact: 'Fatima Al-Zahra', phone: '+20 987 654 3210', agent: 'Mohamed Hassan', duration: '12m 15s', messages: 18, channel: 'WhatsApp' },
+    { id: 2, contact: 'Fatima Al-Rashid', phone: '+20 987 654 3210', agent: 'Mohamed Hassan', duration: '12m 15s', messages: 18, channel: 'WhatsApp' },
     { id: 3, contact: 'Omar Sayed', phone: '+20 555 123 4567', agent: 'Layla Ibrahim', duration: '25m 48s', messages: 31, channel: 'WhatsApp' },
-    { id: 4, contact: 'Noor Mustafa', phone: '+20 222 333 4444', agent: 'Ahmed Karim', duration: '9m 20s', messages: 12, channel: 'WhatsApp' },
+    { id: 4, contact: 'Nour Mostafa', phone: '+20 222 333 4444', agent: 'Ahmed Karim', duration: '9m 20s', messages: 12, channel: 'WhatsApp' },
     { id: 5, contact: 'Salma Fathy', phone: '+20 666 777 8888', agent: 'Sarah Ahmed', duration: '21m 10s', messages: 28, channel: 'WhatsApp' },
     { id: 6, contact: 'Karim Ali', phone: '+20 111 222 3333', agent: 'Mohamed Hassan', duration: '16m 45s', messages: 22, channel: 'WhatsApp' },
     { id: 7, contact: 'Maryam Ehab', phone: '+20 444 555 6666', agent: 'Layla Ibrahim', duration: '14m 30s', messages: 19, channel: 'WhatsApp' },
@@ -22,67 +20,75 @@ export default function ChatReportPage() {
     { id: 10, contact: 'Tariq Hassan', phone: '+20 777 888 9999', agent: 'Mohamed Hassan', duration: '13m 40s', messages: 17, channel: 'WhatsApp' },
   ]
 
-  const getHourColor = (isPeak: boolean) => isPeak ? 'bg-nos-gold' : 'bg-nos-teal'
-
   return (
     <div className="p-8 space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Chat Report</h1>
-        <p className="text-muted-foreground mt-1">Detailed conversation analytics and volume</p>
+        <h1 className="text-3xl font-bold text-gray-900">Chat Report</h1>
+        <p className="text-gray-500 mt-1">Detailed conversation analytics and volume</p>
       </div>
 
       {/* Hourly Volume Chart */}
-      <div className="bg-white border border-border rounded-xl p-6">
-        <h2 className="font-semibold text-foreground mb-6">Hourly Conversation Volume (Today)</h2>
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <h2 className="font-semibold text-gray-900 mb-6">Hourly Conversation Volume (Today)</h2>
         <div className="space-y-2">
-          {/* Bar Chart */}
           <div className="flex items-end gap-1 h-64">
             {hourlyData.map((data, idx) => (
               <div key={idx} className="flex-1 flex flex-col items-center gap-1">
                 <div
-                  className={`w-full ${getHourColor(data.isPeak)} rounded-t transition-all hover:opacity-80`}
-                  style={{ height: `${(data.conversations / 200) * 100}%` }}
+                  className="w-full rounded-t transition-all hover:opacity-80 cursor-pointer"
+                  style={{
+                    height: `${(data.conversations / 200) * 100}%`,
+                    backgroundColor: data.isPeak ? '#C0992F' : '#00B69B',
+                  }}
                   title={`${data.hour}: ${data.conversations} conversations`}
                 />
               </div>
             ))}
           </div>
-          <div className="flex justify-between text-xs text-muted-foreground mt-4">
+          <div className="flex justify-between text-xs text-gray-400 mt-4">
             <span>00:00</span>
             <span>06:00</span>
             <span>12:00</span>
             <span>18:00</span>
             <span>23:00</span>
           </div>
+          <div className="flex items-center gap-4 mt-2 justify-center">
+            <span className="flex items-center gap-1.5 text-xs text-gray-500">
+              <span className="w-3 h-3 rounded" style={{ backgroundColor: '#C0992F' }} /> Peak Hours (9AM-5PM)
+            </span>
+            <span className="flex items-center gap-1.5 text-xs text-gray-500">
+              <span className="w-3 h-3 rounded" style={{ backgroundColor: '#00B69B' }} /> Off-Peak
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Top Conversations Table */}
-      <div className="bg-white border border-border rounded-xl overflow-hidden">
-        <div className="p-6 border-b border-border">
-          <h2 className="font-semibold text-foreground">Top Conversations (Today)</h2>
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="font-semibold text-gray-900">Top Conversations (Today)</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-nos-light-gold border-b border-border">
+            <thead style={{ backgroundColor: '#FFF9ED' }} className="border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Contact</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Phone</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Agent</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-foreground">Duration</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-foreground">Messages</th>
-                <th className="px-6 py-3 text-center text-sm font-semibold text-foreground">Channel</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Contact</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Phone</th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Agent</th>
+                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Duration</th>
+                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Messages</th>
+                <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Channel</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-gray-100">
               {topConversations.map((conv) => (
-                <tr key={conv.id} className="hover:bg-nos-light-gold transition-colors">
-                  <td className="px-6 py-4 text-sm font-medium text-foreground">{conv.contact}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{conv.phone}</td>
-                  <td className="px-6 py-4 text-sm text-foreground">{conv.agent}</td>
-                  <td className="px-6 py-4 text-sm text-center text-foreground">{conv.duration}</td>
-                  <td className="px-6 py-4 text-sm text-center text-foreground">{conv.messages}</td>
-                  <td className="px-6 py-4 text-sm text-center text-nos-teal font-semibold">{conv.channel}</td>
+                <tr key={conv.id} className="hover:bg-amber-50 transition-colors">
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{conv.contact}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{conv.phone}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{conv.agent}</td>
+                  <td className="px-6 py-4 text-sm text-center text-gray-900">{conv.duration}</td>
+                  <td className="px-6 py-4 text-sm text-center text-gray-900">{conv.messages}</td>
+                  <td className="px-6 py-4 text-sm text-center font-semibold" style={{ color: '#00B69B' }}>{conv.channel}</td>
                 </tr>
               ))}
             </tbody>
