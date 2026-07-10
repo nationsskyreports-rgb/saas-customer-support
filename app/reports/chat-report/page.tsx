@@ -1,11 +1,20 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+
 export default function ChatReportPage() {
-  const hourlyData = Array.from({ length: 24 }, (_, i) => ({
-    hour: `${i}:00`,
-    conversations: Math.floor(Math.random() * 150 + 50),
-    isPeak: i >= 9 && i <= 17,
-  }))
+  const [hourlyData, setHourlyData] = useState<Array<{hour: string, conversations: number, isPeak: boolean}>>([])
+
+  useEffect(() => {
+    const data = Array.from({ length: 24 }, (_, i) => ({
+      hour: `${String(i).padStart(2, '0')}:00`,
+      conversations: Math.floor(Math.random() * 150 + 50),
+      isPeak: i >= 9 && i <= 17,
+    }))
+    setHourlyData(data)
+  }, [])
+
+  const maxVal = Math.max(...hourlyData.map(d => d.conversations), 1)
 
   const topConversations = [
     { id: 1, contact: 'Ahmed Hassan', phone: '+20 123 456 7890', agent: 'Sarah Ahmed', duration: '18m 32s', messages: 24, channel: 'WhatsApp' },
@@ -30,36 +39,38 @@ export default function ChatReportPage() {
       {/* Hourly Volume Chart */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
         <h2 className="font-semibold text-gray-900 mb-6">Hourly Conversation Volume (Today)</h2>
-        <div className="space-y-2">
-          <div className="flex items-end gap-1 h-64">
-            {hourlyData.map((data, idx) => (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-1">
+        <div className="flex items-end gap-[3px]" style={{ height: '256px' }}>
+          {hourlyData.map((data, idx) => {
+            const barHeight = (data.conversations / maxVal) * 230
+            return (
+              <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full">
                 <div
-                  className="w-full rounded-t transition-all hover:opacity-80 cursor-pointer"
+                  className="w-full rounded-t-sm hover:opacity-80 cursor-pointer transition-opacity"
                   style={{
-                    height: `${(data.conversations / 200) * 100}%`,
+                    height: `${barHeight}px`,
                     backgroundColor: data.isPeak ? '#C0992F' : '#00B69B',
+                    minHeight: '4px',
                   }}
                   title={`${data.hour}: ${data.conversations} conversations`}
                 />
               </div>
-            ))}
-          </div>
-          <div className="flex justify-between text-xs text-gray-400 mt-4">
-            <span>00:00</span>
-            <span>06:00</span>
-            <span>12:00</span>
-            <span>18:00</span>
-            <span>23:00</span>
-          </div>
-          <div className="flex items-center gap-4 mt-2 justify-center">
-            <span className="flex items-center gap-1.5 text-xs text-gray-500">
-              <span className="w-3 h-3 rounded" style={{ backgroundColor: '#C0992F' }} /> Peak Hours (9AM-5PM)
-            </span>
-            <span className="flex items-center gap-1.5 text-xs text-gray-500">
-              <span className="w-3 h-3 rounded" style={{ backgroundColor: '#00B69B' }} /> Off-Peak
-            </span>
-          </div>
+            )
+          })}
+        </div>
+        <div className="flex justify-between text-xs text-gray-400 mt-3">
+          <span>00:00</span>
+          <span>06:00</span>
+          <span>12:00</span>
+          <span>18:00</span>
+          <span>23:00</span>
+        </div>
+        <div className="flex items-center gap-4 mt-3 justify-center">
+          <span className="flex items-center gap-1.5 text-xs text-gray-500">
+            <span className="w-3 h-3 rounded" style={{ backgroundColor: '#C0992F' }} /> Peak Hours (9AM-5PM)
+          </span>
+          <span className="flex items-center gap-1.5 text-xs text-gray-500">
+            <span className="w-3 h-3 rounded" style={{ backgroundColor: '#00B69B' }} /> Off-Peak
+          </span>
         </div>
       </div>
 
