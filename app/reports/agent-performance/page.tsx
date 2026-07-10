@@ -81,14 +81,21 @@ export default function AgentPerformanceReportPage() {
       </div>
 
       {/* Top Performer Card */}
-      <div className="bg-gradient-to-r from-nos-gold to-nos-gold/80 rounded-xl p-8 text-white border-4 border-nos-gold">
+      <div
+        className="rounded-xl p-8 border-2"
+        style={{ background: 'linear-gradient(135deg, #C0992F 0%, #D4AD45 100%)', borderColor: '#C0992F' }}
+      >
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm font-semibold opacity-90">TOP PERFORMER</p>
-            <h2 className="text-3xl font-bold mt-2">{agents[0].name}</h2>
-            <p className="text-sm mt-4 opacity-90">Performance Score: {agents[0].score}/100</p>
+            <p className="text-sm font-semibold text-white/80 uppercase tracking-wide">TOP PERFORMER</p>
+            <h2 className="text-3xl font-bold mt-2 text-white">{agents[0].name}</h2>
+            <div className="flex items-center gap-4 mt-4">
+              <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold text-white">Score: {agents[0].score}/100</span>
+              <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold text-white">{agents[0].handled} Handled</span>
+              <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold text-white">{agents[0].resolved} Resolved</span>
+            </div>
           </div>
-          <Star className="w-12 h-12" />
+          <Star className="w-12 h-12 text-white/90" />
         </div>
       </div>
 
@@ -96,7 +103,7 @@ export default function AgentPerformanceReportPage() {
       <div className="bg-white border border-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-nos-light-gold border-b border-border">
+            <thead style={{ backgroundColor: '#FFF9ED' }} className="border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Agent</th>
                 <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Handled</th>
@@ -111,7 +118,7 @@ export default function AgentPerformanceReportPage() {
               {agents.map((agent) => (
                 <tr
                   key={agent.id}
-                  className={`${agent.isTopPerformer ? 'bg-nos-light-gold/50' : 'hover:bg-nos-light-gold'} transition-colors`}
+                  className={`${agent.isTopPerformer ? 'bg-amber-50' : 'hover:bg-amber-50'} transition-colors`}
                 >
                   <td className="px-6 py-4 text-sm font-medium text-foreground">
                     {agent.name}
@@ -129,8 +136,8 @@ export default function AgentPerformanceReportPage() {
                     <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${getScoreColor(agent.score)}`}>
                       <div className="w-16 bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-nos-gold h-2 rounded-full transition-all"
-                          style={{ width: `${agent.score}%` }}
+                          className="h-2 rounded-full transition-all"
+                          style={{ width: `${agent.score}%`, backgroundColor: '#C0992F' }}
                         />
                       </div>
                       <span className={`text-sm font-semibold ${getScoreTextColor(agent.score)}`}>
