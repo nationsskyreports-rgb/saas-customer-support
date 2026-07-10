@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { X, RefreshCw } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 interface InviteAgentModalProps {
   isOpen: boolean
@@ -10,79 +10,161 @@ interface InviteAgentModalProps {
 }
 
 export function InviteAgentModal({ isOpen, onClose }: InviteAgentModalProps) {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState('agent')
+  const [role, setRole] = useState<'admin' | 'agent'>('agent')
+  const [maxChats, setMaxChats] = useState(5)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
 
   if (!isOpen) return null
 
-  const handleInvite = () => {
-    // Handle invite logic
+  const handleInvite = async () => {
+    if (!name.trim() || !email.trim()) {
+      setError('Name and email are required')
+      return
+    }
+
+    setSaving(true)
+    setError('')
+
+    const { error: dbError } = await supabase.from('agents').insert({
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      role,
+      max_chats: maxChats,
+      status: 'offline',
+      is_active: true,
+    })
+
+    setSaving(false)
+
+    if (dbError) {
+      if (dbError.code === '23505') {
+        setError('An agent with this email already exists')
+      } else {
+        setError(dbError.message)
+      }
+      return
+    }
+
+    setSuccess(true)
+    setTimeout(() => {
+      setName('')
+      setEmail('')
+      setRole('agent')
+      setMaxChats(5)
+      setSuccess(false)
+      onClose()
+      window.location.reload()
+    }, 1000)
+  }
+
+  const handleClose = () => {
+    setName('')
     setEmail('')
     setRole('agent')
+    setMaxChats(5)
+    setError('')
+    setSuccess(false)
     onClose()
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-card border border-border rounded-lg max-w-md w-full mx-4 shadow-lg">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={handleClose}>
+      <div className="bg-white rounded-xl max-w-md w-full mx-4 shadow-xl" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-lg font-semibold text-foreground">Invite Agent</h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-muted rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-muted-foreground" />
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-bold text-gray-900">Add New Agent</h2>
+          <button onClick={handleClose} className="p-1.5 hover:bg-gray-100 rounded-lg">
+            <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
-        {/* Content */}
+        {/* Body */}
         <div className="p-6 space-y-4">
+          {/* Success */}
+          {success && (
+            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800 font-medium">
+              ✓ Agent added successfully!
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+              {error}
+            </div>
+          )}
+
+          {/* Name */}
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">
-              Email Address
-            </label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name *</label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="agent@company.com"
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g. Mohamed Ali"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
             />
           </div>
 
+          {/* Email */}
           <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">
-              Role
-            </label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="agent">Agent</option>
-              <option value="senior">Senior Agent</option>
-              <option value="supervisor">Supervisor</option>
-            </select>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address *</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="agent@nationsofsky.com"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+            />
+          </div>
+
+          {/* Role */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Role</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" checked={role === 'agent'} onChange={() => setRole('agent')} className="accent-amber-500" />
+                <span className="text-sm text-gray-700">Agent</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" checked={role === 'admin'} onChange={() => setRole('admin')} className="accent-amber-500" />
+                <span className="text-sm text-gray-700">Admin</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Max Chats */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Max Concurrent Chats</label>
+            <input
+              type="number"
+              value={maxChats}
+              onChange={e => setMaxChats(Number(e.target.value))}
+              min={1}
+              max={20}
+              className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+            />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-border">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="flex-1"
-          >
+        <div className="flex gap-3 px-6 py-4 border-t border-gray-200">
+          <button onClick={handleClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
             Cancel
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={handleInvite}
-            disabled={!email}
-            className="flex-1"
+            disabled={saving || !name.trim() || !email.trim()}
+            className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{ backgroundColor: '#C0992F' }}
           >
-            Send Invite
-          </Button>
+            {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
+            {saving ? 'Adding...' : 'Add Agent'}
+          </button>
         </div>
       </div>
     </div>
