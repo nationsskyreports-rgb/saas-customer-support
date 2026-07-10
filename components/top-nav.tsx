@@ -2,10 +2,12 @@
 
 import { useState } from 'react'
 import { Bell, Settings, ChevronDown, LogOut } from 'lucide-react'
+import { useSidebar } from '@/lib/sidebar-context'
 
 export function TopNav() {
   const [statusOpen, setStatusOpen] = useState(false)
   const [agentStatus, setAgentStatus] = useState('Active')
+  const { collapsed } = useSidebar()
 
   const statuses = [
     { label: 'Active', color: 'bg-green-500' },
@@ -21,7 +23,10 @@ export function TopNav() {
 
   return (
     <>
-      <div className="fixed left-60 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-40" style={{ top: '3px' }}>
+      <div
+        className="fixed right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-40 transition-all duration-300 ease-in-out"
+        style={{ top: '3px', left: collapsed ? '60px' : '240px' }}
+      >
       {/* Left side - Page title would go here */}
       <div className="flex-1" />
 
