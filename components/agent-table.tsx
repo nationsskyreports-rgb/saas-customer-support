@@ -1,82 +1,20 @@
 'use client'
 
-import { useState } from 'react'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { MoreVertical, Edit, KeyRound, UserX, Trash2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { MoreVertical, Edit, KeyRound, UserX, Trash2, RefreshCw } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 
-const agents = [
-  {
-    id: 1,
-    name: 'Sarah Ahmed',
-    email: 'sarah.ahmed@nos.com',
-    role: 'Admin',
-    status: 'online',
-    activeChats: 3,
-    handledToday: 47,
-    satisfaction: 98,
-    teams: ['Customer Service'],
-    joinedDate: 'Jan 15, 2024',
-    initials: 'SA',
-    color: '#C0992F',
-  },
-  {
-    id: 2,
-    name: 'Mohamed Hassan',
-    email: 'm.hassan@nos.com',
-    role: 'Agent',
-    status: 'online',
-    activeChats: 2,
-    handledToday: 31,
-    satisfaction: 94,
-    teams: ['Customer Service'],
-    joinedDate: 'Feb 20, 2024',
-    initials: 'MH',
-    color: '#00B69B',
-  },
-  {
-    id: 3,
-    name: 'Layla Ibrahim',
-    email: 'layla.ibrahim@nos.com',
-    role: 'Agent',
-    status: 'busy',
-    activeChats: 4,
-    handledToday: 28,
-    satisfaction: 91,
-    teams: ['Technical Support'],
-    joinedDate: 'Mar 5, 2024',
-    initials: 'LI',
-    color: '#3B82F6',
-  },
-  {
-    id: 4,
-    name: 'Ahmed Karim',
-    email: 'a.karim@nos.com',
-    role: 'Agent',
-    status: 'away',
-    activeChats: 0,
-    handledToday: 15,
-    satisfaction: 89,
-    teams: ['Marketing'],
-    joinedDate: 'Apr 10, 2024',
-    initials: 'AK',
-    color: '#8B5CF6',
-  },
-  {
-    id: 5,
-    name: 'Nour Mostafa',
-    email: 'nour.mostafa@nos.com',
-    role: 'Agent',
-    status: 'offline',
-    activeChats: 0,
-    handledToday: 0,
-    satisfaction: 87,
-    teams: ['Customer Service'],
-    joinedDate: 'May 1, 2024',
-    initials: 'NM',
-    color: '#EC4899',
-  },
-]
+interface Agent {
+  id: string
+  name: string
+  email: string
+  role: 'admin' | 'agent'
+  status: 'online' | 'busy' | 'away' | 'offline'
+  is_active: boolean
+  max_chats: number
+  created_at: string
+}
 
 const statusConfig: Record<string, { dot: string; label: string; bg: string; text: string }> = {
   online:  { dot: 'bg-green-500',  label: 'Online',  bg: 'bg-green-100',  text: 'text-green-800' },
@@ -85,16 +23,55 @@ const statusConfig: Record<string, { dot: string; label: string; bg: string; tex
   offline: { dot: 'bg-red-500',    label: 'Offline', bg: 'bg-red-100',    text: 'text-red-800' },
 }
 
-const counts = {
-  total: agents.length,
-  online: agents.filter(a => a.status === 'online').length,
-  busy: agents.filter(a => a.status === 'busy').length,
-  away: agents.filter(a => a.status === 'away').length,
-  offline: agents.filter(a => a.status === 'offline').length,
+const avatarColors = ['#C0992F', '#00B69B', '#3B82F6', '#8B5CF6', '#EC4899', '#EF4444', '#F59E0B']
+
+function getInitials(name: string) {
+  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+}
+
+function getColor(index: number) {
+  return avatarColors[index % avatarColors.length]
 }
 
 export function AgentTable() {
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null)
+  const [agents, setAgents] = useState<Agent[]>([])
+  const [loading, setLoading] = useState(true)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+
+  const fetchAgents = async () => {
+    setLoading(true)
+    const { data, error } = await supabase
+      .from('agents')
+      .select('*')
+      .order('role', { ascending: false })
+      .order('name')
+
+    if (!error && data) {
+      setAgents(data)
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchAgents()
+  }, [])
+
+  const counts = {
+    total: agents.length,
+    online: agents.filter(a => a.status === 'online').length,
+    busy: agents.filter(a => a.status === 'busy').length,
+    away: agents.filter(a => a.status === 'away').length,
+    offline: agents.filter(a => a.status === 'offline').length,
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
+        <span className="ml-3 text-gray-500">Loading agents...</span>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -125,30 +102,27 @@ export function AgentTable() {
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Agent</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Role</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Active Chats</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Handled Today</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Satisfaction</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Max Chats</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Joined</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {agents.map((agent) => {
-              const status = statusConfig[agent.status]
+            {agents.map((agent, index) => {
+              const status = statusConfig[agent.status] || statusConfig.offline
               return (
                 <tr
                   key={agent.id}
-                  className="hover:bg-amber-50 transition-colors cursor-pointer"
+                  className="hover:bg-amber-50 transition-colors"
                   onClick={() => setOpenMenuId(null)}
                 >
-                  {/* Agent */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div
                         className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0"
-                        style={{ backgroundColor: agent.color }}
+                        style={{ backgroundColor: getColor(index) }}
                       >
-                        {agent.initials}
+                        {getInitials(agent.name)}
                       </div>
                       <div>
                         <p className="font-semibold text-sm text-gray-900">{agent.name}</p>
@@ -157,19 +131,17 @@ export function AgentTable() {
                     </div>
                   </td>
 
-                  {/* Role */}
                   <td className="px-6 py-4">
                     <span className={cn(
                       'px-2.5 py-1 rounded-full text-xs font-semibold',
-                      agent.role === 'Admin'
+                      agent.role === 'admin'
                         ? 'bg-purple-100 text-purple-800'
                         : 'bg-gray-100 text-gray-700'
                     )}>
-                      {agent.role}
+                      {agent.role === 'admin' ? 'Admin' : 'Agent'}
                     </span>
                   </td>
 
-                  {/* Status */}
                   <td className="px-6 py-4">
                     <span className={cn('flex items-center gap-1.5 text-xs font-medium w-fit px-2.5 py-1 rounded-full', status.bg, status.text)}>
                       <span className={cn('w-1.5 h-1.5 rounded-full', status.dot)} />
@@ -177,27 +149,16 @@ export function AgentTable() {
                     </span>
                   </td>
 
-                  {/* Active Chats */}
                   <td className="px-6 py-4">
-                    <span className="text-sm font-semibold text-gray-900">{agent.activeChats}</span>
+                    <span className="text-sm text-gray-900">{agent.max_chats}</span>
                   </td>
 
-                  {/* Handled Today */}
                   <td className="px-6 py-4">
-                    <span className="text-sm font-semibold text-gray-900">{agent.handledToday}</span>
+                    <span className="text-sm text-gray-500">
+                      {new Date(agent.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
                   </td>
 
-                  {/* Satisfaction */}
-                  <td className="px-6 py-4">
-                    <span className="text-sm font-semibold text-gray-900">{agent.satisfaction}%</span>
-                  </td>
-
-                  {/* Joined */}
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-gray-500">{agent.joinedDate}</span>
-                  </td>
-
-                  {/* Actions */}
                   <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
                       <button className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
