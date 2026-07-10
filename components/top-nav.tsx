@@ -1,13 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Bell, Settings, ChevronDown, LogOut } from 'lucide-react'
+import { Bell, Settings, ChevronDown, LogOut, Moon, Sun } from 'lucide-react'
 import { useSidebar } from '@/lib/sidebar-context'
+import { useTheme } from '@/lib/theme-context'
 
 export function TopNav() {
   const [statusOpen, setStatusOpen] = useState(false)
   const [agentStatus, setAgentStatus] = useState('Active')
   const { collapsed } = useSidebar()
+  const { dark, toggleDark } = useTheme()
 
   const statuses = [
     { label: 'Active', color: 'bg-green-500' },
@@ -27,11 +29,24 @@ export function TopNav() {
         className="fixed right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-40 transition-all duration-300 ease-in-out"
         style={{ top: '3px', left: collapsed ? '60px' : '240px' }}
       >
-      {/* Left side - Page title would go here */}
+      {/* Left side */}
       <div className="flex-1" />
 
-      {/* Right side - Actions */}
-      <div className="flex items-center gap-6">
+      {/* Right side */}
+      <div className="flex items-center gap-4">
+        {/* Dark Mode Toggle */}
+        <button
+          onClick={toggleDark}
+          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          title={dark ? 'Light Mode' : 'Dark Mode'}
+        >
+          {dark ? (
+            <Sun className="w-5 h-5 text-amber-400" />
+          ) : (
+            <Moon className="w-5 h-5 text-gray-600" />
+          )}
+        </button>
+
         <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Notifications">
           <Bell className="w-5 h-5 text-gray-700" />
         </button>
@@ -50,7 +65,6 @@ export function TopNav() {
             <ChevronDown className="w-4 h-4 text-gray-600" />
           </button>
 
-          {/* Dropdown Menu */}
           {statusOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
               <div className="p-2">
@@ -84,7 +98,7 @@ export function TopNav() {
 
         {/* Agent Avatar and Name */}
         <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-          <div style={{ width: '36px', height: '36px', marginRight: '8px', backgroundColor: '#C0992F', borderRadius: '50%' }} className="text-white flex items-center justify-center font-semibold text-sm">
+          <div style={{ width: '36px', height: '36px', backgroundColor: '#C0992F', borderRadius: '50%' }} className="text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
             KR
           </div>
           <span className="text-sm font-medium text-gray-600">Kareem Rashad</span>
