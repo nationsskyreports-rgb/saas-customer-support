@@ -8,20 +8,20 @@ import {
   MessageCircle,
   Users,
   Clock,
-  MessageSquare,
   LogOut,
   TrendingUp,
   PhoneCall,
   Send,
   LayoutGrid,
-  FileText,
   Eye,
   CircleDot,
-  Package,
   Zap,
   Tag,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useSidebar } from '@/lib/sidebar-context'
 
 interface NavSection {
   title: string
@@ -31,6 +31,7 @@ interface NavSection {
 export function Sidebar() {
   const [expandedSections, setExpandedSections] = useState<string[]>(['ANALYTICS', 'INBOX', 'ADMINISTRATION', 'CHANNELS', 'MESSAGES', 'REPORTS'])
   const pathname = usePathname()
+  const { collapsed, toggle } = useSidebar()
 
   const navSections: NavSection[] = [
     {
@@ -85,6 +86,7 @@ export function Sidebar() {
   ]
 
   const toggleSection = (title: string) => {
+    if (collapsed) return
     setExpandedSections((prev) =>
       prev.includes(title)
         ? prev.filter((s) => s !== title)
@@ -93,34 +95,49 @@ export function Sidebar() {
   }
 
   return (
-    <div className="fixed left-0 h-screen w-60 text-white flex flex-col border-r border-white/10" style={{ backgroundColor: '#C0992F', top: '3px' }}>
+    <div
+      className={cn(
+        'fixed left-0 h-screen text-white flex flex-col border-r border-white/10 transition-all duration-300 ease-in-out z-40',
+        collapsed ? 'w-[60px]' : 'w-60'
+      )}
+      style={{ backgroundColor: '#C0992F', top: '3px' }}
+    >
+      {/* Logo/Header */}
+      <div className={cn('flex items-center border-b border-white/15 p-4', collapsed ? 'justify-center' : 'gap-2')}>
+        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-xs flex-shrink-0" style={{ color: '#C0992F' }}>
+          <img
+            src="/logo-transparent.png"
+            alt="NOS"
+            width={24}
+            height={24}
+            style={{ filter: 'sepia(1) hue-rotate(10deg) saturate(3) brightness(0.7)', objectFit: 'contain' }}
+          />
+        </div>
+        {!collapsed && <span className="font-semibold text-sm text-white">Nations Of Sky</span>}
+      </div>
 
-{/* Logo/Header */}
-<div className="flex items-center gap-2 p-4 border-b border-white/15">
-  <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
-    <img
-      src="/logo-transparent.png"
-      alt="NOS Logo"
-      width={32}
-      height={32}
-      style={{ filter: 'brightness(0) invert(1)', objectFit: 'contain' }}
-    />
-  </div>
-  <span className="font-semibold text-sm text-white">Nations Of Sky</span>
-</div>
-      
-      {/* Navigation Sections */}
-      <nav className="flex-1 overflow-y-auto">
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden">
         {navSections.map((section) => (
-          <div key={section.title} className="px-2 py-2">
-            <button
-              onClick={() => toggleSection(section.title)}
-              className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-white uppercase opacity-60 hover:opacity-100 transition-opacity tracking-wider"
-            >
-              <span>{section.title}</span>
-            </button>
-            {expandedSections.includes(section.title) && (
-              <div className="space-y-1">
+          <div key={section.title} className="px-2 py-1">
+            {/* Section Title */}
+            {!collapsed && (
+              <button
+                onClick={() => toggleSection(section.title)}
+                className="w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold text-white uppercase opacity-60 hover:opacity-100 transition-opacity tracking-wider"
+              >
+                <span>{section.title}</span>
+              </button>
+            )}
+
+            {/* Collapsed: show a thin separator */}
+            {collapsed && (
+              <div className="mx-2 my-2 border-t border-white/20" />
+            )}
+
+            {/* Items */}
+            {(collapsed || expandedSections.includes(section.title)) && (
+              <div className="space-y-0.5">
                 {section.items.map((item) => {
                   const Icon = item.icon
                   const isActive = item.href === '/inbox'
@@ -130,15 +147,17 @@ export function Sidebar() {
                     <Link
                       key={item.href}
                       href={item.href}
+                      title={collapsed ? item.label : undefined}
                       className={cn(
-                        'flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors duration-200 text-sm font-medium',
+                        'flex items-center rounded-lg transition-colors duration-200 text-sm font-medium',
+                        collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-4 py-2.5',
                         isActive
-                          ? 'bg-white/20 text-white border-l-3 border-white'
+                          ? 'bg-white/20 text-white'
                           : 'text-white hover:bg-white/12'
                       )}
                     >
                       <Icon className="w-5 h-5 flex-shrink-0" />
-                      <span>{item.label}</span>
+                      {!collapsed && <span>{item.label}</span>}
                     </Link>
                   )
                 })}
@@ -148,11 +167,30 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Logout Button */}
-      <div className="p-3 border-t border-white/15">
-        <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/15 transition-colors text-sm text-white">
+      {/* Toggle Button */}
+      <div className="p-2 border-t border-white/15">
+        <button
+          onClick={toggle}
+          className={cn(
+            'w-full flex items-center rounded-lg hover:bg-white/15 transition-colors text-sm text-white py-2.5',
+            collapsed ? 'justify-center px-0' : 'gap-3 px-3'
+          )}
+        >
+          {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          {!collapsed && <span>Collapse</span>}
+        </button>
+      </div>
+
+      {/* Logout */}
+      <div className="p-2 border-t border-white/15">
+        <button
+          className={cn(
+            'w-full flex items-center rounded-lg hover:bg-white/15 transition-colors text-sm text-white py-2.5',
+            collapsed ? 'justify-center px-0' : 'gap-3 px-3'
+          )}
+        >
           <LogOut className="w-5 h-5 flex-shrink-0" />
-          <span>Logout</span>
+          {!collapsed && <span>Logout</span>}
         </button>
       </div>
     </div>
