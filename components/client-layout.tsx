@@ -1,6 +1,7 @@
 'use client'
 
 import { SidebarProvider, useSidebar } from '@/lib/sidebar-context'
+import { ThemeProvider } from '@/lib/theme-context'
 import { Sidebar } from '@/components/sidebar'
 import { TopNav } from '@/components/top-nav'
 
@@ -13,7 +14,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <TopNav />
       <main
-        className="bg-gray-50 transition-all duration-300 ease-in-out"
+        className="transition-all duration-300 ease-in-out"
         style={{
           marginLeft: collapsed ? '60px' : '240px',
           marginTop: 'calc(3px + 4rem)',
@@ -27,8 +28,10 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SidebarProvider>
-      <LayoutInner>{children}</LayoutInner>
-    </SidebarProvider>
+    <ThemeProvider>
+      <SidebarProvider>
+        <LayoutInner>{children}</LayoutInner>
+      </SidebarProvider>
+    </ThemeProvider>
   )
 }
