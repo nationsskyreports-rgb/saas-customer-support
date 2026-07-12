@@ -34,21 +34,12 @@ export function Sidebar() {
   const { collapsed, toggle } = useSidebar()
   const [unreadCount, setUnreadCount] = useState(0)
 
-  // Listen for new-message events fired by GlobalNotifications
+  // Listen for new-message events fired by GlobalNotifications — always count
   useEffect(() => {
-    const handler = () => {
-      // Don't count if already viewing the inbox
-      if (window.location.pathname.startsWith('/inbox')) return
-      setUnreadCount(prev => prev + 1)
-    }
+    const handler = () => setUnreadCount(prev => prev + 1)
     window.addEventListener('nos-new-message', handler)
     return () => window.removeEventListener('nos-new-message', handler)
   }, [])
-
-  // Reset badge when opening the inbox
-  useEffect(() => {
-    if (pathname.startsWith('/inbox')) setUnreadCount(0)
-  }, [pathname])
 
   const navSections: NavSection[] = [
     {
@@ -164,6 +155,7 @@ export function Sidebar() {
                     <Link
                       key={item.href}
                       href={item.href}
+                      onClick={() => { if (item.href === '/inbox') setUnreadCount(0) }}
                       title={collapsed ? item.label : undefined}
                       className={cn(
                         'flex items-center rounded-lg transition-colors duration-200 text-sm font-medium',
