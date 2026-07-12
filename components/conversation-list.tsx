@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, MessageCircle, X } from 'lucide-react'
 
 interface Conversation {
   id: string
@@ -17,6 +17,13 @@ interface Conversation {
   contacts: { name: string; phone: string } | null
 }
 
+interface Toast {
+  id: number
+  title: string
+  body: string
+  conversationId: string
+}
+
 interface ConversationListProps {
   selectedId: string | null
   onSelect: (id: string) => void
@@ -27,6 +34,63 @@ export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: C
   const [activeTab, setActiveTab] = useState(defaultTab)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
+  const [toasts, setToasts] = useState<Toast[]>([])
+  const toastIdRef = useRef(0)
+  const selectedIdRef = useRef(selectedId)
+
+  useEffect(() => { selectedIdRef.current = selectedId }, [selectedId])
+
+  // Ask for browser notification permission once
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }, [])
+
+  const playSound = () => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const o = ctx.createOscillator()
+      const g = ctx.createGain()
+      o.connect(g); g.connect(ctx.destination)
+      o.frequency.value = 880
+      g.gain.setValueAtTime(0.15, ctx.currentTime)
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+      o.start(); o.stop(ctx.currentTime + 0.4)
+    } catch {}
+  }
+
+  const showToast = (title: string, body: string, conversationId: string) => {
+    const id = ++toastIdRef.current
+    setToasts(prev => [...prev, { id, title, body, conversationId }])
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 6000)
+  }
+
+  const notifyNewMessage = async (msg: any) => {
+    // Only notify for customer (inbound) messages
+    if (msg.direction !== 'inbound') return
+    // Don't notify if the conversation is already open on screen
+    if (msg.conversation_id === selectedIdRef.current) return
+
+    // Get contact name
+    let name = 'New message'
+    const { data: conv } = await supabase
+      .from('conversations')
+      .select('contacts(name)')
+      .eq('id', msg.conversation_id)
+      .single()
+    const c = (conv as any)?.contacts
+    if (c?.name) name = c.name
+
+    playSound()
+    showToast(name, msg.content || 'New message', msg.conversation_id)
+
+    // Browser notification (works even in another tab)
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const n = new Notification(name, { body: msg.content || 'New message', icon: '/favicon.ico' })
+      n.onclick = () => { window.focus(); onSelect(msg.conversation_id); n.close() }
+    }
+  }
 
   const fetchConversations = async () => {
     const { data } = await supabase
@@ -42,7 +106,10 @@ export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: C
     const ch = supabase
       .channel('inbox-conversations')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => fetchConversations())
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => fetchConversations())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+        fetchConversations()
+        notifyNewMessage(payload.new)
+      })
       .subscribe()
     return () => { supabase.removeChannel(ch) }
   }, [])
@@ -80,7 +147,7 @@ export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: C
   if (loading) return <div className="flex items-center justify-center py-10"><RefreshCw className="w-5 h-5 animate-spin text-gray-400" /></div>
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       <div className="flex gap-1.5 p-3 border-b border-gray-200 flex-wrap">
         {tabs.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
@@ -118,6 +185,35 @@ export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: C
           )
         })}
       </div>
+
+      {/* Toast Notifications */}
+      <div className="fixed top-4 right-4 z-[100] space-y-2" style={{ maxWidth: '340px' }}>
+        {toasts.map(toast => (
+          <div key={toast.id}
+            onClick={() => { onSelect(toast.conversationId); setToasts(prev => prev.filter(t => t.id !== toast.id)) }}
+            className="bg-white rounded-xl shadow-2xl border border-gray-200 p-4 flex items-start gap-3 cursor-pointer hover:shadow-xl transition-all animate-[slideIn_0.3s_ease-out]"
+            style={{ animation: 'slideIn 0.3s ease-out' }}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ backgroundColor: '#C0992F' }}>
+              <MessageCircle className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm text-gray-900 truncate">{toast.title}</p>
+              <p className="text-sm text-gray-500 truncate">{toast.body}</p>
+            </div>
+            <button onClick={(e) => { e.stopPropagation(); setToasts(prev => prev.filter(t => t.id !== toast.id)) }}
+              className="p-1 hover:bg-gray-100 rounded flex-shrink-0">
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <style jsx global>{`
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+      `}</style>
     </div>
   )
 }
