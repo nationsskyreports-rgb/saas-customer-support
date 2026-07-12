@@ -95,6 +95,12 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
     fetchMessages()
   }
 
+  const reopenConversation = async () => {
+    if (!conversationId) return
+    await supabase.from('conversations').update({ status: 'open' }).eq('id', conversationId)
+    fetchMessages()
+  }
+
   if (!conversationId) {
     return <div className="flex items-center justify-center h-full bg-white"><p className="text-gray-400">Select a conversation to start chatting</p></div>
   }
@@ -152,6 +158,14 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
         )}
       </div>
 
+      {(convInfo?.status === 'closed' || convInfo?.status === 'resolved') && (
+        <div className="border-t border-gray-200 bg-gray-50 flex items-center justify-center gap-3" style={{ height: '64px', padding: '0 16px' }}>
+          <p className="text-sm text-gray-500">This conversation is {convInfo.status}.</p>
+          <button onClick={reopenConversation} className="px-4 py-1.5 text-sm font-semibold text-white rounded-lg hover:opacity-90" style={{ backgroundColor: '#C0992F' }}>
+            Reopen Conversation
+          </button>
+        </div>
+      )}
       {convInfo?.status !== 'closed' && convInfo?.status !== 'resolved' && (
         <div className="border-t border-gray-200 bg-white" style={{ height: '64px', padding: '0 16px' }}>
           <div className="flex items-center gap-3 h-full">
