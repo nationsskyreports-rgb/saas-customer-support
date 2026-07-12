@@ -7,7 +7,7 @@ import { ConversationDetails } from '@/components/conversation-details'
 import { Search } from 'lucide-react'
 
 export default function AllConversationsPage() {
-  const [selectedConversationId, setSelectedConversationId] = useState(1)
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 3px - 4rem)' }}>

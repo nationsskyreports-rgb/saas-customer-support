@@ -1,9 +1,52 @@
-import { MessageCircle, Users, Clock, Star } from 'lucide-react'
+'use client'
+
+import { useState, useEffect } from 'react'
+import { MessageCircle, Users, Clock, Star, RefreshCw } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 import { DashboardCard } from '@/components/dashboard-card'
 import { MetricsChart } from '@/components/metrics-chart'
-import { RecentConversations } from '@/components/recent-conversations'
+
+interface ConvRow { id: string; contact_name: string; status: string; updated_at: string }
 
 export default function DashboardPage() {
+  const [totalConversations, setTotalConversations] = useState(0)
+  const [activeAgents, setActiveAgents] = useState(0)
+  const [totalAgents, setTotalAgents] = useState(0)
+  const [openConvs, setOpenConvs] = useState(0)
+  const [recentConvs, setRecentConvs] = useState<ConvRow[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      setLoading(true)
+      const [convRes, agentsRes, openRes, recentRes] = await Promise.all([
+        supabase.from('conversations').select('id', { count: 'exact', head: true }),
+        supabase.from('agents').select('id, status, is_active'),
+        supabase.from('conversations').select('id', { count: 'exact', head: true }).in('status', ['open', 'pending']),
+        supabase.from('conversations').select('id, contact_name, status, updated_at').order('updated_at', { ascending: false }).limit(5),
+      ])
+
+      setTotalConversations(convRes.count || 0)
+      if (agentsRes.data) {
+        setTotalAgents(agentsRes.data.filter(a => a.is_active).length)
+        setActiveAgents(agentsRes.data.filter(a => a.status === 'online' && a.is_active).length)
+      }
+      setOpenConvs(openRes.count || 0)
+      if (recentRes.data) setRecentConvs(recentRes.data)
+      setLoading(false)
+    }
+    fetchDashboard()
+  }, [])
+
+  const getStatusColor = (s: string) => {
+    switch (s) {
+      case 'open': return 'bg-blue-100 text-blue-800'
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'resolved': return 'bg-green-100 text-green-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
   return (
     <div className="p-8 space-y-8">
       {/* Welcome Banner */}
@@ -13,48 +56,39 @@ export default function DashboardPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <DashboardCard
-          title="Total Conversations"
-          value="3,847"
-          change="+12%"
-          icon={MessageCircle}
-          iconColor="text-nos-gold"
-          trendPositive
-        />
-        <DashboardCard
-          title="Active Agents"
-          value="12"
-          change="+3"
-          icon={Users}
-          iconColor="text-nos-teal"
-          trendPositive
-        />
-        <DashboardCard
-          title="Avg Response Time"
-          value="2m 14s"
-          change="-5%"
-          icon={Clock}
-          iconColor="text-blue-500"
-          trendPositive
-        />
-        <DashboardCard
-          title="Customer Satisfaction"
-          value="94%"
-          change="+8%"
-          icon={Star}
-          iconColor="text-amber-500"
-          trendPositive
-        />
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-10"><RefreshCw className="w-6 h-6 animate-spin text-gray-400" /></div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <DashboardCard title="Total Conversations" value={totalConversations.toLocaleString()} change="" icon={MessageCircle} iconColor="text-nos-gold" trendPositive />
+          <DashboardCard title="Active Agents" value={`${activeAgents} / ${totalAgents}`} change="" icon={Users} iconColor="text-nos-teal" trendPositive />
+          <DashboardCard title="Open Conversations" value={openConvs.toLocaleString()} change="" icon={Clock} iconColor="text-blue-500" trendPositive />
+          <DashboardCard title="Resolved Today" value="—" change="" icon={Star} iconColor="text-amber-500" trendPositive />
+        </div>
+      )}
 
       {/* Charts and Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <MetricsChart />
         </div>
-        <div>
-          <RecentConversations />
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Conversations</h3>
+          {recentConvs.length === 0 ? (
+            <p className="text-sm text-gray-400">No conversations yet</p>
+          ) : (
+            <div className="space-y-3">
+              {recentConvs.map(c => (
+                <div key={c.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{c.contact_name}</p>
+                    <p className="text-xs text-gray-400">{new Date(c.updated_at).toLocaleString()}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(c.status)}`}>{c.status}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

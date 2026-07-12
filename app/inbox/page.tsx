@@ -7,7 +7,7 @@ import { ConversationDetails } from '@/components/conversation-details'
 import { Search } from 'lucide-react'
 
 export default function InboxPage() {
-  const [selectedConversationId, setSelectedConversationId] = useState(1)
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 3px - 4rem)' }}>
@@ -27,7 +27,7 @@ export default function InboxPage() {
           <ConversationList
             selectedId={selectedConversationId}
             onSelect={setSelectedConversationId}
-            defaultTab="mine"
+            defaultTab="all"
           />
         </div>
         <div className="flex-1 bg-gray-50 flex flex-col overflow-hidden">
