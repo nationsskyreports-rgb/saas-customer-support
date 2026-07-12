@@ -7,56 +7,33 @@ import { RefreshCw } from 'lucide-react'
 
 interface Conversation {
   id: string
-  contact_name: string
-  contact_phone: string
+  contact_id: string
   status: string
-  agent_id: string | null
+  last_message_preview: string | null
+  last_message_at: string | null
   created_at: string
   updated_at: string
-}
-
-interface Channel { id: string; name: string }
-
-function getStatusColor(status: string) {
-  switch (status) {
-    case 'open': return 'bg-blue-500'
-    case 'pending': return 'bg-yellow-500'
-    case 'resolved': return 'bg-green-500'
-    default: return 'bg-gray-500'
-  }
+  assigned_agent_id: string | null
+  contacts: { name: string; phone: string } | null
 }
 
 interface ConversationListProps {
   selectedId: string | null
   onSelect: (id: string) => void
-  defaultTab?: 'all' | 'mine' | 'unassigned' | 'pending'
+  defaultTab?: 'all' | 'unassigned' | 'pending'
 }
 
 export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: ConversationListProps) {
   const [activeTab, setActiveTab] = useState(defaultTab)
   const [conversations, setConversations] = useState<Conversation[]>([])
-  const [channels, setChannels] = useState<Channel[]>([])
   const [loading, setLoading] = useState(true)
-  const [lastMessages, setLastMessages] = useState<Record<string, { content: string; time: string }>>({})
 
   const fetchConversations = async () => {
-    const [convRes, chRes] = await Promise.all([
-      supabase.from('conversations').select('*').order('updated_at', { ascending: false }),
-      supabase.from('channels').select('id, name'),
-    ])
-    if (convRes.data) {
-      setConversations(convRes.data)
-      // Fetch last message for each conversation
-      const msgs: Record<string, { content: string; time: string }> = {}
-      for (const c of convRes.data.slice(0, 30)) {
-        const { data } = await supabase.from('messages').select('content, created_at').eq('conversation_id', c.id).order('created_at', { ascending: false }).limit(1)
-        if (data && data.length > 0) {
-          msgs[c.id] = { content: data[0].content, time: timeAgo(data[0].created_at) }
-        }
-      }
-      setLastMessages(msgs)
-    }
-    if (chRes.data) setChannels(chRes.data)
+    const { data } = await supabase
+      .from('conversations')
+      .select('id, contact_id, status, last_message_preview, last_message_at, created_at, updated_at, assigned_agent_id, contacts(name, phone)')
+      .order('updated_at', { ascending: false })
+    if (data) setConversations(data as any)
     setLoading(false)
   }
 
@@ -70,7 +47,8 @@ export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: C
     return () => { supabase.removeChannel(ch) }
   }, [])
 
-  const timeAgo = (ts: string) => {
+  const timeAgo = (ts: string | null) => {
+    if (!ts) return ''
     const diff = Date.now() - new Date(ts).getTime()
     const mins = Math.floor(diff / 60000)
     if (mins < 1) return 'now'
@@ -80,41 +58,34 @@ export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: C
     return `${Math.floor(hrs / 24)}d`
   }
 
+  const getStatusColor = (s: string) => {
+    switch (s) { case 'open': return 'bg-blue-500'; case 'pending': return 'bg-yellow-500'; case 'resolved': return 'bg-green-500'; default: return 'bg-gray-500' }
+  }
+
   const getFiltered = () => {
     switch (activeTab) {
-      case 'unassigned': return conversations.filter(c => !c.agent_id)
+      case 'unassigned': return conversations.filter(c => !c.assigned_agent_id)
       case 'pending': return conversations.filter(c => c.status === 'pending')
       default: return conversations
     }
   }
 
   const filtered = getFiltered()
-
   const tabs = [
     { id: 'all', label: 'All', count: conversations.length },
-    { id: 'unassigned', label: 'Unassigned', count: conversations.filter(c => !c.agent_id).length },
+    { id: 'unassigned', label: 'Unassigned', count: conversations.filter(c => !c.assigned_agent_id).length },
     { id: 'pending', label: 'Pending', count: conversations.filter(c => c.status === 'pending').length },
   ]
 
-  if (loading) {
-    return <div className="flex items-center justify-center py-10"><RefreshCw className="w-5 h-5 animate-spin text-gray-400" /></div>
-  }
+  if (loading) return <div className="flex items-center justify-center py-10"><RefreshCw className="w-5 h-5 animate-spin text-gray-400" /></div>
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex gap-1.5 p-3 border-b border-gray-200 flex-wrap">
         {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={cn(
-              'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
-              activeTab === tab.id
-                ? 'text-white'
-                : 'text-gray-500 border border-gray-200 hover:bg-gray-50'
-            )}
-            style={activeTab === tab.id ? { backgroundColor: '#C0992F' } : {}}
-          >
+          <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
+            className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', activeTab === tab.id ? 'text-white' : 'text-gray-500 border border-gray-200 hover:bg-gray-50')}
+            style={activeTab === tab.id ? { backgroundColor: '#C0992F' } : {}}>
             {tab.label} ({tab.count})
           </button>
         ))}
@@ -123,30 +94,26 @@ export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: C
         {filtered.length === 0 ? (
           <div className="p-8 text-center text-sm text-gray-400">No conversations</div>
         ) : filtered.map(conv => {
-          const msg = lastMessages[conv.id]
+          const contact = conv.contacts as any
+          const name = contact?.name || '—'
+          const phone = contact?.phone || ''
           return (
-            <button
-              key={conv.id}
-              onClick={() => onSelect(conv.id)}
-              className={cn(
-                'w-full text-left p-4 hover:bg-gray-50 transition-colors border-l-2',
-                selectedId === conv.id ? 'bg-amber-50 border-l-[#C0992F]' : 'border-l-transparent'
-              )}
-            >
+            <button key={conv.id} onClick={() => onSelect(conv.id)}
+              className={cn('w-full text-left p-4 hover:bg-gray-50 transition-colors border-l-2', selectedId === conv.id ? 'bg-amber-50 border-l-[#C0992F]' : 'border-l-transparent')}>
               <div className="flex items-start gap-3 mb-1">
                 <div className="relative flex-shrink-0">
                   <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-sm font-semibold">
-                    {conv.contact_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    {name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
                   </div>
                   <div className={cn('absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white', getStatusColor(conv.status))} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-gray-900 truncate">{conv.contact_name}</p>
-                  <p className="text-xs text-gray-500">{conv.contact_phone}</p>
+                  <p className="font-semibold text-sm text-gray-900 truncate">{name}</p>
+                  <p className="text-xs text-gray-500">{phone}</p>
                 </div>
-                <span className="text-xs text-gray-400 flex-shrink-0">{msg ? msg.time : timeAgo(conv.updated_at)}</span>
+                <span className="text-xs text-gray-400 flex-shrink-0">{timeAgo(conv.last_message_at || conv.updated_at)}</span>
               </div>
-              {msg && <p className="text-sm text-gray-500 truncate pl-13">{msg.content}</p>}
+              {conv.last_message_preview && <p className="text-sm text-gray-500 truncate pl-13">{conv.last_message_preview}</p>}
             </button>
           )
         })}
