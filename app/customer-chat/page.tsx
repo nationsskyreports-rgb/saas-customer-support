@@ -37,8 +37,8 @@ export default function CustomerChatPage() {
       const { data } = await supabase
         .from('conversations')
         .select('id, contact_id, status, created_at, contacts(name, phone)')
-        .in('status', ['open', 'pending'])
         .order('updated_at', { ascending: false })
+        .limit(15)
       if (data) setConversations(data as any)
     }
     fetch()
@@ -163,6 +163,7 @@ export default function CustomerChatPage() {
       updated_at: new Date().toISOString(),
       last_message_preview: message.trim(),
       last_message_at: new Date().toISOString(),
+      status: 'open', // reopen if it was closed/resolved
     }).eq('id', conversationId)
     setMessage('')
     setSending(false)
