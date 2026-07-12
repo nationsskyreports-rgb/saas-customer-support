@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { ConversationList } from '@/components/conversation-list'
 import { ChatPanel } from '@/components/chat-panel'
-import { ConversationDetails } from '@/components/conversation-details'
 import { Search } from 'lucide-react'
 
 export default function InboxPage() {
@@ -31,10 +30,8 @@ export default function InboxPage() {
           />
         </div>
         <div className="flex-1 bg-gray-50 flex flex-col overflow-hidden">
-          <ChatPanel conversationId={selectedConversationId} />
-        </div>
-        <div className="w-80 border-l border-gray-200 bg-white overflow-y-auto flex-shrink-0">
-          <ConversationDetails conversationId={selectedConversationId} />
+          {/* hideActions: no Resolve/Close — chat only */}
+          <ChatPanel conversationId={selectedConversationId} hideActions />
         </div>
       </div>
     </div>
