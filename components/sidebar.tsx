@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -32,6 +32,23 @@ export function Sidebar() {
   const [expandedSections, setExpandedSections] = useState<string[]>(['ANALYTICS', 'INBOX', 'ADMINISTRATION', 'CHANNELS', 'MESSAGES', 'REPORTS'])
   const pathname = usePathname()
   const { collapsed, toggle } = useSidebar()
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Listen for new-message events fired by GlobalNotifications
+  useEffect(() => {
+    const handler = () => {
+      // Don't count if already viewing the inbox
+      if (window.location.pathname.startsWith('/inbox')) return
+      setUnreadCount(prev => prev + 1)
+    }
+    window.addEventListener('nos-new-message', handler)
+    return () => window.removeEventListener('nos-new-message', handler)
+  }, [])
+
+  // Reset badge when opening the inbox
+  useEffect(() => {
+    if (pathname.startsWith('/inbox')) setUnreadCount(0)
+  }, [pathname])
 
   const navSections: NavSection[] = [
     {
@@ -156,8 +173,24 @@ export function Sidebar() {
                           : 'text-white hover:bg-white/12'
                       )}
                     >
-                      <Icon className="w-5 h-5 flex-shrink-0" />
-                      {!collapsed && <span>{item.label}</span>}
+                      <div className="relative flex-shrink-0">
+                        <Icon className="w-5 h-5" />
+                        {item.href === '/inbox' && unreadCount > 0 && collapsed && (
+                          <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
+                      </div>
+                      {!collapsed && (
+                        <span className="flex-1 flex items-center justify-between">
+                          {item.label}
+                          {item.href === '/inbox' && unreadCount > 0 && (
+                            <span className="min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+                              {unreadCount > 99 ? '99+' : unreadCount}
+                            </span>
+                          )}
+                        </span>
+                      )}
                     </Link>
                   )
                 })}
