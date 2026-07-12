@@ -19,9 +19,9 @@ interface ConvInfo {
   contacts: { name: string; phone: string } | null
 }
 
-interface ChatPanelProps { conversationId: string | null }
+interface ChatPanelProps { conversationId: string | null; hideActions?: boolean }
 
-export function ChatPanel({ conversationId }: ChatPanelProps) {
+export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [convInfo, setConvInfo] = useState<ConvInfo | null>(null)
   const [message, setMessage] = useState('')
@@ -119,10 +119,12 @@ export function ChatPanel({ conversationId }: ChatPanelProps) {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={resolveConversation} className="px-3 py-1.5 text-sm font-medium text-white rounded hover:opacity-90" style={{ backgroundColor: '#00B69B' }}>Resolve</button>
-          <button onClick={closeConversation} className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50">Close</button>
-        </div>
+        {!hideActions && (
+          <div className="flex items-center gap-2">
+            <button onClick={resolveConversation} className="px-3 py-1.5 text-sm font-medium text-white rounded hover:opacity-90" style={{ backgroundColor: '#00B69B' }}>Resolve</button>
+            <button onClick={closeConversation} className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50">Close</button>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
