@@ -103,10 +103,23 @@ export default function CustomerChatPage() {
 
     if (!contactId) { setSending(false); return }
 
-    // Create conversation — minimal insert, no enum values
+    // Get first channel (conversations require a channel_id)
+    const { data: channel, error: chErr } = await supabase
+      .from('channels')
+      .select('id')
+      .limit(1)
+      .maybeSingle()
+
+    if (chErr || !channel) {
+      alert('No channel found. Please create a channel first in the Channels page.')
+      setSending(false)
+      return
+    }
+
+    // Create conversation
     const { data: conv, error: convErr } = await supabase
       .from('conversations')
-      .insert({ contact_id: contactId })
+      .insert({ contact_id: contactId, channel_id: channel.id })
       .select()
       .single()
 
