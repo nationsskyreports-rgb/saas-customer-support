@@ -83,27 +83,38 @@ export default function CustomerChatPage() {
       .select('id')
       .eq('phone', contactPhone.trim())
       .limit(1)
-      .single()
+      .maybeSingle()
 
     if (existing) {
       contactId = existing.id
     } else {
-      const { data: newContact } = await supabase
+      const { data: newContact, error: contactErr } = await supabase
         .from('contacts')
         .insert({ name: contactName.trim(), phone: contactPhone.trim() })
         .select('id')
         .single()
+      if (contactErr) {
+        alert('Contact error: ' + contactErr.message)
+        setSending(false)
+        return
+      }
       if (newContact) contactId = newContact.id
     }
 
     if (!contactId) { setSending(false); return }
 
-    // Create conversation
-    const { data: conv } = await supabase
+    // Create conversation — minimal insert, no enum values
+    const { data: conv, error: convErr } = await supabase
       .from('conversations')
-      .insert({ contact_id: contactId, status: 'open', priority: 'normal' })
+      .insert({ contact_id: contactId })
       .select()
       .single()
+
+    if (convErr) {
+      alert('Conversation error: ' + convErr.message)
+      setSending(false)
+      return
+    }
 
     if (conv) {
       setConversationId(conv.id)
@@ -123,14 +134,18 @@ export default function CustomerChatPage() {
   const handleSend = async () => {
     if (!message.trim() || !conversationId) return
     setSending(true)
-    await supabase.from('messages').insert({
+    const { error: msgErr } = await supabase.from('messages').insert({
       conversation_id: conversationId,
       direction: 'inbound',
       type: 'text',
       content: message.trim(),
-      status: 'sent',
       sender: 'customer',
     })
+    if (msgErr) {
+      alert('Message error: ' + msgErr.message)
+      setSending(false)
+      return
+    }
     await supabase.from('conversations').update({
       updated_at: new Date().toISOString(),
       last_message_preview: message.trim(),
