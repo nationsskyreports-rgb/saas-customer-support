@@ -25,11 +25,21 @@ export function TopNav() {
 
   useEffect(() => {
     const agent = getAgent()
-    if (agent) {
-      setMe(agent)
-      const s = statuses.find(x => x.value === agent.status)
-      if (s) setAgentStatus(s.label)
-    }
+    if (!agent) return
+    setMe(agent)
+    // Read the REAL current status from the database (not the cached one)
+    supabase
+      .from('agents')
+      .select('status')
+      .eq('id', agent.id)
+      .single()
+      .then(({ data }) => {
+        if (data?.status) {
+          const s = statuses.find(x => x.value === data.status)
+          if (s) setAgentStatus(s.label)
+          setAgent({ ...agent, status: data.status })
+        }
+      })
   }, [])
 
   const getStatusColor = () => {
