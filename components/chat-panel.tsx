@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Zap, Smile, Paperclip, RefreshCw } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { getAgent } from '@/lib/auth'
 
 interface Message {
   id: string
@@ -27,7 +28,17 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [sending, setSending] = useState(false)
+  const [predefined, setPredefined] = useState<any[]>([])
+  const [predefinedOpen, setPredefinedOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const me = getAgent()
+
+  // Load pre-defined messages once
+  useEffect(() => {
+    supabase.from('predefined_messages').select('*').then(({ data }) => {
+      if (data) setPredefined(data)
+    })
+  }, [])
 
   const fetchMessages = async () => {
     if (!conversationId) return
@@ -64,17 +75,25 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
       type: 'text',
       content: message.trim(),
       sender: 'agent',
+      sender_agent_id: me?.id || null,
     })
     if (msgErr) {
       alert('Message error: ' + msgErr.message)
       setSending(false)
       return
     }
-    await supabase.from('conversations').update({
+
+    const convUpdate: any = {
       updated_at: new Date().toISOString(),
       last_message_preview: message.trim(),
       last_message_at: new Date().toISOString(),
-    }).eq('id', conversationId)
+    }
+    // Auto-assign to me if the conversation is unassigned
+    if (me && convInfo && !convInfo.assigned_agent_id) {
+      convUpdate.assigned_agent_id = me.id
+      setConvInfo(prev => prev ? { ...prev, assigned_agent_id: me.id } : prev)
+    }
+    await supabase.from('conversations').update(convUpdate).eq('id', conversationId)
     setMessage('')
     setSending(false)
   }
@@ -169,7 +188,28 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
       {convInfo?.status !== 'closed' && convInfo?.status !== 'resolved' && (
         <div className="border-t border-gray-200 bg-white" style={{ height: '64px', padding: '0 16px' }}>
           <div className="flex items-center gap-3 h-full">
-            <button className="p-2 text-gray-600 hover:text-amber-600"><Zap className="w-5 h-5" /></button>
+            <div className="relative">
+              <button onClick={() => setPredefinedOpen(!predefinedOpen)} className="p-2 text-gray-600 hover:text-amber-600" title="Pre-defined messages"><Zap className="w-5 h-5" /></button>
+              {predefinedOpen && (
+                <div className="absolute bottom-12 left-0 w-80 max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-2xl z-50">
+                  <div className="px-3 py-2 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase">Pre-defined Messages</div>
+                  {predefined.length === 0 ? (
+                    <p className="px-3 py-4 text-sm text-gray-400 text-center">No pre-defined messages</p>
+                  ) : predefined.map((t: any, i: number) => {
+                    const title = t.title || t.name || `Message ${i + 1}`
+                    const body = t.content || t.message || t.text || t.body || ''
+                    return (
+                      <button key={t.id || i}
+                        onClick={() => { setMessage(body); setPredefinedOpen(false) }}
+                        className="w-full text-left px-3 py-2.5 hover:bg-amber-50 border-b border-gray-50 transition-colors">
+                        <p className="text-sm font-semibold text-gray-900">{title}</p>
+                        <p className="text-xs text-gray-500 truncate" dir="auto">{body}</p>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
             <button className="p-2 text-gray-600 hover:text-amber-600"><Smile className="w-5 h-5" /></button>
             <button className="p-2 text-gray-600 hover:text-amber-600"><Paperclip className="w-5 h-5" /></button>
             <textarea value={message} onChange={e => setMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Type a message..." className="flex-1 h-full py-2 resize-none border-0 outline-none bg-transparent text-gray-900 placeholder-gray-400 text-sm" />

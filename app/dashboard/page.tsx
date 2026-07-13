@@ -6,24 +6,29 @@ import { supabase } from '@/lib/supabase'
 import { DashboardCard } from '@/components/dashboard-card'
 import { MetricsChart } from '@/components/metrics-chart'
 
-interface ConvRow { id: string; contact_name: string; status: string; updated_at: string }
+interface ConvRow { id: string; status: string; updated_at: string; contacts?: { name: string } | null }
 
 export default function DashboardPage() {
   const [totalConversations, setTotalConversations] = useState(0)
   const [activeAgents, setActiveAgents] = useState(0)
   const [totalAgents, setTotalAgents] = useState(0)
   const [openConvs, setOpenConvs] = useState(0)
+  const [resolvedToday, setResolvedToday] = useState(0)
   const [recentConvs, setRecentConvs] = useState<ConvRow[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchDashboard = async () => {
       setLoading(true)
-      const [convRes, agentsRes, openRes, recentRes] = await Promise.all([
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+
+      const [convRes, agentsRes, openRes, recentRes, resolvedRes] = await Promise.all([
         supabase.from('conversations').select('id', { count: 'exact', head: true }),
         supabase.from('agents').select('id, status, is_active'),
         supabase.from('conversations').select('id', { count: 'exact', head: true }).in('status', ['open', 'pending']),
-        supabase.from('conversations').select('id, contact_name, status, updated_at').order('updated_at', { ascending: false }).limit(5),
+        supabase.from('conversations').select('id, status, updated_at, contacts(name)').order('updated_at', { ascending: false }).limit(5),
+        supabase.from('conversations').select('id', { count: 'exact', head: true }).eq('status', 'resolved').gte('resolved_at', todayStart.toISOString()),
       ])
 
       setTotalConversations(convRes.count || 0)
@@ -32,7 +37,8 @@ export default function DashboardPage() {
         setActiveAgents(agentsRes.data.filter(a => a.status === 'online' && a.is_active).length)
       }
       setOpenConvs(openRes.count || 0)
-      if (recentRes.data) setRecentConvs(recentRes.data)
+      if (recentRes.data) setRecentConvs(recentRes.data as any)
+      setResolvedToday(resolvedRes.count || 0)
       setLoading(false)
     }
     fetchDashboard()
@@ -63,7 +69,7 @@ export default function DashboardPage() {
           <DashboardCard title="Total Conversations" value={totalConversations.toLocaleString()} change="" icon={MessageCircle} iconColor="text-nos-gold" trendPositive />
           <DashboardCard title="Active Agents" value={`${activeAgents} / ${totalAgents}`} change="" icon={Users} iconColor="text-nos-teal" trendPositive />
           <DashboardCard title="Open Conversations" value={openConvs.toLocaleString()} change="" icon={Clock} iconColor="text-blue-500" trendPositive />
-          <DashboardCard title="Resolved Today" value="—" change="" icon={Star} iconColor="text-amber-500" trendPositive />
+          <DashboardCard title="Resolved Today" value={resolvedToday.toLocaleString()} change="" icon={Star} iconColor="text-amber-500" trendPositive />
         </div>
       )}
 
@@ -81,7 +87,7 @@ export default function DashboardPage() {
               {recentConvs.map(c => (
                 <div key={c.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{c.contact_name}</p>
+                    <p className="text-sm font-medium text-gray-900">{(c.contacts as any)?.name || '—'}</p>
                     <p className="text-xs text-gray-400">{new Date(c.updated_at).toLocaleString()}</p>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(c.status)}`}>{c.status}</span>

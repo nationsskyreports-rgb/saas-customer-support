@@ -7,6 +7,7 @@ import { Search } from 'lucide-react'
 
 export default function InboxPage() {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 3px - 4rem)' }}>
@@ -16,6 +17,8 @@ export default function InboxPage() {
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
           <input
             type="text"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
             placeholder="Search conversations..."
             className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
           />
@@ -26,11 +29,11 @@ export default function InboxPage() {
           <ConversationList
             selectedId={selectedConversationId}
             onSelect={setSelectedConversationId}
-            defaultTab="all"
+            mineOnly
+            searchTerm={searchTerm}
           />
         </div>
         <div className="flex-1 bg-gray-50 flex flex-col overflow-hidden">
-          {/* hideActions: no Resolve/Close — chat only */}
           <ChatPanel conversationId={selectedConversationId} hideActions />
         </div>
       </div>

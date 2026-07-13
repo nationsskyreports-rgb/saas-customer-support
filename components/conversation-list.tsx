@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { RefreshCw } from 'lucide-react'
+import { getAgent } from '@/lib/auth'
 
 interface Conversation {
   id: string
@@ -20,13 +21,16 @@ interface Conversation {
 interface ConversationListProps {
   selectedId: string | null
   onSelect: (id: string) => void
-  defaultTab?: 'all' | 'unassigned' | 'pending'
+  defaultTab?: string
+  mineOnly?: boolean       // My Chats mode: tabs become Mine / Unassigned / Pending
+  searchTerm?: string      // filter by contact name / phone / last message
 }
 
-export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: ConversationListProps) {
-  const [activeTab, setActiveTab] = useState(defaultTab)
+export function ConversationList({ selectedId, onSelect, defaultTab, mineOnly = false, searchTerm = '' }: ConversationListProps) {
+  const [activeTab, setActiveTab] = useState(defaultTab || (mineOnly ? 'mine' : 'all'))
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
+  const me = getAgent()
 
   const fetchConversations = async () => {
     const { data } = await supabase
@@ -40,7 +44,7 @@ export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: C
   useEffect(() => {
     fetchConversations()
     const ch = supabase
-      .channel('inbox-conversations')
+      .channel('inbox-conversations-' + (mineOnly ? 'mine' : 'all'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversations' }, () => fetchConversations())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => fetchConversations())
       .subscribe()
@@ -62,20 +66,42 @@ export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: C
     switch (s) { case 'open': return 'bg-blue-500'; case 'pending': return 'bg-yellow-500'; case 'resolved': return 'bg-green-500'; default: return 'bg-gray-500' }
   }
 
+  // Search filter
+  const matchesSearch = (c: Conversation) => {
+    if (!searchTerm.trim()) return true
+    const q = searchTerm.trim().toLowerCase()
+    const contact = c.contacts as any
+    return (
+      (contact?.name || '').toLowerCase().includes(q) ||
+      (contact?.phone || '').toLowerCase().includes(q) ||
+      (c.last_message_preview || '').toLowerCase().includes(q)
+    )
+  }
+
+  const searched = conversations.filter(matchesSearch)
+
   const getFiltered = () => {
     switch (activeTab) {
-      case 'unassigned': return conversations.filter(c => !c.assigned_agent_id)
-      case 'pending': return conversations.filter(c => c.status === 'pending')
-      default: return conversations
+      case 'mine': return searched.filter(c => c.assigned_agent_id === me?.id)
+      case 'unassigned': return searched.filter(c => !c.assigned_agent_id)
+      case 'pending': return searched.filter(c => c.status === 'pending')
+      default: return searched
     }
   }
 
   const filtered = getFiltered()
-  const tabs = [
-    { id: 'all', label: 'All', count: conversations.length },
-    { id: 'unassigned', label: 'Unassigned', count: conversations.filter(c => !c.assigned_agent_id).length },
-    { id: 'pending', label: 'Pending', count: conversations.filter(c => c.status === 'pending').length },
-  ]
+
+  const tabs = mineOnly
+    ? [
+        { id: 'mine', label: 'Mine', count: searched.filter(c => c.assigned_agent_id === me?.id).length },
+        { id: 'unassigned', label: 'Unassigned', count: searched.filter(c => !c.assigned_agent_id).length },
+        { id: 'pending', label: 'Pending', count: searched.filter(c => c.status === 'pending').length },
+      ]
+    : [
+        { id: 'all', label: 'All', count: searched.length },
+        { id: 'unassigned', label: 'Unassigned', count: searched.filter(c => !c.assigned_agent_id).length },
+        { id: 'pending', label: 'Pending', count: searched.filter(c => c.status === 'pending').length },
+      ]
 
   if (loading) return <div className="flex items-center justify-center py-10"><RefreshCw className="w-5 h-5 animate-spin text-gray-400" /></div>
 
@@ -83,7 +109,7 @@ export function ConversationList({ selectedId, onSelect, defaultTab = 'all' }: C
     <div className="flex flex-col h-full">
       <div className="flex gap-1.5 p-3 border-b border-gray-200 flex-wrap">
         {tabs.map(tab => (
-          <button key={tab.id} onClick={() => setActiveTab(tab.id as any)}
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', activeTab === tab.id ? 'text-white' : 'text-gray-500 border border-gray-200 hover:bg-gray-50')}
             style={activeTab === tab.id ? { backgroundColor: '#C0992F' } : {}}>
             {tab.label} ({tab.count})

@@ -116,10 +116,41 @@ export default function CustomerChatPage() {
       return
     }
 
-    // Create conversation
+    // Auto-assignment: pick the online agent with the fewest open chats (under their max_chats)
+    let assignedAgentId: string | null = null
+    try {
+      const { data: onlineAgents } = await supabase
+        .from('agents')
+        .select('id, max_chats')
+        .eq('status', 'online')
+        .eq('is_active', true)
+
+      if (onlineAgents && onlineAgents.length > 0) {
+        const { data: openConvs } = await supabase
+          .from('conversations')
+          .select('assigned_agent_id')
+          .in('status', ['open', 'pending'])
+          .not('assigned_agent_id', 'is', null)
+
+        const loadMap: Record<string, number> = {}
+        openConvs?.forEach(c => {
+          if (c.assigned_agent_id) loadMap[c.assigned_agent_id] = (loadMap[c.assigned_agent_id] || 0) + 1
+        })
+
+        // Least-loaded online agent who still has capacity
+        const candidates = onlineAgents
+          .map(a => ({ id: a.id, load: loadMap[a.id] || 0, max: a.max_chats || 5 }))
+          .filter(a => a.load < a.max)
+          .sort((a, b) => a.load - b.load)
+
+        if (candidates.length > 0) assignedAgentId = candidates[0].id
+      }
+    } catch {}
+
+    // Create conversation (auto-assigned if an agent is available)
     const { data: conv, error: convErr } = await supabase
       .from('conversations')
-      .insert({ contact_id: contactId, channel_id: channel.id })
+      .insert({ contact_id: contactId, channel_id: channel.id, assigned_agent_id: assignedAgentId })
       .select()
       .single()
 

@@ -22,6 +22,9 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSidebar } from '@/lib/sidebar-context'
+import { useRouter } from 'next/navigation'
+import { getAgent, clearAgent } from '@/lib/auth'
+import { supabase } from '@/lib/supabase'
 
 interface NavSection {
   title: string
@@ -33,6 +36,21 @@ export function Sidebar() {
   const pathname = usePathname()
   const { collapsed, toggle } = useSidebar()
   const [unreadCount, setUnreadCount] = useState(0)
+  const [isAdminRole, setIsAdminRole] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    setIsAdminRole(getAgent()?.role === 'admin')
+  }, [])
+
+  const handleLogout = async () => {
+    const agent = getAgent()
+    if (agent) {
+      await supabase.from('agents').update({ status: 'offline' }).eq('id', agent.id)
+    }
+    clearAgent()
+    router.replace('/login')
+  }
 
   // Listen for new-message events fired by GlobalNotifications — always count
   useEffect(() => {
@@ -93,6 +111,10 @@ export function Sidebar() {
     },
   ]
 
+  // Agents only see ANALYTICS + INBOX; admins see everything
+  const ADMIN_ONLY = ['ADMINISTRATION', 'CHANNELS', 'MESSAGES', 'REPORTS']
+  const visibleSections = navSections.filter(s => isAdminRole || !ADMIN_ONLY.includes(s.title))
+
   const toggleSection = (title: string) => {
     if (collapsed) return
     setExpandedSections((prev) =>
@@ -126,7 +148,7 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden">
-        {navSections.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.title} className="px-2 py-1">
             {/* Section Title */}
             {!collapsed && (
@@ -209,6 +231,7 @@ export function Sidebar() {
       {/* Logout */}
       <div className="p-2 border-t border-white/15">
         <button
+          onClick={handleLogout}
           className={cn(
             'w-full flex items-center rounded-lg hover:bg-white/15 transition-colors text-sm text-white py-2.5',
             collapsed ? 'justify-center px-0' : 'gap-3 px-3'

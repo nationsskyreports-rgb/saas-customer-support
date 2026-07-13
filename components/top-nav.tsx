@@ -1,27 +1,60 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Bell, Settings, ChevronDown, LogOut, Moon, Sun } from 'lucide-react'
 import { useSidebar } from '@/lib/sidebar-context'
 import { useTheme } from '@/lib/theme-context'
+import { getAgent, setAgent, clearAgent, AuthAgent } from '@/lib/auth'
+import { supabase } from '@/lib/supabase'
 
 export function TopNav() {
   const [statusOpen, setStatusOpen] = useState(false)
   const [agentStatus, setAgentStatus] = useState('Active')
+  const [me, setMe] = useState<AuthAgent | null>(null)
   const { collapsed } = useSidebar()
   const { dark, toggleDark } = useTheme()
+  const router = useRouter()
 
   const statuses = [
-    { label: 'Active', color: 'bg-green-500' },
-    { label: 'Busy', color: 'bg-yellow-500' },
-    { label: 'Away', color: 'bg-gray-400' },
-    { label: 'Offline', color: 'bg-red-500' },
+    { label: 'Active', value: 'online', color: 'bg-green-500' },
+    { label: 'Busy', value: 'busy', color: 'bg-yellow-500' },
+    { label: 'Away', value: 'away', color: 'bg-gray-400' },
+    { label: 'Offline', value: 'offline', color: 'bg-red-500' },
   ]
+
+  useEffect(() => {
+    const agent = getAgent()
+    if (agent) {
+      setMe(agent)
+      const s = statuses.find(x => x.value === agent.status)
+      if (s) setAgentStatus(s.label)
+    }
+  }, [])
 
   const getStatusColor = () => {
     const status = statuses.find(s => s.label === agentStatus)
     return status?.color || 'bg-green-500'
   }
+
+  const changeStatus = async (status: { label: string; value: string }) => {
+    setAgentStatus(status.label)
+    setStatusOpen(false)
+    if (me) {
+      await supabase.from('agents').update({ status: status.value }).eq('id', me.id)
+      setAgent({ ...me, status: status.value })
+    }
+  }
+
+  const signOut = async () => {
+    if (me) {
+      await supabase.from('agents').update({ status: 'offline' }).eq('id', me.id)
+    }
+    clearAgent()
+    router.replace('/login')
+  }
+
+  const initials = me ? me.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '??'
 
   return (
     <>
@@ -71,10 +104,7 @@ export function TopNav() {
                 {statuses.map((status) => (
                   <button
                     key={status.label}
-                    onClick={() => {
-                      setAgentStatus(status.label)
-                      setStatusOpen(false)
-                    }}
+                    onClick={() => changeStatus(status)}
                     className="w-full flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm text-gray-700"
                   >
                     <div className={`w-2 h-2 rounded-full ${status.color}`} />
@@ -84,10 +114,10 @@ export function TopNav() {
               </div>
               <div className="border-t border-gray-200" />
               <div className="p-2">
-                <button className="w-full text-left px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm text-gray-700">
-                  My Profile
-                </button>
-                <button className="w-full flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm text-gray-700">
+                <button
+                  onClick={signOut}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100 transition-colors text-sm text-gray-700"
+                >
                   <LogOut className="w-4 h-4" />
                   <span>Sign Out</span>
                 </button>
@@ -99,9 +129,9 @@ export function TopNav() {
         {/* Agent Avatar and Name */}
         <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
           <div style={{ width: '36px', height: '36px', backgroundColor: '#C0992F', borderRadius: '50%' }} className="text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
-            KR
+            {initials}
           </div>
-          <span className="text-sm font-medium text-gray-600">Kareem Rashad</span>
+          <span className="text-sm font-medium text-gray-600">{me?.name || ''}</span>
         </div>
       </div>
       </div>
