@@ -50,6 +50,7 @@ export function TopNav() {
   const changeStatus = async (status: { label: string; value: string }) => {
     setAgentStatus(status.label)
     setStatusOpen(false)
+    localStorage.setItem('nos_last_status', status.value) // remembered for next login
     if (me) {
       await supabase.from('agents').update({ status: status.value }).eq('id', me.id)
       setAgent({ ...me, status: status.value })
