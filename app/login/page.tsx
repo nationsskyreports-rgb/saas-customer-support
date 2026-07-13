@@ -41,15 +41,16 @@ export default function LoginPage() {
       return
     }
 
-    // Set agent online
-    await supabase.from('agents').update({ status: 'online' }).eq('id', data.id)
+    // Restore the last status this agent chose (default: online for first login)
+    const lastStatus = localStorage.getItem('nos_last_status') || 'online'
+    await supabase.from('agents').update({ status: lastStatus }).eq('id', data.id)
 
     setAgent({
       id: data.id,
       name: data.name,
       email: data.email,
       role: data.role,
-      status: 'online',
+      status: lastStatus,
       max_chats: data.max_chats,
     })
     router.replace('/dashboard')
