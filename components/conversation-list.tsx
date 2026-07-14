@@ -113,7 +113,7 @@ export function ConversationList({ selectedId, onSelect, defaultTab, mineOnly = 
         {tabs.map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={cn('px-3 py-1.5 text-xs font-medium rounded-md transition-colors', activeTab === tab.id ? 'text-white' : 'text-gray-500 border border-gray-200 hover:bg-gray-50')}
-            style={activeTab === tab.id ? { backgroundColor: '#C0992F' } : {}}>
+            style={activeTab === tab.id ? { backgroundColor: '#00B69B' } : {}}>
             {tab.label} ({tab.count})
           </button>
         ))}
@@ -127,10 +127,10 @@ export function ConversationList({ selectedId, onSelect, defaultTab, mineOnly = 
           const phone = contact?.phone || ''
           return (
             <button key={conv.id} onClick={() => onSelect(conv.id)}
-              className={cn('w-full text-left p-4 hover:bg-gray-50 transition-colors border-l-2', selectedId === conv.id ? 'bg-amber-50 border-l-[#C0992F]' : 'border-l-transparent')}>
+              className={cn('w-full text-left p-4 hover:bg-gray-50 transition-colors border-l-2', selectedId === conv.id ? 'bg-emerald-50 border-l-[#00B69B]' : 'border-l-transparent')}>
               <div className="flex items-start gap-3 mb-1">
                 <div className="relative flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-sm font-semibold">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-sm font-semibold">
                     {name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
                   </div>
                   <div className={cn('absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white', getStatusColor(conv.status))} />

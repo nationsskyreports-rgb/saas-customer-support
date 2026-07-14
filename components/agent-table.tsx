@@ -29,7 +29,7 @@ const statusConfig: Record<string, { dot: string; label: string; bg: string; tex
   offline: { dot: 'bg-red-400',    label: 'Offline', bg: 'bg-red-100',    text: 'text-red-800' },
 }
 
-const avatarColors = ['#C0992F', '#00B69B', '#3B82F6', '#8B5CF6', '#EC4899', '#EF4444', '#F59E0B']
+const avatarColors = ['#00B69B', '#00B69B', '#3B82F6', '#8B5CF6', '#EC4899', '#EF4444', '#F59E0B']
 const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 const getColor = (i: number) => avatarColors[i % avatarColors.length]
 
@@ -173,8 +173,8 @@ export function AgentTable() {
       {/* ─── KPI Cards ─── */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-            <Users className="w-6 h-6 text-[#C0992F]" />
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <Users className="w-6 h-6 text-[#00B69B]" />
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-900">{counts.total}</p>
@@ -211,7 +211,7 @@ export function AgentTable() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by name, email, team..."
-            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
           />
         </div>
         <button
@@ -252,7 +252,7 @@ export function AgentTable() {
               const status = statusConfig[agent.status] || statusConfig.offline
               const teams = agent.agent_teams?.map(t => t.teams?.name).filter(Boolean) || []
               return (
-                <tr key={agent.id} className={cn('transition-colors', agent.is_active ? 'hover:bg-amber-50/40' : 'opacity-50 bg-gray-50')}>
+                <tr key={agent.id} className={cn('transition-colors', agent.is_active ? 'hover:bg-emerald-50/40' : 'opacity-50 bg-gray-50')}>
 
                   {/* Agent */}
                   <td className="px-6 py-4">
@@ -294,7 +294,7 @@ export function AgentTable() {
                     {teams.length > 0 ? (
                       <div className="flex flex-wrap gap-1">
                         {teams.map(t => (
-                          <span key={t} className="text-xs px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full">
+                          <span key={t} className="text-xs px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">
                             {t}
                           </span>
                         ))}
@@ -380,14 +380,14 @@ export function AgentTable() {
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
               <div className="flex justify-center">
-                <div className="w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl" style={{ backgroundColor: '#C0992F' }}>
+                <div className="w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl" style={{ backgroundColor: '#00B69B' }}>
                   {getInitials(editName)}
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Name</label>
                 <input type="text" value={editName} onChange={e => setEditName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
@@ -398,12 +398,12 @@ export function AgentTable() {
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Mobile Number</label>
                 <input type="text" value={editMobile} onChange={e => setEditMobile(e.target.value)}
                   placeholder="e.g. 201111234567"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Role</label>
                 <select value={editRole} onChange={e => setEditRole(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300">
                   <option value="admin">Admin</option>
                   <option value="agent">Agent</option>
                 </select>
@@ -411,7 +411,7 @@ export function AgentTable() {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status</label>
                 <select value={editStatus} onChange={e => setEditStatus(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300">
                   <option value="online">🟢 Online</option>
                   <option value="busy">🟡 Busy</option>
                   <option value="away">⚫ Away</option>
@@ -421,7 +421,7 @@ export function AgentTable() {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Max Concurrent Chats</label>
                 <input type="number" value={editMaxChats} onChange={e => setEditMaxChats(Number(e.target.value))} min={1} max={20}
-                  className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                  className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-200 flex gap-3">
@@ -431,7 +431,7 @@ export function AgentTable() {
               </button>
               <button onClick={saveEdit} disabled={saving}
                 className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2"
-                style={{ backgroundColor: '#C0992F' }}>
+                style={{ backgroundColor: '#00B69B' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : 'Save Changes'}
               </button>

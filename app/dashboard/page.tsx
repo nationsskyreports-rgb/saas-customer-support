@@ -157,7 +157,7 @@ export default function DashboardPage() {
           disabled={loading}
           className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#C0992F]' : ''}`} />
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#00B69B]' : ''}`} />
           {loading ? 'Loading...' : 'Refresh'}
         </button>
       </div>
@@ -166,12 +166,12 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
         <button onClick={() => router.push('/inbox/all')}
-          className="bg-white rounded-xl border border-gray-200 p-5 text-left hover:border-[#C0992F] hover:shadow-md transition-all group">
+          className="bg-white rounded-xl border border-gray-200 p-5 text-left hover:border-[#00B69B] hover:shadow-md transition-all group">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
-              <MessageCircle className="w-5 h-5 text-[#C0992F]" />
+            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <MessageCircle className="w-5 h-5 text-[#00B69B]" />
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#C0992F] transition-colors" />
+            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#00B69B] transition-colors" />
           </div>
           <p className="text-2xl font-bold text-gray-900">
             {loading ? '—' : todayConversations}
@@ -250,8 +250,8 @@ export default function DashboardPage() {
           </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-            <Timer className="w-6 h-6 text-[#C0992F]" />
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <Timer className="w-6 h-6 text-[#00B69B]" />
           </div>
           <div>
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Avg. Handling Time</p>
@@ -285,10 +285,10 @@ export default function DashboardPage() {
               const { text: sLabel, cls: sColor } = statusLabel(agent.status)
               return (
                 <button key={agent.id} onClick={() => router.push('/monitoring')}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-50/60 transition-colors text-left">
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-emerald-50/60 transition-colors text-left">
                   <div className="relative flex-shrink-0">
                     <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                      style={{ backgroundColor: '#C0992F' }}>
+                      style={{ backgroundColor: '#00B69B' }}>
                       {initials(agent.name)}
                     </div>
                     <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${statusDot(agent.status)}`} />
@@ -335,7 +335,7 @@ export default function DashboardPage() {
               )}
             </div>
             <button onClick={() => router.push('/inbox/all?tab=open')}
-              className="text-xs text-[#C0992F] hover:underline font-medium">
+              className="text-xs text-[#00B69B] hover:underline font-medium">
               View all →
             </button>
           </div>
@@ -409,15 +409,15 @@ export default function DashboardPage() {
       <MetricsChart />
 
       {/* Resolved Today */}
-      <div className="bg-gradient-to-r from-[#C0992F]/10 via-white to-[#00B69B]/10 border border-[#C0992F]/20 rounded-xl p-5 flex items-center justify-between">
+      <div className="bg-gradient-to-r from-[#00B69B]/10 via-white to-[#00B69B]/10 border border-[#00B69B]/20 rounded-xl p-5 flex items-center justify-between">
         <div>
           <p className="text-sm text-gray-500">Resolved Today</p>
-          <p className="text-3xl font-bold mt-0.5" style={{ color: '#C0992F' }}>
+          <p className="text-3xl font-bold mt-0.5" style={{ color: '#00B69B' }}>
             {loading ? '—' : resolvedToday}
             <span className="text-base font-normal text-gray-400 ml-2">conversations closed</span>
           </p>
         </div>
-        <Star className="w-12 h-12 opacity-15" style={{ color: '#C0992F' }} />
+        <Star className="w-12 h-12 opacity-15" style={{ color: '#00B69B' }} />
       </div>
 
     </div>

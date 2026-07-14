@@ -15,7 +15,7 @@ interface PredefinedMessage {
 }
 
 const categoryColors: Record<string, string> = {
-  greeting: '#C0992F',
+  greeting: '#00B69B',
   order: '#3B82F6',
   policy: '#8B5CF6',
   billing: '#EF4444',
@@ -100,7 +100,7 @@ export function MessageTemplates() {
   }
 
   const tabStyle = (id: string) => selectedCategory === id
-    ? { backgroundColor: '#C0992F', color: '#FFFFFF', border: '2px solid #C0992F', borderRadius: '6px', padding: '6px 16px', fontWeight: '600', fontSize: '13px', whiteSpace: 'nowrap' as const }
+    ? { backgroundColor: '#00B69B', color: '#FFFFFF', border: '2px solid #00B69B', borderRadius: '6px', padding: '6px 16px', fontWeight: '600', fontSize: '13px', whiteSpace: 'nowrap' as const }
     : { backgroundColor: 'transparent', color: '#6B7280', border: '1px solid #d1d5db', borderRadius: '6px', padding: '6px 16px', fontWeight: '500', fontSize: '13px', whiteSpace: 'nowrap' as const }
 
   if (loading) {
@@ -152,12 +152,12 @@ export function MessageTemplates() {
             <div className="flex gap-2">
               <button
                 onClick={() => handleCopy(msg.content, msg.id)}
-                className="flex-1 p-2 hover:bg-amber-50 rounded-lg transition-colors flex items-center justify-center gap-1 text-sm text-gray-700 font-medium"
+                className="flex-1 p-2 hover:bg-emerald-50 rounded-lg transition-colors flex items-center justify-center gap-1 text-sm text-gray-700 font-medium"
               >
                 <Copy className="w-4 h-4" />
                 {copiedId === msg.id ? 'Copied!' : 'Copy'}
               </button>
-              <button onClick={() => openEdit(msg)} className="p-2 hover:bg-amber-50 rounded-lg transition-colors">
+              <button onClick={() => openEdit(msg)} className="p-2 hover:bg-emerald-50 rounded-lg transition-colors">
                 <Edit className="w-4 h-4 text-gray-600" />
               </button>
               <button onClick={() => setConfirmDelete(msg.id)} className="p-2 hover:bg-red-50 rounded-lg transition-colors">
@@ -183,21 +183,21 @@ export function MessageTemplates() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Title</label>
-                <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                <input type="text" value={editTitle} onChange={e => setEditTitle(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
-                <input type="text" value={editCategory} onChange={e => setEditCategory(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                <input type="text" value={editCategory} onChange={e => setEditCategory(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Content</label>
-                <textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={5} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
+                <textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={5} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none" />
                 <p className="text-xs text-gray-400 mt-1">{editContent.length}/500</p>
               </div>
             </div>
             <div className="flex gap-3 px-6 py-4 border-t border-gray-200">
               <button onClick={() => setEditMsg(null)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-              <button onClick={saveEdit} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2" style={{ backgroundColor: '#C0992F' }}>
+              <button onClick={saveEdit} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2" style={{ backgroundColor: '#00B69B' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : 'Save'}
               </button>

@@ -82,7 +82,7 @@ export default function LogCategoriesPage() {
           <h1 className="text-3xl font-bold text-foreground">Log Category Types</h1>
           <p className="text-muted-foreground mt-1">Manage activity log categories</p>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#C0992F' }}>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#00B69B' }}>
           <Plus className="w-4 h-4" />
           New Category
         </button>
@@ -100,7 +100,7 @@ export default function LogCategoriesPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {categories.map((cat) => (
-              <tr key={cat.id} className="hover:bg-amber-50 transition-colors">
+              <tr key={cat.id} className="hover:bg-emerald-50 transition-colors">
                 <td className="px-6 py-4 text-sm font-medium text-gray-900">{cat.name}</td>
                 <td className="px-6 py-4 text-sm text-gray-500">{cat.description}</td>
                 <td className="px-6 py-4 text-sm text-gray-500">
@@ -136,16 +136,16 @@ export default function LogCategoriesPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Name *</label>
-                <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Escalation" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Escalation" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
-                <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Brief description..." rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
+                <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Brief description..." rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none" />
               </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-              <button onClick={handleSave} disabled={saving || !name.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#C0992F' }}>
+              <button onClick={handleSave} disabled={saving || !name.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#00B69B' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : 'Save'}
               </button>

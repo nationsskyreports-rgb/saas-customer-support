@@ -106,7 +106,7 @@ export function InviteAgentModal({ isOpen, onClose }: InviteAgentModalProps) {
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Mohamed Ali"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
             />
           </div>
 
@@ -118,7 +118,7 @@ export function InviteAgentModal({ isOpen, onClose }: InviteAgentModalProps) {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="agent@nationsofsky.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
             />
           </div>
 
@@ -127,11 +127,11 @@ export function InviteAgentModal({ isOpen, onClose }: InviteAgentModalProps) {
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Role</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" checked={role === 'agent'} onChange={() => setRole('agent')} className="accent-amber-500" />
+                <input type="radio" checked={role === 'agent'} onChange={() => setRole('agent')} className="accent-emerald-500" />
                 <span className="text-sm text-gray-700">Agent</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" checked={role === 'admin'} onChange={() => setRole('admin')} className="accent-amber-500" />
+                <input type="radio" checked={role === 'admin'} onChange={() => setRole('admin')} className="accent-emerald-500" />
                 <span className="text-sm text-gray-700">Admin</span>
               </label>
             </div>
@@ -146,7 +146,7 @@ export function InviteAgentModal({ isOpen, onClose }: InviteAgentModalProps) {
               onChange={e => setMaxChats(Number(e.target.value))}
               min={1}
               max={20}
-              className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+              className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
             />
           </div>
         </div>
@@ -160,7 +160,7 @@ export function InviteAgentModal({ isOpen, onClose }: InviteAgentModalProps) {
             onClick={handleInvite}
             disabled={saving || !name.trim() || !email.trim()}
             className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50"
-            style={{ backgroundColor: '#C0992F' }}
+            style={{ backgroundColor: '#00B69B' }}
           >
             {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
             {saving ? 'Adding...' : 'Add Agent'}

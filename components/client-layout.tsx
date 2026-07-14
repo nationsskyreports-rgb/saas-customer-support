@@ -17,7 +17,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div style={{ height: '3px', backgroundColor: '#C0992F', width: '100%', position: 'fixed', top: 0, left: 0, zIndex: 60 }} />
+      <div style={{ height: '3px', backgroundColor: '#00B69B', width: '100%', position: 'fixed', top: 0, left: 0, zIndex: 60 }} />
       <Sidebar />
       <TopNav />
       <GlobalNotifications />

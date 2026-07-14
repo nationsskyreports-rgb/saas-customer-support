@@ -108,7 +108,7 @@ export function GlobalNotifications() {
               onClick={() => { router.push('/inbox'); dismiss(toast.id) }}
               className="bg-white rounded-xl shadow-2xl border border-gray-200 p-4 flex items-start gap-3 cursor-pointer hover:shadow-xl transition-all"
               style={{ animation: 'nosSlideIn 0.3s ease-out' }}>
-              <div className="w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ backgroundColor: '#C0992F' }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0" style={{ backgroundColor: '#00B69B' }}>
                 <MessageCircle className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">

@@ -53,7 +53,7 @@
   --card-foreground: oklch(0.2 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0 0);
-  --primary: #C0992F;
+  --primary: #00B69B;
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.95 0 0);
   --secondary-foreground: oklch(0.2 0 0);
@@ -64,91 +64,91 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.93 0 0);
   --input: oklch(0.95 0 0);
-  --ring: #C0992F;
-  --chart-1: #C0992F;
+  --ring: #00B69B;
+  --chart-1: #00B69B;
   --chart-2: oklch(0.5 0.165 184);
   --chart-3: oklch(0.75 0.05 190);
   --chart-4: oklch(0.85 0 0);
   --chart-5: oklch(0.6 0 0);
   --radius: 0.5rem;
-  --sidebar: #C0992F;
+  --sidebar: #00B69B;
   --sidebar-foreground: #FFFFFF;
   --sidebar-primary: oklch(1 0 0);
-  --sidebar-primary-foreground: #C0992F;
+  --sidebar-primary-foreground: #00B69B;
   --sidebar-accent: oklch(1 0 0);
-  --sidebar-accent-foreground: #C0992F;
+  --sidebar-accent-foreground: #00B69B;
   --sidebar-border: rgba(255, 255, 255, 0.15);
-  --sidebar-ring: #C0992F;
-  --nos-gold: #C0992F;
+  --sidebar-ring: #00B69B;
+  --nos-gold: #00B69B;
   --nos-teal: #00B69B;
-  --nos-light-gold: #FFF9ED;
+  --nos-light-gold: #EDFDF8;
 }
 
 /* ─── NOS Dark Mode ─── */
 .dark {
   color-scheme: dark;
-  --background: #111827;
+  --background: #0A101E;
   --foreground: #F3F4F6;
-  --card: #1F2937;
+  --card: #121B2E;
   --card-foreground: #F3F4F6;
-  --popover: #1F2937;
+  --popover: #121B2E;
   --popover-foreground: #F3F4F6;
-  --primary: #D4A843;
-  --primary-foreground: #111827;
-  --secondary: #374151;
+  --primary: #34E8A5;
+  --primary-foreground: #0A101E;
+  --secondary: #1E2A42;
   --secondary-foreground: #F3F4F6;
-  --muted: #374151;
+  --muted: #1E2A42;
   --muted-foreground: #9CA3AF;
-  --accent: #374151;
+  --accent: #1E2A42;
   --accent-foreground: #F3F4F6;
   --destructive: #EF4444;
-  --border: #374151;
-  --input: #374151;
-  --ring: #D4A843;
-  --chart-1: #D4A843;
+  --border: #1E2A42;
+  --input: #1E2A42;
+  --ring: #34E8A5;
+  --chart-1: #34E8A5;
   --chart-2: #00B69B;
   --chart-3: #3B82F6;
   --chart-4: #6B7280;
-  --chart-5: #4B5563;
-  --sidebar: #C0992F;
+  --chart-5: #2B3A55;
+  --sidebar: #00B69B;
   --sidebar-foreground: #FFFFFF;
   --sidebar-primary: oklch(1 0 0);
-  --sidebar-primary-foreground: #C0992F;
+  --sidebar-primary-foreground: #00B69B;
   --sidebar-accent: oklch(1 0 0);
-  --sidebar-accent-foreground: #C0992F;
+  --sidebar-accent-foreground: #00B69B;
   --sidebar-border: rgba(255, 255, 255, 0.15);
-  --sidebar-ring: #D4A843;
-  --nos-light-gold: #1F2937;
+  --sidebar-ring: #34E8A5;
+  --nos-light-gold: #121B2E;
 }
 
 /* ─── Dark Mode Global Overrides ─── */
 .dark body {
-  background-color: #111827;
+  background-color: #0A101E;
   color: #F3F4F6;
 }
 
 .dark main {
-  background-color: #111827 !important;
+  background-color: #0A101E !important;
 }
 
 /* Cards & Containers */
 .dark .bg-white {
-  background-color: #1F2937 !important;
+  background-color: #121B2E !important;
 }
 
 .dark .bg-gray-50,
 .dark .bg-gray-100 {
-  background-color: #111827 !important;
+  background-color: #0A101E !important;
 }
 
-.dark .bg-amber-50 {
-  background-color: rgba(192, 153, 47, 0.1) !important;
+.dark .bg-emerald-50 {
+  background-color: rgba(0, 182, 155, 0.1) !important;
 }
 
 /* Borders */
 .dark .border-gray-200,
 .dark .border-gray-100 {
-  border-color: #374151 !important;
+  border-color: #1E2A42 !important;
 }
 
 /* Text Colors */
@@ -172,24 +172,24 @@
 
 /* Table Headers */
 .dark thead[style] {
-  background-color: #1a2332 !important;
+  background-color: #0E1626 !important;
 }
 
-.dark .hover\:bg-amber-50:hover {
-  background-color: rgba(192, 153, 47, 0.08) !important;
+.dark .hover\:bg-emerald-50:hover {
+  background-color: rgba(0, 182, 155, 0.08) !important;
 }
 
 .dark .hover\:bg-gray-50:hover,
 .dark .hover\:bg-gray-100:hover {
-  background-color: #374151 !important;
+  background-color: #1E2A42 !important;
 }
 
 /* Inputs */
 .dark input,
 .dark textarea,
 .dark select {
-  background-color: #374151 !important;
-  border-color: #4B5563 !important;
+  background-color: #1E2A42 !important;
+  border-color: #2B3A55 !important;
   color: #F3F4F6 !important;
 }
 
@@ -200,7 +200,7 @@
 
 /* Dropdowns */
 .dark .bg-gray-100 {
-  background-color: #374151 !important;
+  background-color: #1E2A42 !important;
 }
 
 /* Shadow adjustments */
@@ -211,13 +211,13 @@
 
 /* Topbar */
 .dark .bg-white.border-b {
-  background-color: #1F2937 !important;
-  border-color: #374151 !important;
+  background-color: #121B2E !important;
+  border-color: #1E2A42 !important;
 }
 
 /* Welcome Banner */
-.dark [style*="FFF9ED"] {
-  background-color: rgba(192, 153, 47, 0.08) !important;
+.dark [style*="EDFDF8"] {
+  background-color: rgba(0, 182, 155, 0.08) !important;
 }
 
 /* Badge overrides — keep colored badges readable in dark */
@@ -226,7 +226,7 @@
 .dark .bg-red-100 { background-color: rgba(239, 68, 68, 0.2) !important; }
 .dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.2) !important; }
 .dark .bg-purple-100 { background-color: rgba(168, 85, 247, 0.2) !important; }
-.dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.2) !important; }
+.dark .bg-emerald-100 { background-color: rgba(245, 158, 11, 0.2) !important; }
 
 /* Badge text — force lighter colors in dark mode */
 .dark .text-green-800 { color: #4ADE80 !important; }
@@ -242,7 +242,7 @@
 .dark .text-blue-700 { color: #60A5FA !important; }
 .dark .text-purple-800 { color: #C084FC !important; }
 .dark .text-purple-700 { color: #C084FC !important; }
-.dark .text-amber-800 { color: #FCD34D !important; }
+.dark .text-emerald-800 { color: #FCD34D !important; }
 
 /* Dark mode — table th/header text */
 .dark th {
@@ -257,39 +257,39 @@
 
 /* Status indicator pills */
 .dark .bg-gray-100 {
-  background-color: #374151 !important;
+  background-color: #1E2A42 !important;
 }
 
 /* Top stats pills */
 .dark .bg-white.border.border-gray-200.rounded-full {
-  background-color: #1F2937 !important;
-  border-color: #4B5563 !important;
+  background-color: #121B2E !important;
+  border-color: #2B3A55 !important;
 }
 
 /* Dropdown menus */
 .dark .bg-white.border.border-gray-200.rounded-lg.shadow-lg {
-  background-color: #1F2937 !important;
-  border-color: #4B5563 !important;
+  background-color: #121B2E !important;
+  border-color: #2B3A55 !important;
 }
 
 /* Card borders */
 .dark .border.border-gray-200.rounded-xl {
-  border-color: #374151 !important;
+  border-color: #1E2A42 !important;
 }
 
 /* Dividers */
 .dark .divide-gray-100 > * + * {
-  border-color: #374151 !important;
+  border-color: #1E2A42 !important;
 }
 
 /* Ghost buttons */
 .dark .border-gray-200.rounded-lg {
-  border-color: #4B5563 !important;
+  border-color: #2B3A55 !important;
   color: #D1D5DB !important;
 }
 
 .dark .hover\:bg-gray-50:hover {
-  background-color: #374151 !important;
+  background-color: #1E2A42 !important;
 }
 
 /* Topbar icons */
@@ -299,24 +299,24 @@
 
 /* Welcome banner in dark */
 .dark [style*="border-left"] {
-  border-color: #D4A843 !important;
+  border-color: #34E8A5 !important;
 }
 
 /* Chart tooltips */
 .dark .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background-color: #1F2937 !important;
-  border-color: #374151 !important;
+  background-color: #121B2E !important;
+  border-color: #1E2A42 !important;
 }
 
 /* Tab active — keep visible */
-.dark [style*="background-color: rgb(192, 153, 47)"] {
+.dark [style*="background-color: rgb(0, 182, 155)"] {
   color: #FFFFFF !important;
 }
 
 /* Scrollbar */
 .dark ::-webkit-scrollbar { width: 6px; }
-.dark ::-webkit-scrollbar-track { background: #1F2937; }
-.dark ::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 3px; }
+.dark ::-webkit-scrollbar-track { background: #121B2E; }
+.dark ::-webkit-scrollbar-thumb { background: #2B3A55; border-radius: 3px; }
 
 @layer base {
   * {

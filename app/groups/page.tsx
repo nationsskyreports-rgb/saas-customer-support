@@ -91,7 +91,7 @@ export default function GroupsPage() {
           <h1 className="text-3xl font-bold text-foreground">Groups</h1>
           <p className="text-muted-foreground mt-1">Organize agents into groups</p>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#C0992F' }}>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#00B69B' }}>
           <Plus className="w-4 h-4" />
           New Group
         </button>
@@ -99,7 +99,7 @@ export default function GroupsPage() {
 
       <div className="mb-6 relative">
         <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-        <input type="text" placeholder="Search groups..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-300 text-sm" />
+        <input type="text" placeholder="Search groups..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 text-sm" />
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -115,11 +115,11 @@ export default function GroupsPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {filteredGroups.map(g => (
-              <tr key={g.id} className="hover:bg-amber-50 transition-colors">
+              <tr key={g.id} className="hover:bg-emerald-50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#C0992F20' }}>
-                      <Users className="w-4 h-4" style={{ color: '#C0992F' }} />
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#00B69B20' }}>
+                      <Users className="w-4 h-4" style={{ color: '#00B69B' }} />
                     </div>
                     <span className="font-medium text-gray-900 text-sm">{g.name}</span>
                   </div>
@@ -129,7 +129,7 @@ export default function GroupsPage() {
                 <td className="px-6 py-4 text-sm text-gray-500">{new Date(g.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
                 <td className="px-6 py-4">
                   <div className="flex justify-end gap-1">
-                    <button onClick={() => setManageGroup(g)} className="p-2 hover:bg-gray-100 rounded-lg" title="Manage members"><UserPlus className="w-4 h-4" style={{ color: '#C0992F' }} /></button>
+                    <button onClick={() => setManageGroup(g)} className="p-2 hover:bg-gray-100 rounded-lg" title="Manage members"><UserPlus className="w-4 h-4" style={{ color: '#00B69B' }} /></button>
                     <button onClick={() => openEdit(g)} className="p-2 hover:bg-gray-100 rounded-lg"><Edit2 className="w-4 h-4 text-gray-500" /></button>
                     <button onClick={() => setConfirmDelete(g.id)} className="p-2 hover:bg-gray-100 rounded-lg"><Trash2 className="w-4 h-4 text-red-500" /></button>
                   </div>
@@ -154,16 +154,16 @@ export default function GroupsPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Group Name *</label>
-                <input type="text" value={gName} onChange={e => setGName(e.target.value)} placeholder="e.g. VIP Support" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                <input type="text" value={gName} onChange={e => setGName(e.target.value)} placeholder="e.g. VIP Support" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
-                <textarea value={gDesc} onChange={e => setGDesc(e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
+                <textarea value={gDesc} onChange={e => setGDesc(e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none" />
               </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-              <button onClick={handleSave} disabled={saving || !gName.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#C0992F' }}>
+              <button onClick={handleSave} disabled={saving || !gName.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#00B69B' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : 'Save'}
               </button>
@@ -189,7 +189,7 @@ export default function GroupsPage() {
               {getGroupAgents(manageGroup.id).map(a => (
                 <div key={a.id} className="flex items-center justify-between py-2 border-b border-gray-100">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#C0992F' }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#00B69B' }}>
                       {a.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                     </div>
                     <p className="text-sm font-medium text-gray-900">{a.name}</p>

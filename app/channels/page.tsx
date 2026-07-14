@@ -94,7 +94,7 @@ export default function ChannelsPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {channels.map(ch => (
-              <tr key={ch.id} className="hover:bg-amber-50 transition-colors">
+              <tr key={ch.id} className="hover:bg-emerald-50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-2">
                     <MessageCircle className="w-4 h-4 text-green-500" />
@@ -145,7 +145,7 @@ export default function ChannelsPage() {
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Channel Name</label>
-                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Phone Number</label>
@@ -154,33 +154,33 @@ export default function ChannelsPage() {
               <hr className="border-gray-200" />
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Welcome Message</label>
-                <textarea value={editWelcome} onChange={e => setEditWelcome(e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
+                <textarea value={editWelcome} onChange={e => setEditWelcome(e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Away Message</label>
-                <textarea value={editAway} onChange={e => setEditAway(e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
+                <textarea value={editAway} onChange={e => setEditAway(e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Assignment Mode</label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" checked={editAssign === 'auto'} onChange={() => setEditAssign('auto')} className="accent-amber-500" />
+                    <input type="radio" checked={editAssign === 'auto'} onChange={() => setEditAssign('auto')} className="accent-emerald-500" />
                     <span className="text-sm text-gray-700">Auto-assign</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" checked={editAssign === 'manual'} onChange={() => setEditAssign('manual')} className="accent-amber-500" />
+                    <input type="radio" checked={editAssign === 'manual'} onChange={() => setEditAssign('manual')} className="accent-emerald-500" />
                     <span className="text-sm text-gray-700">Manual</span>
                   </label>
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Max Chats per Agent</label>
-                <input type="number" value={editMaxChats} onChange={e => setEditMaxChats(Number(e.target.value))} min={1} max={20} className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                <input type="number" value={editMaxChats} onChange={e => setEditMaxChats(Number(e.target.value))} min={1} max={20} className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-200 flex gap-3">
               <button onClick={() => setShowSettings(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-              <button onClick={saveSettings} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2" style={{ backgroundColor: '#C0992F' }}>
+              <button onClick={saveSettings} disabled={saving} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2" style={{ backgroundColor: '#00B69B' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : 'Save Settings'}
               </button>

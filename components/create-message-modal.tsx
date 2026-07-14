@@ -74,12 +74,12 @@ export function CreateMessageModal({ isOpen, onClose }: CreateMessageModalProps)
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Title *</label>
-            <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Welcome Message" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+            <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Welcome Message" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
           </div>
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
-            <select value={category} onChange={e => setCategory(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300">
+            <select value={category} onChange={e => setCategory(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300">
               <option value="greeting">Greeting</option>
               <option value="order">Order</option>
               <option value="policy">Policy</option>
@@ -92,14 +92,14 @@ export function CreateMessageModal({ isOpen, onClose }: CreateMessageModalProps)
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Message Content *</label>
-            <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Type your message template..." rows={5} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
+            <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Type your message template..." rows={5} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none" />
             <p className="text-xs text-gray-400 mt-1">{content.length}/500</p>
           </div>
         </div>
 
         <div className="flex gap-3 px-6 py-4 border-t border-gray-200">
           <button onClick={handleClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-          <button onClick={handleCreate} disabled={saving || !title.trim() || !content.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#C0992F' }}>
+          <button onClick={handleCreate} disabled={saving || !title.trim() || !content.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#00B69B' }}>
             {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : null}
             {saving ? 'Creating...' : 'Create Message'}
           </button>

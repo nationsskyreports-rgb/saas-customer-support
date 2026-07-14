@@ -108,7 +108,7 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
       <div className="p-6 space-y-6">
         <div>
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm text-white" style={{ backgroundColor: '#C0992F' }}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm text-white" style={{ backgroundColor: '#00B69B' }}>
               {name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
             </div>
             <div>
@@ -158,7 +158,7 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
                   {['normal', 'high', 'urgent'].map(p => (
                     <button key={p} onClick={() => setSelectedPriority(p)}
                       className={`px-3 py-1.5 text-sm border rounded capitalize ${selectedPriority === p ? 'text-white border-transparent' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
-                      style={selectedPriority === p ? { backgroundColor: p === 'urgent' ? '#EF4444' : p === 'high' ? '#F59E0B' : '#C0992F' } : {}}>
+                      style={selectedPriority === p ? { backgroundColor: p === 'urgent' ? '#EF4444' : p === 'high' ? '#F59E0B' : '#00B69B' } : {}}>
                       {p}
                     </button>
                   ))}
@@ -171,7 +171,7 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
-              <button onClick={saveChanges} disabled={saving} className="w-full px-3 py-2 text-sm font-semibold text-white rounded-lg flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: savedFlash ? '#00B69B' : '#C0992F' }}>
+              <button onClick={saveChanges} disabled={saving} className="w-full px-3 py-2 text-sm font-semibold text-white rounded-lg flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: savedFlash ? '#00B69B' : '#00B69B' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : savedFlash ? '✓ Saved!' : 'Save Changes'}
               </button>

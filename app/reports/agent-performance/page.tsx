@@ -83,7 +83,7 @@ export default function AgentPerformanceReportPage() {
       {/* Top Performer Card */}
       <div
         className="rounded-xl p-8 border-2"
-        style={{ background: 'linear-gradient(135deg, #C0992F 0%, #D4AD45 100%)', borderColor: '#C0992F' }}
+        style={{ background: 'linear-gradient(135deg, #00B69B 0%, #D4AD45 100%)', borderColor: '#00B69B' }}
       >
         <div className="flex items-start justify-between">
           <div>
@@ -103,7 +103,7 @@ export default function AgentPerformanceReportPage() {
       <div className="bg-white border border-border rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead style={{ backgroundColor: '#FFF9ED' }} className="border-b border-gray-200">
+            <thead style={{ backgroundColor: '#EDFDF8' }} className="border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Agent</th>
                 <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Handled</th>
@@ -118,7 +118,7 @@ export default function AgentPerformanceReportPage() {
               {agents.map((agent) => (
                 <tr
                   key={agent.id}
-                  className={`${agent.isTopPerformer ? 'bg-amber-50' : 'hover:bg-amber-50'} transition-colors`}
+                  className={`${agent.isTopPerformer ? 'bg-emerald-50' : 'hover:bg-emerald-50'} transition-colors`}
                 >
                   <td className="px-6 py-4 text-sm font-medium text-foreground">
                     {agent.name}
@@ -137,7 +137,7 @@ export default function AgentPerformanceReportPage() {
                       <div className="w-16 bg-gray-200 rounded-full h-2">
                         <div
                           className="h-2 rounded-full transition-all"
-                          style={{ width: `${agent.score}%`, backgroundColor: '#C0992F' }}
+                          style={{ width: `${agent.score}%`, backgroundColor: '#00B69B' }}
                         />
                       </div>
                       <span className={`text-sm font-semibold ${getScoreTextColor(agent.score)}`}>

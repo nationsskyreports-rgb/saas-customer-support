@@ -97,7 +97,7 @@ export function AgentConversationPanel({ conversationId }: { conversationId: str
                   Current: {teams.find(t => t.id === currentTeam)?.name}
                 </span>
               )}
-              <button onClick={assignTeam} disabled={saving || selectedTeam === currentTeam} className="w-full px-3 py-2 text-sm font-semibold text-white rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 transition-colors" style={{ backgroundColor: savedFlash ? '#00B69B' : '#C0992F' }}>
+              <button onClick={assignTeam} disabled={saving || selectedTeam === currentTeam} className="w-full px-3 py-2 text-sm font-semibold text-white rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 transition-colors" style={{ backgroundColor: savedFlash ? '#00B69B' : '#00B69B' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Assigning...' : savedFlash ? '✓ Assigned!' : 'Assign Team'}
               </button>
@@ -118,10 +118,10 @@ export function AgentConversationPanel({ conversationId }: { conversationId: str
                 onChange={e => setNewNote(e.target.value)}
                 placeholder="Add internal note... (only agents see this)"
                 rows={3}
-                className="w-full px-3 py-2 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-300"
+                className="w-full px-3 py-2 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-300"
                 style={{ backgroundColor: '#FFFBEB', border: '1px solid #FDE68A' }}
               />
-              <button onClick={addNote} disabled={addingNote || !newNote.trim()} className="px-4 py-1.5 text-xs font-semibold text-white rounded-lg disabled:opacity-50" style={{ backgroundColor: '#C0992F' }}>
+              <button onClick={addNote} disabled={addingNote || !newNote.trim()} className="px-4 py-1.5 text-xs font-semibold text-white rounded-lg disabled:opacity-50" style={{ backgroundColor: '#00B69B' }}>
                 {addingNote ? 'Adding...' : '+ Add Note'}
               </button>
 

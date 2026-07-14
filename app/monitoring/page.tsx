@@ -116,9 +116,9 @@ export default function MonitoringPage() {
           <h2 className="text-lg font-bold text-gray-900 mb-4">Agents ({agents.length})</h2>
           <div className="space-y-2">
             {agents.map(agent => (
-              <button key={agent.id} onClick={() => router.push(`/agents?agentId=${agent.id}`)} className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-amber-50 transition-colors text-left">
+              <button key={agent.id} onClick={() => router.push(`/agents?agentId=${agent.id}`)} className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-emerald-50 transition-colors text-left">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#C0992F' }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#00B69B' }}>
                     {agent.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                   </div>
                   <div>
@@ -141,9 +141,9 @@ export default function MonitoringPage() {
           <h2 className="text-lg font-bold text-gray-900 mb-4">Channels ({channels.length})</h2>
           <div className="space-y-2">
             {channels.map(ch => (
-              <button key={ch.id} onClick={() => router.push('/channels')} className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-amber-50 transition-colors text-left">
+              <button key={ch.id} onClick={() => router.push('/channels')} className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-emerald-50 transition-colors text-left">
                 <div className="flex items-center gap-3">
-                  <Phone className="w-5 h-5" style={{ color: '#C0992F' }} />
+                  <Phone className="w-5 h-5" style={{ color: '#00B69B' }} />
                   <div>
                     <p className="text-sm font-medium text-gray-900">{ch.name}</p>
                     <p className="text-xs text-gray-400 capitalize">{ch.type}</p>
@@ -173,7 +173,7 @@ export default function MonitoringPage() {
               </tr></thead>
               <tbody>
                 {unassigned.map(c => (
-                  <tr key={c.id} className="border-b border-gray-100 hover:bg-amber-50">
+                  <tr key={c.id} className="border-b border-gray-100 hover:bg-emerald-50">
                     <td className="py-3 px-4 text-sm text-gray-900">{c.contact_name}</td>
                     <td className="py-3 px-4 text-sm text-gray-500">{c.contact_phone}</td>
                     <td className="py-3 px-4 text-sm font-medium text-orange-600">{timeAgo(c.created_at)}</td>

@@ -125,7 +125,7 @@ export default function TeamsPage() {
           <h1 className="text-3xl font-bold text-foreground">Teams Management</h1>
           <p className="text-muted-foreground mt-1">Organize agents into teams for better management</p>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#C0992F' }}>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#00B69B' }}>
           <Plus className="w-4 h-4" />
           New Team
         </button>
@@ -139,8 +139,8 @@ export default function TeamsPage() {
             <div key={team.id} className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#C0992F20' }}>
-                    <Users className="w-5 h-5" style={{ color: '#C0992F' }} />
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#00B69B20' }}>
+                    <Users className="w-5 h-5" style={{ color: '#00B69B' }} />
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900">{team.name}</h3>
@@ -176,7 +176,7 @@ export default function TeamsPage() {
                       const isSup = agentTeams.find(at => at.agent_id === a.id && at.team_id === team.id)?.role === 'supervisor'
                       return (
                         <div key={a.id} className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#C0992F' }}>
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#00B69B' }}>
                             {a.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                           </div>
                           <span className="text-xs text-gray-700 flex-1">{a.name}</span>
@@ -188,7 +188,7 @@ export default function TeamsPage() {
                 </div>
               )}
 
-              <button onClick={() => setManageTeam(team)} className="w-full px-3 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2" style={{ color: '#C0992F' }}>
+              <button onClick={() => setManageTeam(team)} className="w-full px-3 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2" style={{ color: '#00B69B' }}>
                 <UserPlus className="w-4 h-4" />
                 Manage Members
               </button>
@@ -208,11 +208,11 @@ export default function TeamsPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Team Name *</label>
-                <input type="text" value={teamName} onChange={e => setTeamName(e.target.value)} placeholder="e.g. Team Gamma" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                <input type="text" value={teamName} onChange={e => setTeamName(e.target.value)} placeholder="e.g. Team Gamma" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
-                <textarea value={teamDesc} onChange={e => setTeamDesc(e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" />
+                <textarea value={teamDesc} onChange={e => setTeamDesc(e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status</label>
@@ -224,7 +224,7 @@ export default function TeamsPage() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-              <button onClick={handleSave} disabled={saving || !teamName.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#C0992F' }}>
+              <button onClick={handleSave} disabled={saving || !teamName.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#00B69B' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : 'Save'}
               </button>
@@ -252,7 +252,7 @@ export default function TeamsPage() {
                 return (
                   <div key={a.id} className="flex items-center justify-between py-2 border-b border-gray-100">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#C0992F' }}>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: '#00B69B' }}>
                         {a.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                       </div>
                       <div>

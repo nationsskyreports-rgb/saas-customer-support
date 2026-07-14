@@ -80,7 +80,7 @@ export function ConversationsTable() {
         </thead>
         <tbody className="divide-y divide-gray-100">
           {conversations.map(conv => (
-            <tr key={conv.id} className="hover:bg-amber-50 transition-colors">
+            <tr key={conv.id} className="hover:bg-emerald-50 transition-colors">
               <td className="px-6 py-4">
                 <div>
                   <p className="font-medium text-sm text-gray-900">{conv.contact_name}</p>

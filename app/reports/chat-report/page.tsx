@@ -48,7 +48,7 @@ export default function ChatReportPage() {
                   className="w-full rounded-t-sm hover:opacity-80 cursor-pointer transition-opacity"
                   style={{
                     height: `${barHeight}px`,
-                    backgroundColor: data.isPeak ? '#C0992F' : '#00B69B',
+                    backgroundColor: data.isPeak ? '#00B69B' : '#00B69B',
                     minHeight: '4px',
                   }}
                   title={`${data.hour}: ${data.conversations} conversations`}
@@ -66,7 +66,7 @@ export default function ChatReportPage() {
         </div>
         <div className="flex items-center gap-4 mt-3 justify-center">
           <span className="flex items-center gap-1.5 text-xs text-gray-500">
-            <span className="w-3 h-3 rounded" style={{ backgroundColor: '#C0992F' }} /> Peak Hours (9AM-5PM)
+            <span className="w-3 h-3 rounded" style={{ backgroundColor: '#00B69B' }} /> Peak Hours (9AM-5PM)
           </span>
           <span className="flex items-center gap-1.5 text-xs text-gray-500">
             <span className="w-3 h-3 rounded" style={{ backgroundColor: '#00B69B' }} /> Off-Peak
@@ -81,7 +81,7 @@ export default function ChatReportPage() {
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead style={{ backgroundColor: '#FFF9ED' }} className="border-b border-gray-200">
+            <thead style={{ backgroundColor: '#EDFDF8' }} className="border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Contact</th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Phone</th>
@@ -93,7 +93,7 @@ export default function ChatReportPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {topConversations.map((conv) => (
-                <tr key={conv.id} className="hover:bg-amber-50 transition-colors">
+                <tr key={conv.id} className="hover:bg-emerald-50 transition-colors">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{conv.contact}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">{conv.phone}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{conv.agent}</td>

@@ -86,7 +86,7 @@ export default function TemplatesPage() {
           <h1 className="text-3xl font-bold text-foreground">Message Templates</h1>
           <p className="text-muted-foreground mt-1">Pre-designed message templates for quick responses</p>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#C0992F' }}>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#00B69B' }}>
           <Plus className="w-4 h-4" />
           New Template
         </button>
@@ -95,11 +95,11 @@ export default function TemplatesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="md:col-span-2 relative">
           <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-          <input type="text" placeholder="Search templates..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-300 text-sm" />
+          <input type="text" placeholder="Search templates..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 text-sm" />
         </div>
         <div className="relative">
           <Filter className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-          <select value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-300 text-sm appearance-none bg-white">
+          <select value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 text-sm appearance-none bg-white">
             {categories.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
           </select>
         </div>
@@ -143,7 +143,7 @@ export default function TemplatesPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Template Name *</label>
-                <input type="text" value={tName} onChange={e => setTName(e.target.value)} placeholder="e.g. Payment Reminder" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                <input type="text" value={tName} onChange={e => setTName(e.target.value)} placeholder="e.g. Payment Reminder" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -162,13 +162,13 @@ export default function TemplatesPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Message Content *</label>
-                <textarea value={tContent} onChange={e => setTContent(e.target.value)} rows={6} placeholder="Write your template message here..." className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none" dir="auto" />
+                <textarea value={tContent} onChange={e => setTContent(e.target.value)} rows={6} placeholder="Write your template message here..." className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none" dir="auto" />
                 <p className="text-xs text-gray-400 mt-1">Use {'{{variable_name}}'} for dynamic content</p>
               </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-              <button onClick={handleSave} disabled={saving || !tName.trim() || !tContent.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#C0992F' }}>
+              <button onClick={handleSave} disabled={saving || !tName.trim() || !tContent.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#00B69B' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : 'Save'}
               </button>

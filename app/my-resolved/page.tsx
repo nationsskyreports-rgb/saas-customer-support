@@ -49,7 +49,7 @@ export default function MyResolvedPage() {
   }
 
   const tabStyle = (id: string) => filter === id
-    ? { backgroundColor: '#C0992F', color: '#FFF', border: '2px solid #C0992F', borderRadius: '6px', padding: '6px 16px', fontWeight: 600, fontSize: '13px' }
+    ? { backgroundColor: '#00B69B', color: '#FFF', border: '2px solid #00B69B', borderRadius: '6px', padding: '6px 16px', fontWeight: 600, fontSize: '13px' }
     : { backgroundColor: '#FFF', color: '#6B7280', border: '1px solid #E5E7EB', borderRadius: '6px', padding: '6px 16px', fontWeight: 500, fontSize: '13px' }
 
   if (loading) {
@@ -83,7 +83,7 @@ export default function MyResolvedPage() {
       {/* Table */}
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
         <table className="w-full">
-          <thead className="border-b border-gray-200" style={{ backgroundColor: '#FFF9ED' }}>
+          <thead className="border-b border-gray-200" style={{ backgroundColor: '#EDFDF8' }}>
             <tr>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Contact</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
@@ -99,10 +99,10 @@ export default function MyResolvedPage() {
               const team = conv.teams as any
               const completedAt = conv.resolved_at || conv.closed_at || conv.updated_at
               return (
-                <tr key={conv.id} className="hover:bg-amber-50 transition-colors">
+                <tr key={conv.id} className="hover:bg-emerald-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ backgroundColor: '#C0992F' }}>
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ backgroundColor: '#00B69B' }}>
                         {(contact?.name || '?').slice(0, 1).toUpperCase()}
                       </div>
                       <div>

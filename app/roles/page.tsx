@@ -192,11 +192,11 @@ export default function RolesPage() {
                 </tr>
               )}
               {roles.map(role => (
-                <tr key={role.id} className="hover:bg-amber-50/30 transition-colors">
+                <tr key={role.id} className="hover:bg-emerald-50/30 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
-                        <Shield className="w-4 h-4 text-[#C0992F]" />
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                        <Shield className="w-4 h-4 text-[#00B69B]" />
                       </div>
                       <span className="text-sm font-semibold text-gray-900">{role.name}</span>
                     </div>
@@ -244,7 +244,7 @@ export default function RolesPage() {
                   value={roleName}
                   onChange={e => setRoleName(e.target.value)}
                   placeholder="e.g. NOS Admin, Semi Admin..."
-                  className="w-full max-w-sm px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  className="w-full max-w-sm px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
                 />
               </div>
 
@@ -260,7 +260,7 @@ export default function RolesPage() {
                     className={cn(
                       'flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors',
                       allSelected
-                        ? 'bg-amber-50 border-amber-300 text-amber-700'
+                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
                         : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                     )}
                   >
@@ -276,7 +276,7 @@ export default function RolesPage() {
                         <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide w-44">Page</th>
                         {OPS.map(op => (
                           <th key={op} className="px-3 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                            <button onClick={() => toggleCol(op)} className="hover:text-[#C0992F] transition-colors">
+                            <button onClick={() => toggleCol(op)} className="hover:text-[#00B69B] transition-colors">
                               {OP_LABELS[op]}
                             </button>
                           </th>
@@ -288,7 +288,7 @@ export default function RolesPage() {
                       {PAGES.map(page => {
                         const rowAllOn = OPS.every(op => perms[page][op])
                         return (
-                          <tr key={page} className="hover:bg-amber-50/30 transition-colors">
+                          <tr key={page} className="hover:bg-emerald-50/30 transition-colors">
                             <td className="px-4 py-3 text-sm text-gray-700 font-medium">{page}</td>
                             {OPS.map(op => (
                               <td key={op} className="px-3 py-3 text-center">
@@ -296,7 +296,7 @@ export default function RolesPage() {
                                   type="checkbox"
                                   checked={perms[page][op]}
                                   onChange={() => togglePerm(page, op)}
-                                  className="w-4 h-4 rounded border-gray-300 accent-[#C0992F] cursor-pointer"
+                                  className="w-4 h-4 rounded border-gray-300 accent-[#00B69B] cursor-pointer"
                                 />
                               </td>
                             ))}
@@ -306,7 +306,7 @@ export default function RolesPage() {
                                 type="checkbox"
                                 checked={rowAllOn}
                                 onChange={() => toggleRow(page)}
-                                className="w-4 h-4 rounded border-gray-300 accent-[#C0992F] cursor-pointer"
+                                className="w-4 h-4 rounded border-gray-300 accent-[#00B69B] cursor-pointer"
                               />
                             </td>
                           </tr>
@@ -330,7 +330,7 @@ export default function RolesPage() {
                 onClick={save}
                 disabled={saving || !roleName.trim()}
                 className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50"
-                style={{ backgroundColor: '#C0992F' }}
+                style={{ backgroundColor: '#00B69B' }}
               >
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : 'Save Role'}

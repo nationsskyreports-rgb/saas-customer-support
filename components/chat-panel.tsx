@@ -133,7 +133,7 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
     <div className="flex flex-col h-full bg-white">
       <div className="flex items-center justify-between h-16 border-b border-gray-200 px-4 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full text-white flex items-center justify-center font-semibold text-sm" style={{ backgroundColor: '#C0992F' }}>{initials}</div>
+          <div className="w-10 h-10 rounded-full text-white flex items-center justify-center font-semibold text-sm" style={{ backgroundColor: '#00B69B' }}>{initials}</div>
           <div>
             <p className="font-semibold text-sm text-gray-900">{name}</p>
             <div className="flex items-center gap-2 mt-0.5">
@@ -162,7 +162,7 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
             {messages.map(msg => (
               <div key={msg.id} className={`flex w-full ${msg.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}>
                 <div style={msg.direction === 'outbound'
-                  ? { backgroundColor: '#C0992F', color: '#FFF', borderRadius: '18px 18px 4px 18px', padding: '10px 14px', maxWidth: '65%', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }
+                  ? { backgroundColor: '#00B69B', color: '#FFF', borderRadius: '18px 18px 4px 18px', padding: '10px 14px', maxWidth: '65%', boxShadow: '0 1px 2px rgba(0,0,0,0.15)' }
                   : { backgroundColor: '#F1F5F9', color: '#1F2937', borderRadius: '18px 18px 18px 4px', padding: '10px 14px', maxWidth: '65%' }
                 }>
                   <p className="text-sm">{msg.content}</p>
@@ -180,7 +180,7 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
       {(convInfo?.status === 'closed' || convInfo?.status === 'resolved') && (
         <div className="border-t border-gray-200 bg-gray-50 flex items-center justify-center gap-3" style={{ height: '64px', padding: '0 16px' }}>
           <p className="text-sm text-gray-500">This conversation is {convInfo.status}.</p>
-          <button onClick={reopenConversation} className="px-4 py-1.5 text-sm font-semibold text-white rounded-lg hover:opacity-90" style={{ backgroundColor: '#C0992F' }}>
+          <button onClick={reopenConversation} className="px-4 py-1.5 text-sm font-semibold text-white rounded-lg hover:opacity-90" style={{ backgroundColor: '#00B69B' }}>
             Reopen Conversation
           </button>
         </div>
@@ -189,7 +189,7 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
         <div className="border-t border-gray-200 bg-white" style={{ height: '64px', padding: '0 16px' }}>
           <div className="flex items-center gap-3 h-full">
             <div className="relative">
-              <button onClick={() => setPredefinedOpen(!predefinedOpen)} className="p-2 text-gray-600 hover:text-amber-600" title="Pre-defined messages"><Zap className="w-5 h-5" /></button>
+              <button onClick={() => setPredefinedOpen(!predefinedOpen)} className="p-2 text-gray-600 hover:text-emerald-600" title="Pre-defined messages"><Zap className="w-5 h-5" /></button>
               {predefinedOpen && (
                 <div className="absolute bottom-12 left-0 w-80 max-h-64 overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-2xl z-50">
                   <div className="px-3 py-2 border-b border-gray-100 text-xs font-bold text-gray-500 uppercase">Pre-defined Messages</div>
@@ -201,7 +201,7 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
                     return (
                       <button key={t.id || i}
                         onClick={() => { setMessage(body); setPredefinedOpen(false) }}
-                        className="w-full text-left px-3 py-2.5 hover:bg-amber-50 border-b border-gray-50 transition-colors">
+                        className="w-full text-left px-3 py-2.5 hover:bg-emerald-50 border-b border-gray-50 transition-colors">
                         <p className="text-sm font-semibold text-gray-900">{title}</p>
                         <p className="text-xs text-gray-500 truncate" dir="auto">{body}</p>
                       </button>
@@ -210,10 +210,10 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
                 </div>
               )}
             </div>
-            <button className="p-2 text-gray-600 hover:text-amber-600"><Smile className="w-5 h-5" /></button>
-            <button className="p-2 text-gray-600 hover:text-amber-600"><Paperclip className="w-5 h-5" /></button>
+            <button className="p-2 text-gray-600 hover:text-emerald-600"><Smile className="w-5 h-5" /></button>
+            <button className="p-2 text-gray-600 hover:text-emerald-600"><Paperclip className="w-5 h-5" /></button>
             <textarea value={message} onChange={e => setMessage(e.target.value)} onKeyDown={handleKeyDown} placeholder="Type a message..." className="flex-1 h-full py-2 resize-none border-0 outline-none bg-transparent text-gray-900 placeholder-gray-400 text-sm" />
-            <button onClick={handleSend} disabled={sending || !message.trim()} className="flex-shrink-0 w-10 h-10 rounded-full text-white hover:opacity-90 flex items-center justify-center disabled:opacity-50" style={{ backgroundColor: '#C0992F' }}>
+            <button onClick={handleSend} disabled={sending || !message.trim()} className="flex-shrink-0 w-10 h-10 rounded-full text-white hover:opacity-90 flex items-center justify-center disabled:opacity-50" style={{ backgroundColor: '#00B69B' }}>
               {sending ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
             </button>
           </div>

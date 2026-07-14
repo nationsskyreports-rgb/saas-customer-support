@@ -85,7 +85,7 @@ export function TopNav() {
           title={dark ? 'Light Mode' : 'Dark Mode'}
         >
           {dark ? (
-            <Sun className="w-5 h-5 text-amber-400" />
+            <Sun className="w-5 h-5 text-emerald-400" />
           ) : (
             <Moon className="w-5 h-5 text-gray-600" />
           )}
@@ -139,7 +139,7 @@ export function TopNav() {
 
         {/* Agent Avatar and Name */}
         <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-          <div style={{ width: '36px', height: '36px', backgroundColor: '#C0992F', borderRadius: '50%' }} className="text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
+          <div style={{ width: '36px', height: '36px', backgroundColor: '#00B69B', borderRadius: '50%' }} className="text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">
             {initials}
           </div>
           <span className="text-sm font-medium text-gray-600">{me?.name || ''}</span>

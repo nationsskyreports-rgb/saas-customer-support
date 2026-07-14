@@ -107,7 +107,7 @@ export default function AgentStatusesPage() {
           <h1 className="text-3xl font-bold text-foreground">Agent Statuses</h1>
           <p className="text-muted-foreground mt-1">Real-time status and custom status management</p>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#C0992F' }}>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#00B69B' }}>
           <Plus className="w-4 h-4" />
           New Status
         </button>
@@ -152,7 +152,7 @@ export default function AgentStatusesPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {statuses.map(s => (
-                <tr key={s.id} className="hover:bg-amber-50 transition-colors">
+                <tr key={s.id} className="hover:bg-emerald-50 transition-colors">
                   <td className="px-6 py-3 text-sm font-medium text-gray-900 flex items-center gap-2">
                     <span className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }} />
                     {s.name}
@@ -181,7 +181,7 @@ export default function AgentStatusesPage() {
             <div key={agent.id} className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ backgroundColor: '#C0992F' }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ backgroundColor: '#00B69B' }}>
                     {agent.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                   </div>
                   <div>
@@ -197,7 +197,7 @@ export default function AgentStatusesPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-amber-500" />
+                    <Zap className="w-4 h-4 text-emerald-500" />
                     <span className="text-xs font-medium text-gray-500">Max Chats</span>
                   </div>
                   <span className="font-bold text-gray-900 text-sm">{agent.max_chats}</span>
@@ -222,7 +222,7 @@ export default function AgentStatusesPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status Name *</label>
-                <input type="text" value={statusName} onChange={e => setStatusName(e.target.value)} placeholder="e.g. In Meeting" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                <input type="text" value={statusName} onChange={e => setStatusName(e.target.value)} placeholder="e.g. In Meeting" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Color</label>
@@ -234,7 +234,7 @@ export default function AgentStatusesPage() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-              <button onClick={handleSave} disabled={saving || !statusName.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#C0992F' }}>
+              <button onClick={handleSave} disabled={saving || !statusName.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#00B69B' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : 'Save'}
               </button>

@@ -18,7 +18,7 @@ export default function MessagesPage() {
         <button
           onClick={() => setIsCreateOpen(true)}
           className="text-white px-4 py-2 rounded-lg hover:opacity-90 transition-colors flex items-center gap-2 font-semibold"
-          style={{ backgroundColor: '#C0992F' }}
+          style={{ backgroundColor: '#00B69B' }}
         >
           <Plus className="w-4 h-4" />
           New Message

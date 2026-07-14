@@ -94,7 +94,7 @@ export default function CampaignsPage() {
           <h1 className="text-3xl font-bold text-foreground">Campaigns</h1>
           <p className="text-muted-foreground mt-1">Create and manage broadcast campaigns</p>
         </div>
-        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#C0992F' }}>
+        <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg text-white font-semibold hover:opacity-90 transition-colors" style={{ backgroundColor: '#00B69B' }}>
           <Plus className="w-4 h-4" />
           New Campaign
         </button>
@@ -117,7 +117,7 @@ export default function CampaignsPage() {
             {campaigns.map(c => {
               const pct = c.recipient_count > 0 ? Math.round((c.sent_count / c.recipient_count) * 100) : 0
               return (
-                <tr key={c.id} className="hover:bg-amber-50 transition-colors">
+                <tr key={c.id} className="hover:bg-emerald-50 transition-colors">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{c.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-500 capitalize">{c.type}</td>
                   <td className="px-6 py-4">
@@ -129,7 +129,7 @@ export default function CampaignsPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: '#C0992F' }} />
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: '#00B69B' }} />
                       </div>
                       <span className="text-sm font-medium text-gray-900 min-w-fit">{pct}%</span>
                     </div>
@@ -166,7 +166,7 @@ export default function CampaignsPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Campaign Name *</label>
-                <input type="text" value={cName} onChange={e => setCName(e.target.value)} placeholder="e.g. Summer Sale 2024" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                <input type="text" value={cName} onChange={e => setCName(e.target.value)} placeholder="e.g. Summer Sale 2024" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -194,7 +194,7 @@ export default function CampaignsPage() {
             </div>
             <div className="flex gap-3 mt-6">
               <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-              <button onClick={handleSave} disabled={saving || !cName.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#C0992F' }}>
+              <button onClick={handleSave} disabled={saving || !cName.trim()} className="flex-1 px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#00B69B' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {saving ? 'Saving...' : 'Save'}
               </button>

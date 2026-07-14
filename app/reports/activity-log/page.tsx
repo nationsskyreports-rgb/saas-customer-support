@@ -77,9 +77,9 @@ export default function ActivityLogPage() {
             style={
               filter === 'All'
                 ? {
-                    backgroundColor: '#C0992F',
+                    backgroundColor: '#00B69B',
                     color: '#FFFFFF',
-                    border: '2px solid #C0992F',
+                    border: '2px solid #00B69B',
                     borderRadius: '6px',
                     padding: '6px 16px',
                     fontWeight: '600',
