@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSidebar } from '@/lib/sidebar-context'
+import { usePermissions, pageForRoute } from '@/lib/permissions'
 import { useRouter } from 'next/navigation'
 import { getAgent, clearAgent } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
@@ -37,12 +38,8 @@ export function Sidebar() {
   const pathname = usePathname()
   const { collapsed, toggle } = useSidebar()
   const [unreadCount, setUnreadCount] = useState(0)
-  const [isAdminRole, setIsAdminRole] = useState(false)
   const router = useRouter()
-
-  useEffect(() => {
-    setIsAdminRole(getAgent()?.role === 'admin')
-  }, [])
+  const { loading: permsLoading, canView } = usePermissions()
 
   const handleLogout = async () => {
     const agent = getAgent()
@@ -114,9 +111,19 @@ export function Sidebar() {
     },
   ]
 
-  // Agents only see ANALYTICS + INBOX; admins see everything
-  const ADMIN_ONLY = ['ADMINISTRATION', 'CHANNELS', 'MESSAGES', 'REPORTS']
-  const visibleSections = navSections.filter(s => isAdminRole || !ADMIN_ONLY.includes(s.title))
+  // ─── Filter nav by the role's real permissions ───
+  // Each link maps to a page in role_permissions; a link shows only
+  // if the role has at least one permission on that page.
+  const visibleSections = navSections
+    .map(section => ({
+      ...section,
+      items: section.items.filter(item => {
+        if (permsLoading) return false
+        const page = pageForRoute(item.href)
+        return page === null || canView(page)
+      }),
+    }))
+    .filter(section => section.items.length > 0)
 
   const toggleSection = (title: string) => {
     if (collapsed) return
