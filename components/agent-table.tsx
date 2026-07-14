@@ -14,7 +14,7 @@ interface Agent {
   name: string
   email: string
   mobile_number?: string
-  role: 'admin' | 'agent'
+  role: string
   status: 'online' | 'busy' | 'away' | 'offline'
   is_active: boolean
   max_chats: number
@@ -40,7 +40,8 @@ export function AgentTable() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [editAgent, setEditAgent] = useState<Agent | null>(null)
   const [editName, setEditName] = useState('')
-  const [editRole, setEditRole] = useState<'admin' | 'agent'>('agent')
+  const [editRole, setEditRole] = useState('NOS Agent')
+  const [roleOptions, setRoleOptions] = useState<string[]>([])
   const [editMaxChats, setEditMaxChats] = useState(5)
   const [editStatus, setEditStatus] = useState<'online' | 'busy' | 'away' | 'offline'>('online')
   const [editMobile, setEditMobile] = useState('')
@@ -58,7 +59,13 @@ export function AgentTable() {
     setLoading(false)
   }
 
-  useEffect(() => { fetchAgents() }, [])
+  useEffect(() => {
+    fetchAgents()
+    // load role names from Terms & Roles for the role dropdown
+    supabase.from('roles').select('name').order('name').then(({ data }) => {
+      if (data) setRoleOptions(data.map(r => r.name))
+    })
+  }, [])
 
   // ─── KPI ─────────────────────────────────────
   const counts = useMemo(() => ({
@@ -116,13 +123,6 @@ export function AgentTable() {
       is_active: !agent.is_active,
       status: !agent.is_active ? 'offline' : agent.status,
     }).eq('id', agent.id)
-    setOpenMenuId(null)
-    fetchAgents()
-  }
-
-  // ─── CHANGE ROLE ─────────────────────────────
-  const changeRole = async (agent: Agent) => {
-    await supabase.from('agents').update({ role: agent.role === 'admin' ? 'agent' : 'admin' }).eq('id', agent.id)
     setOpenMenuId(null)
     fetchAgents()
   }
@@ -276,8 +276,10 @@ export function AgentTable() {
                   {/* Role */}
                   <td className="px-6 py-4">
                     <span className={cn('px-2.5 py-1 rounded-full text-xs font-semibold',
-                      agent.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-700')}>
-                      {agent.role === 'admin' ? 'Admin' : 'Agent'}
+                      /super/i.test(agent.role) ? 'bg-purple-100 text-purple-800'
+                        : /admin/i.test(agent.role) ? 'bg-blue-100 text-blue-800'
+                        : 'bg-gray-100 text-gray-700')}>
+                      {agent.role}
                     </span>
                   </td>
 
@@ -339,9 +341,9 @@ export function AgentTable() {
                         </button>
                         {openMenuId === agent.id && (
                           <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
-                            <button onClick={() => changeRole(agent)}
+                            <button onClick={() => openEdit(agent)}
                               className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
-                              <Edit className="w-4 h-4" /> Make {agent.role === 'admin' ? 'Agent' : 'Admin'}
+                              <Edit className="w-4 h-4" /> Change Role
                             </button>
                             <button onClick={() => toggleActive(agent)}
                               className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-yellow-600 hover:bg-yellow-50">
@@ -402,11 +404,12 @@ export function AgentTable() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Role</label>
-                <select value={editRole} onChange={e => setEditRole(e.target.value as any)}
+                <select value={editRole} onChange={e => setEditRole(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300">
-                  <option value="admin">Admin</option>
-                  <option value="agent">Agent</option>
+                  {!roleOptions.includes(editRole) && <option value={editRole}>{editRole}</option>}
+                  {roleOptions.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
+                <p className="text-xs text-gray-400 mt-1">Permissions come from Terms &amp; Roles</p>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Status</label>
