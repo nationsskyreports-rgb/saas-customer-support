@@ -386,7 +386,9 @@ export default function LoginPage() {
           -webkit-backdrop-filter: blur(22px);
           box-shadow:
             0 24px 70px rgba(0, 0, 0, 0.55),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            0 0 0 1px rgba(52, 232, 165, 0.08),
+            0 0 42px rgba(52, 232, 165, 0.10),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
           opacity: 0;
           transform: translateY(24px);
           transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
@@ -398,13 +400,14 @@ export default function LoginPage() {
           position: absolute;
           inset: 0;
           border-radius: 22px;
-          padding: 1px;
+          padding: 1.6px;
           background: linear-gradient(130deg,
-            rgba(52, 232, 165, 0.5),
-            rgba(59, 130, 246, 0.15) 30%,
-            rgba(255, 255, 255, 0.05) 55%,
-            rgba(59, 130, 246, 0.35) 80%,
-            rgba(52, 232, 165, 0.5));
+            rgba(52, 232, 165, 0.9),
+            rgba(59, 130, 246, 0.45) 30%,
+            rgba(148, 210, 255, 0.25) 55%,
+            rgba(59, 130, 246, 0.7) 80%,
+            rgba(52, 232, 165, 0.9));
+          filter: drop-shadow(0 0 6px rgba(52, 232, 165, 0.25));
           background-size: 300% 300%;
           animation: borderFlow 9s ease infinite;
           -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -473,8 +476,8 @@ export default function LoginPage() {
         .field input {
           width: 100%;
           padding: 12.5px 42px 12.5px 42px;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.14);
           border-radius: 12px;
           color: #F1F5F9;
           font-size: 14px;
@@ -592,9 +595,17 @@ export default function LoginPage() {
           position: absolute;
           bottom: 18px;
           left: 7%;
-          color: #2C3A50;
-          font-size: 11.5px;
+          color: #94A3B8;
+          font-size: 12.5px;
+          font-weight: 500;
+          letter-spacing: 0.02em;
           z-index: 5;
+          padding: 6px 14px;
+          border-radius: 9999px;
+          background: rgba(13, 20, 36, 0.5);
+          border: 1px solid rgba(52, 232, 165, 0.18);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
         }
 
         /* ═══════════ RESPONSIVE ═══════════ */
