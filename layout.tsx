@@ -1,0 +1,40 @@
+import { Analytics } from '@vercel/analytics/next'
+import type { Metadata, Viewport } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import './globals.css'
+import { ClientLayout } from '@/components/client-layout'
+
+const geistSans = Geist({ subsets: ['latin'] })
+const geistMono = Geist_Mono({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: 'SoloTec - Customer Support Platform',
+  description: 'Multi-agent customer support platform with WhatsApp integration',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon-light-32x32.png', type: 'image/png' },
+    ],
+    apple: '/apple-icon.png',
+  },
+}
+
+export const viewport: Viewport = {
+  colorScheme: 'light',
+  themeColor: [{ media: '(prefers-color-scheme: light)', color: '#f5f5f5' }],
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <html lang="en" className="bg-background">
+      <body className={`${geistSans.className} antialiased`}>
+        <ClientLayout>{children}</ClientLayout>
+        {process.env.NODE_ENV === 'production' && <Analytics />}
+      </body>
+    </html>
+  )
+}
