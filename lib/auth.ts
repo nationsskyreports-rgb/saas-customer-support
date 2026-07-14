@@ -30,5 +30,8 @@ export function clearAgent() {
 }
 
 export function isAdmin(): boolean {
-  return getAgent()?.role === 'admin'
+  // legacy 'admin' + any role whose name contains "admin"
+  // (Super Admin / NOS Admin / Semi Admin)
+  const role = (getAgent()?.role || '').toLowerCase()
+  return role.includes('admin')
 }
