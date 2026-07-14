@@ -82,10 +82,11 @@ export function ConversationList({ selectedId, onSelect, defaultTab, mineOnly = 
 
   const getFiltered = () => {
     switch (activeTab) {
-      case 'mine': return searched.filter(c => c.assigned_agent_id === me?.id)
+      case 'mine':       return searched.filter(c => c.assigned_agent_id === me?.id)
       case 'unassigned': return searched.filter(c => !c.assigned_agent_id)
-      case 'pending': return searched.filter(c => c.status === 'pending')
-      default: return searched
+      case 'pending':    return searched.filter(c => c.status === 'pending')
+      case 'open':       return searched.filter(c => c.status === 'open' || c.status === 'pending')
+      default:           return searched
     }
   }
 
@@ -93,14 +94,15 @@ export function ConversationList({ selectedId, onSelect, defaultTab, mineOnly = 
 
   const tabs = mineOnly
     ? [
-        { id: 'mine', label: 'Mine', count: searched.filter(c => c.assigned_agent_id === me?.id).length },
+        { id: 'mine',       label: 'Mine',       count: searched.filter(c => c.assigned_agent_id === me?.id).length },
         { id: 'unassigned', label: 'Unassigned', count: searched.filter(c => !c.assigned_agent_id).length },
-        { id: 'pending', label: 'Pending', count: searched.filter(c => c.status === 'pending').length },
+        { id: 'pending',    label: 'Pending',    count: searched.filter(c => c.status === 'pending').length },
       ]
     : [
-        { id: 'all', label: 'All', count: searched.length },
+        { id: 'all',        label: 'All',        count: searched.length },
+        { id: 'open',       label: 'Open',       count: searched.filter(c => c.status === 'open' || c.status === 'pending').length },
         { id: 'unassigned', label: 'Unassigned', count: searched.filter(c => !c.assigned_agent_id).length },
-        { id: 'pending', label: 'Pending', count: searched.filter(c => c.status === 'pending').length },
+        { id: 'pending',    label: 'Pending',    count: searched.filter(c => c.status === 'pending').length },
       ]
 
   if (loading) return <div className="flex items-center justify-center py-10"><RefreshCw className="w-5 h-5 animate-spin text-gray-400" /></div>
