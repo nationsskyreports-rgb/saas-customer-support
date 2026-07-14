@@ -8,12 +8,19 @@ import { Sidebar } from '@/components/sidebar'
 import { TopNav } from '@/components/top-nav'
 import { GlobalNotifications } from '@/components/global-notifications'
 import { getAgent } from '@/lib/auth'
+import { PermissionsProvider, usePermissions, pageForRoute, AccessDenied } from '@/lib/permissions'
 
 // Pages that don't need login and don't show the sidebar/topnav
 const PUBLIC_PATHS = ['/login', '/customer-chat']
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar()
+  const pathname = usePathname()
+  const { loading, canView } = usePermissions()
+
+  // ─── Route guard: block pages the role can't view ───
+  const page = pageForRoute(pathname)
+  const blocked = !loading && page !== null && !canView(page)
 
   return (
     <>
@@ -28,7 +35,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
           marginTop: 'calc(3px + 4rem)',
         }}
       >
-        {children}
+        {loading && page !== null ? null : blocked ? <AccessDenied /> : children}
       </main>
     </>
   )
@@ -60,9 +67,11 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeProvider>
-      <SidebarProvider>
-        <LayoutInner>{children}</LayoutInner>
-      </SidebarProvider>
+      <PermissionsProvider>
+        <SidebarProvider>
+          <LayoutInner>{children}</LayoutInner>
+        </SidebarProvider>
+      </PermissionsProvider>
     </ThemeProvider>
   )
 }
