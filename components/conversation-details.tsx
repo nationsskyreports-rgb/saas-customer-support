@@ -6,43 +6,49 @@ import { supabase } from '@/lib/supabase'
 
 interface ConvDetails {
   id: string; contact_id: string; status: string; priority: string; assigned_agent_id: string | null
+  team_id: string | null
   log_category_id: string | null; subject: string; created_at: string; updated_at: string
   contacts: { name: string; phone: string; email: string } | null
 }
 
 interface Agent { id: string; name: string }
+interface Team { id: string; name: string }
 interface LogCategory { id: string; name: string }
 interface ConversationDetailsProps { conversationId: string | null }
 
 export function ConversationDetails({ conversationId }: ConversationDetailsProps) {
   const [details, setDetails] = useState<ConvDetails | null>(null)
   const [agents, setAgents] = useState<Agent[]>([])
+  const [teams, setTeams] = useState<Team[]>([])
   const [categories, setCategories] = useState<LogCategory[]>([])
   const [loading, setLoading] = useState(false)
   const [conversationOpen, setConversationOpen] = useState(true)
   const [historyOpen, setHistoryOpen] = useState(true)
   const [selectedAgent, setSelectedAgent] = useState('')
+  const [selectedTeam, setSelectedTeam] = useState('')
   const [selectedPriority, setSelectedPriority] = useState('normal')
   const [selectedCategory, setSelectedCategory] = useState('')
   const [saving, setSaving] = useState(false)
+  const [savedFlash, setSavedFlash] = useState(false)
   const [prevConvs, setPrevConvs] = useState<{ id: string; status: string; created_at: string }[]>([])
 
   const fetchDetails = async () => {
     if (!conversationId) return
     setLoading(true)
-    const [convRes, agentRes, catRes] = await Promise.all([
-      supabase.from('conversations').select('id, contact_id, status, priority, assigned_agent_id, log_category_id, subject, created_at, updated_at, contacts(name, phone, email)').eq('id', conversationId).single(),
+    const [convRes, agentRes, teamRes, catRes] = await Promise.all([
+      supabase.from('conversations').select('id, contact_id, status, priority, assigned_agent_id, team_id, log_category_id, subject, created_at, updated_at, contacts(name, phone, email)').eq('id', conversationId).single(),
       supabase.from('agents').select('id, name').eq('is_active', true).order('name'),
+      supabase.from('teams').select('id, name').eq('is_active', true).order('name'),
       supabase.from('log_categories').select('id, name').order('name'),
     ])
     if (convRes.data) {
       const d = convRes.data as any
       setDetails(d)
       setSelectedAgent(d.assigned_agent_id || '')
+      setSelectedTeam(d.team_id || '')
       setSelectedPriority(d.priority || 'normal')
       setSelectedCategory(d.log_category_id || '')
 
-      // Previous conversations for same contact
       if (d.contact_id) {
         const { data: prevData } = await supabase
           .from('conversations')
@@ -55,6 +61,7 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
       }
     }
     if (agentRes.data) setAgents(agentRes.data)
+    if (teamRes.data) setTeams(teamRes.data)
     if (catRes.data) setCategories(catRes.data)
     setLoading(false)
   }
@@ -66,10 +73,24 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
     setSaving(true)
     await supabase.from('conversations').update({
       assigned_agent_id: selectedAgent || null,
+      team_id: selectedTeam || null,
       priority: selectedPriority,
       log_category_id: selectedCategory || null,
     }).eq('id', conversationId)
+
+    // Log the team assignment activity
+    if (selectedTeam && selectedTeam !== details?.team_id) {
+      const teamName = teams.find(t => t.id === selectedTeam)?.name || 'team'
+      await supabase.from('activity_logs').insert({
+        action: 'assignment',
+        description: `Conversation assigned to ${teamName} team`,
+        conversation_id: conversationId,
+      })
+    }
+
     setSaving(false)
+    setSavedFlash(true)
+    setTimeout(() => setSavedFlash(false), 2000)
   }
 
   if (!conversationId) return <div className="flex items-center justify-center h-full"><p className="text-sm text-gray-400">Select a conversation</p></div>
@@ -116,6 +137,21 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
                   {agents.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
               </div>
+
+              {/* ─── TEAM ASSIGNMENT ─── */}
+              <div>
+                <p className="text-xs text-gray-400 mb-2">Assigned Team</p>
+                <select value={selectedTeam} onChange={e => setSelectedTeam(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white">
+                  <option value="">No Team</option>
+                  {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+                {selectedTeam && (
+                  <span className="inline-block mt-2 text-xs px-2.5 py-1 rounded-full font-semibold text-white" style={{ backgroundColor: '#00B69B' }}>
+                    → {teams.find(t => t.id === selectedTeam)?.name}
+                  </span>
+                )}
+              </div>
+
               <div>
                 <p className="text-xs text-gray-400 mb-2">Priority</p>
                 <div className="flex gap-2">
@@ -135,9 +171,9 @@ export function ConversationDetails({ conversationId }: ConversationDetailsProps
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
-              <button onClick={saveChanges} disabled={saving} className="w-full px-3 py-2 text-sm font-semibold text-white rounded-lg flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#C0992F' }}>
+              <button onClick={saveChanges} disabled={saving} className="w-full px-3 py-2 text-sm font-semibold text-white rounded-lg flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: savedFlash ? '#00B69B' : '#C0992F' }}>
                 {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? 'Saving...' : savedFlash ? '✓ Saved!' : 'Save Changes'}
               </button>
             </div>
           )}
