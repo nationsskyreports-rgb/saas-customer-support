@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { RefreshCw, Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { RefreshCw, Eye, EyeOff, ArrowRight, Mail, Lock } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { setAgent } from '@/lib/auth'
 
@@ -12,7 +12,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
+
+  useEffect(() => { setMounted(true) }, [])
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) return
@@ -60,284 +63,558 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#0B1120]">
+    <div className="page">
 
-      {/* ══════════ LEFT: Login Form ══════════ */}
-      <div className="w-full lg:w-[480px] flex flex-col justify-center px-10 lg:px-14 bg-white relative z-10 rounded-r-none lg:rounded-r-3xl shadow-2xl">
+      {/* ═══ Aurora background ═══ */}
+      <div className="aurora aurora-1" />
+      <div className="aurora aurora-2" />
+      <div className="aurora aurora-3" />
+
+      {/* ═══ Star field ═══ */}
+      <div className="stars">
+        {mounted && Array.from({ length: 40 }).map((_, i) => (
+          <span
+            key={i}
+            className="star"
+            style={{
+              left: `${(i * 37) % 100}%`,
+              top: `${(i * 53) % 100}%`,
+              animationDelay: `${(i % 10) * 0.6}s`,
+              width: i % 5 === 0 ? '2.5px' : '1.5px',
+              height: i % 5 === 0 ? '2.5px' : '1.5px',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* ═══ Grid floor ═══ */}
+      <div className="grid-floor" />
+
+      {/* ═══ Giant orbital hexagon core (right side) ═══ */}
+      <div className="hex-core">
+        {/* Outer ring */}
+        <svg className="hex hex-outer" viewBox="0 0 200 200">
+          <path d="M100 10 L178 55 V145 L100 190 L22 145 V55 Z"
+            fill="none" stroke="url(#gradA)" strokeWidth="1.2" strokeLinejoin="round" opacity="0.5" />
+          <defs>
+            <linearGradient id="gradA" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#34E8A5" />
+              <stop offset="100%" stopColor="#3B82F6" />
+            </linearGradient>
+          </defs>
+        </svg>
+        {/* Middle ring */}
+        <svg className="hex hex-mid" viewBox="0 0 200 200">
+          <path d="M100 26 L164 63 V137 L100 174 L36 137 V63 Z"
+            fill="none" stroke="url(#gradB)" strokeWidth="2" strokeLinejoin="round" opacity="0.75" />
+          <defs>
+            <linearGradient id="gradB" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#22D3EE" />
+              <stop offset="100%" stopColor="#34E8A5" />
+            </linearGradient>
+          </defs>
+        </svg>
+        {/* Inner solid */}
+        <svg className="hex hex-inner" viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="gradC" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#34E8A5" />
+              <stop offset="100%" stopColor="#3B82F6" />
+            </linearGradient>
+          </defs>
+          <path d="M100 44 L148 72 V128 L100 156 L52 128 V72 Z"
+            fill="none" stroke="url(#gradC)" strokeWidth="4" strokeLinejoin="round" />
+          <text x="100" y="122" textAnchor="middle" fontSize="58" fontWeight="800"
+            fill="url(#gradC)" fontFamily="Arial, sans-serif">S</text>
+        </svg>
+        {/* Orbiting dot */}
+        <div className="orbit-ring">
+          <span className="orbit-dot" />
+        </div>
+        <div className="hex-glow" />
+      </div>
+
+      {/* ═══ Headline (right side) ═══ */}
+      <div className="hero-text">
+        <h2>
+          Unlock <span className="grad-text">insights</span> to optimize<br />your WhatsApp strategy
+        </h2>
+        <p>Access comprehensive analytics to refine your strategy for better results.</p>
+      </div>
+
+      {/* ═══ Glass login card ═══ */}
+      <div className={`card ${mounted ? 'card-in' : ''}`}>
+        <div className="card-border" />
 
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-12">
-          {/* Hexagon S */}
-          <div className="relative w-11 h-11">
-            <svg viewBox="0 0 48 48" className="w-full h-full">
+        <div className="logo-row">
+          <div className="logo-hex">
+            <svg viewBox="0 0 48 48" width="40" height="40">
               <defs>
-                <linearGradient id="hexGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <linearGradient id="logoG" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#34E8A5" />
                   <stop offset="100%" stopColor="#3B82F6" />
                 </linearGradient>
               </defs>
-              <path
-                d="M24 3 L42 13.5 V34.5 L24 45 L6 34.5 V13.5 Z"
-                fill="none" stroke="url(#hexGrad)" strokeWidth="3.5" strokeLinejoin="round"
-              />
-              <text x="24" y="31" textAnchor="middle" fontSize="20" fontWeight="800" fill="url(#hexGrad)" fontFamily="Arial, sans-serif">S</text>
+              <path d="M24 3 L42 13.5 V34.5 L24 45 L6 34.5 V13.5 Z"
+                fill="none" stroke="url(#logoG)" strokeWidth="3.5" strokeLinejoin="round" />
+              <text x="24" y="31" textAnchor="middle" fontSize="19" fontWeight="800"
+                fill="url(#logoG)" fontFamily="Arial, sans-serif">S</text>
             </svg>
-            {/* Floating dot */}
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#34E8A5] animate-pulse" />
+            <span className="logo-dot" />
           </div>
-          <span className="text-2xl font-extrabold tracking-tight text-gray-900">
-            SoloTe<span className="text-[#00B69B]">c</span>
-          </span>
+          <span className="logo-name">SoloTe<span className="teal">c</span></span>
         </div>
 
-        {/* Heading */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Login</h1>
-        <p className="text-gray-400 text-sm mb-9">Log in to get started.</p>
+        <h1>Welcome back</h1>
+        <p className="sub">Log in to your workspace</p>
 
         {/* Email */}
-        <div className="mb-5">
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Email <span className="text-red-500">*</span>
-          </label>
+        <label className="field-label">Email</label>
+        <div className="field">
+          <Mail className="field-icon" />
           <input
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="you@solotec.com"
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00B69B]/40 focus:border-[#00B69B] transition-all"
           />
         </div>
 
         {/* Password */}
-        <div className="mb-2">
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-            Password <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="••••••••"
-              className="w-full px-4 py-3 pr-11 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00B69B]/40 focus:border-[#00B69B] transition-all"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <p className="text-sm text-red-500 font-medium mb-3 animate-[shake_0.4s_ease]">{error}</p>
-        )}
-
-        {/* Forgot */}
-        <div className="flex justify-end mb-7 mt-1">
-          <button className="text-sm font-semibold text-gray-600 hover:text-[#00B69B] underline underline-offset-2 transition-colors">
-            Forgot Password?
+        <label className="field-label">Password</label>
+        <div className="field">
+          <Lock className="field-icon" />
+          <input
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="••••••••"
+          />
+          <button type="button" className="eye" onClick={() => setShowPassword(!showPassword)}>
+            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
 
-        {/* Login button */}
+        {error && <p className="err">{error}</p>}
+
+        <div className="forgot-row">
+          <button className="forgot">Forgot password?</button>
+        </div>
+
         <button
+          className="login-btn"
           onClick={handleLogin}
           disabled={loading || !email.trim() || !password.trim()}
-          className="w-full py-3.5 rounded-xl text-white text-sm font-bold flex items-center justify-center gap-2 transition-all hover:opacity-90 hover:gap-3 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-[#00B69B]/25"
-          style={{ background: 'linear-gradient(90deg, #00B69B 0%, #3B82F6 100%)' }}
         >
-          {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <>Login <ArrowRight className="w-4 h-4" /></>}
+          <span className="btn-shine" />
+          {loading
+            ? <RefreshCw size={16} className="spin" />
+            : <>Login <ArrowRight size={16} className="btn-arrow" /></>}
         </button>
 
-        {/* Support */}
-        <p className="text-sm text-gray-400 text-center mt-7">
-          Having trouble logging in?{' '}
-          <span className="text-gray-700 font-semibold underline underline-offset-2 cursor-pointer hover:text-[#00B69B] transition-colors">
-            Contact Us
-          </span>{' '}
-          for support.
-        </p>
-
-        {/* Footer */}
-        <p className="text-xs text-gray-300 text-center mt-12">
-          All rights reserved for SoloTec © 2026
+        <p className="support">
+          Having trouble? <span>Contact us</span>
         </p>
       </div>
 
-      {/* ══════════ RIGHT: 3D Animated Hero ══════════ */}
-      <div className="hidden lg:flex flex-1 relative overflow-hidden items-center justify-center"
-        style={{ background: 'radial-gradient(ellipse at 30% 20%, #10243E 0%, #0B1120 55%, #060B16 100%)' }}>
+      {/* Footer */}
+      <p className="footer">All rights reserved for SoloTec © 2026</p>
 
-        {/* ─── 3D Scene ─── */}
-        <div className="scene">
-          {/* Ring of rotating triangles */}
-          <div className="tri-orbit">
-            <div className="tri tri-1" />
-            <div className="tri tri-2" />
-            <div className="tri tri-3" />
-          </div>
+      <style jsx>{`
+        /* ═══════════ BASE ═══════════ */
+        .page {
+          position: relative;
+          min-height: 100vh;
+          background: #05080F;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          font-family: inherit;
+        }
 
-          {/* Center hexagon (spinning in 3D) */}
-          <div className="hex-spin">
-            <svg viewBox="0 0 120 120" width="190" height="190">
-              <defs>
-                <linearGradient id="heroHex" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#34E8A5" />
-                  <stop offset="100%" stopColor="#3B82F6" />
-                </linearGradient>
-              </defs>
-              <path d="M60 8 L105 34 V86 L60 112 L15 86 V34 Z"
-                fill="none" stroke="url(#heroHex)" strokeWidth="5" strokeLinejoin="round" />
-              <text x="60" y="76" textAnchor="middle" fontSize="46" fontWeight="800"
-                fill="url(#heroHex)" fontFamily="Arial, sans-serif">S</text>
-            </svg>
-          </div>
+        /* ═══════════ AURORA ═══════════ */
+        .aurora {
+          position: absolute;
+          border-radius: 9999px;
+          filter: blur(110px);
+          opacity: 0.32;
+          pointer-events: none;
+        }
+        .aurora-1 {
+          width: 640px; height: 640px;
+          background: radial-gradient(circle, #0E4A5C 0%, transparent 65%);
+          top: -180px; right: 8%;
+          animation: drift1 22s ease-in-out infinite;
+        }
+        .aurora-2 {
+          width: 520px; height: 520px;
+          background: radial-gradient(circle, #123B7A 0%, transparent 65%);
+          bottom: -160px; right: 28%;
+          animation: drift2 26s ease-in-out infinite;
+        }
+        .aurora-3 {
+          width: 420px; height: 420px;
+          background: radial-gradient(circle, #0C5548 0%, transparent 65%);
+          top: 30%; left: -140px;
+          animation: drift3 30s ease-in-out infinite;
+        }
+        @keyframes drift1 { 0%,100% { transform: translate(0,0) } 50% { transform: translate(-70px, 50px) } }
+        @keyframes drift2 { 0%,100% { transform: translate(0,0) } 50% { transform: translate(60px, -45px) } }
+        @keyframes drift3 { 0%,100% { transform: translate(0,0) } 50% { transform: translate(45px, 55px) } }
 
-          {/* Floating dots */}
-          <span className="dot dot-1" />
-          <span className="dot dot-2" />
-          <span className="dot dot-3" />
-        </div>
+        /* ═══════════ STARS ═══════════ */
+        .stars { position: absolute; inset: 0; pointer-events: none; }
+        .star {
+          position: absolute;
+          background: #7DD3FC;
+          border-radius: 9999px;
+          opacity: 0.25;
+          animation: twinkle 6s ease-in-out infinite;
+        }
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.15; transform: scale(1); }
+          50%      { opacity: 0.7;  transform: scale(1.4); }
+        }
 
-        {/* ─── Text ─── */}
-        <div className="absolute bottom-20 left-0 right-0 text-center px-12">
-          <h2 className="text-3xl font-bold text-white leading-snug">
-            Unlock <span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(90deg,#34E8A5,#3B82F6)' }}>insights</span> to optimize your WhatsApp strategy
-          </h2>
-          <p className="text-gray-400 mt-3 text-sm max-w-xl mx-auto">
-            Access comprehensive analytics to refine your WhatsApp strategy for better results.
-          </p>
-        </div>
+        /* ═══════════ GRID FLOOR ═══════════ */
+        .grid-floor {
+          position: absolute;
+          left: 0; right: 0; bottom: 0;
+          height: 46vh;
+          background-image:
+            linear-gradient(rgba(52, 232, 165, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(52, 232, 165, 0.05) 1px, transparent 1px);
+          background-size: 54px 54px;
+          transform: perspective(600px) rotateX(58deg);
+          transform-origin: bottom;
+          mask-image: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+          -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+          pointer-events: none;
+        }
 
-        {/* Subtle grid overlay */}
-        <div className="absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+        /* ═══════════ HEX CORE ═══════════ */
+        .hex-core {
+          position: absolute;
+          right: 12%;
+          top: 44%;
+          transform: translateY(-50%);
+          width: 460px;
+          height: 460px;
+          pointer-events: none;
+        }
+        .hex {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+        }
+        .hex-outer { animation: spinSlow 40s linear infinite; }
+        .hex-mid   { animation: spinRev 28s linear infinite; }
+        .hex-inner {
+          animation: breathe 7s ease-in-out infinite;
+          filter: drop-shadow(0 0 26px rgba(52, 232, 165, 0.4));
+        }
+        @keyframes spinSlow { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+        @keyframes spinRev  { from { transform: rotate(360deg) } to { transform: rotate(0deg) } }
+        @keyframes breathe {
+          0%, 100% { transform: scale(1); }
+          50%      { transform: scale(1.05); }
+        }
 
-        {/* ─── Animations CSS ─── */}
-        <style jsx>{`
-          .scene {
-            position: relative;
-            width: 420px;
-            height: 420px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            perspective: 1000px;
-            margin-bottom: 120px;
-          }
+        .orbit-ring {
+          position: absolute;
+          inset: -14px;
+          animation: spinSlow 12s linear infinite;
+        }
+        .orbit-dot {
+          position: absolute;
+          top: 6px; left: 50%;
+          width: 11px; height: 11px;
+          margin-left: -5.5px;
+          border-radius: 9999px;
+          background: #34E8A5;
+          box-shadow: 0 0 18px rgba(52, 232, 165, 0.9), 0 0 40px rgba(52, 232, 165, 0.4);
+        }
+        .hex-glow {
+          position: absolute;
+          inset: 20%;
+          border-radius: 9999px;
+          background: radial-gradient(circle, rgba(52, 232, 165, 0.12) 0%, transparent 70%);
+          animation: breathe 7s ease-in-out infinite;
+        }
 
-          /* ── Center hexagon: 3D tumble ── */
-          .hex-spin {
-            position: relative;
-            z-index: 3;
-            animation: hexTumble 14s ease-in-out infinite;
-            transform-style: preserve-3d;
-            filter: drop-shadow(0 0 28px rgba(52, 232, 165, 0.35));
-          }
-          @keyframes hexTumble {
-            0%   { transform: rotateY(0deg) rotateX(0deg); }
-            25%  { transform: rotateY(180deg) rotateX(8deg); }
-            50%  { transform: rotateY(360deg) rotateX(0deg); }
-            75%  { transform: rotateY(540deg) rotateX(-8deg); }
-            100% { transform: rotateY(720deg) rotateX(0deg); }
-          }
+        /* ═══════════ HERO TEXT ═══════════ */
+        .hero-text {
+          position: absolute;
+          right: 6%;
+          bottom: 9%;
+          text-align: right;
+          max-width: 560px;
+        }
+        .hero-text h2 {
+          color: #F1F5F9;
+          font-size: 28px;
+          font-weight: 700;
+          line-height: 1.35;
+          margin: 0 0 10px;
+        }
+        .grad-text {
+          background: linear-gradient(90deg, #34E8A5, #38BDF8);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+        .hero-text p {
+          color: #64748B;
+          font-size: 13.5px;
+          margin: 0;
+        }
 
-          /* ── Orbit of triangles interlocking ── */
-          .tri-orbit {
-            position: absolute;
-            inset: 0;
-            animation: orbitSpin 26s linear infinite;
-            transform-style: preserve-3d;
-            z-index: 2;
-          }
-          @keyframes orbitSpin {
-            from { transform: rotateZ(0deg) rotateX(14deg); }
-            to   { transform: rotateZ(360deg) rotateX(14deg); }
-          }
+        /* ═══════════ GLASS CARD ═══════════ */
+        .card {
+          position: relative;
+          z-index: 10;
+          width: 420px;
+          margin-left: 7%;
+          padding: 42px 40px 34px;
+          border-radius: 22px;
+          background: rgba(13, 20, 36, 0.55);
+          backdrop-filter: blur(22px);
+          -webkit-backdrop-filter: blur(22px);
+          box-shadow:
+            0 24px 70px rgba(0, 0, 0, 0.55),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+          opacity: 0;
+          transform: translateY(24px);
+          transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .card-in { opacity: 1; transform: translateY(0); }
 
-          .tri {
-            position: absolute;
-            width: 0; height: 0;
-            opacity: 0.85;
-          }
-          /* Triangle 1 — teal, top */
-          .tri-1 {
-            top: 4px; left: 50%;
-            margin-left: -34px;
-            border-left: 34px solid transparent;
-            border-right: 34px solid transparent;
-            border-bottom: 58px solid rgba(52, 232, 165, 0.75);
-            animation: triPulse 4s ease-in-out infinite;
-            filter: drop-shadow(0 0 14px rgba(52,232,165,0.45));
-          }
-          /* Triangle 2 — blue, bottom-left, upside down */
-          .tri-2 {
-            bottom: 30px; left: 44px;
-            border-left: 30px solid transparent;
-            border-right: 30px solid transparent;
-            border-top: 52px solid rgba(59, 130, 246, 0.75);
-            animation: triPulse 4s ease-in-out infinite 1.3s;
-            filter: drop-shadow(0 0 14px rgba(59,130,246,0.45));
-          }
-          /* Triangle 3 — cyan, bottom-right */
-          .tri-3 {
-            bottom: 30px; right: 44px;
-            border-left: 30px solid transparent;
-            border-right: 30px solid transparent;
-            border-bottom: 52px solid rgba(34, 211, 238, 0.65);
-            animation: triPulse 4s ease-in-out infinite 2.6s;
-            filter: drop-shadow(0 0 14px rgba(34,211,238,0.4));
-          }
-          @keyframes triPulse {
-            0%, 100% { transform: scale(1) translateZ(0px); opacity: 0.85; }
-            50%      { transform: scale(1.18) translateZ(40px); opacity: 1; }
-          }
+        /* animated gradient border */
+        .card-border {
+          position: absolute;
+          inset: 0;
+          border-radius: 22px;
+          padding: 1px;
+          background: linear-gradient(130deg,
+            rgba(52, 232, 165, 0.5),
+            rgba(59, 130, 246, 0.15) 30%,
+            rgba(255, 255, 255, 0.05) 55%,
+            rgba(59, 130, 246, 0.35) 80%,
+            rgba(52, 232, 165, 0.5));
+          background-size: 300% 300%;
+          animation: borderFlow 9s ease infinite;
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+        @keyframes borderFlow {
+          0%, 100% { background-position: 0% 50%; }
+          50%      { background-position: 100% 50%; }
+        }
 
-          /* ── Floating dots ── */
-          .dot {
-            position: absolute;
-            border-radius: 9999px;
-            z-index: 4;
-          }
-          .dot-1 {
-            width: 14px; height: 14px;
-            top: 44px; right: 84px;
-            background: #34E8A5;
-            box-shadow: 0 0 18px rgba(52,232,165,0.8);
-            animation: floatY 5s ease-in-out infinite;
-          }
-          .dot-2 {
-            width: 9px; height: 9px;
-            bottom: 90px; left: 60px;
-            background: #3B82F6;
-            box-shadow: 0 0 14px rgba(59,130,246,0.8);
-            animation: floatY 6.5s ease-in-out infinite 1s;
-          }
-          .dot-3 {
-            width: 6px; height: 6px;
-            top: 130px; left: 34px;
-            background: #22D3EE;
-            box-shadow: 0 0 10px rgba(34,211,238,0.8);
-            animation: floatY 4.5s ease-in-out infinite 2s;
-          }
-          @keyframes floatY {
-            0%, 100% { transform: translateY(0px); }
-            50%      { transform: translateY(-22px); }
-          }
+        /* ═══════════ LOGO ═══════════ */
+        .logo-row { display: flex; align-items: center; gap: 11px; margin-bottom: 34px; }
+        .logo-hex { position: relative; width: 40px; height: 40px; }
+        .logo-dot {
+          position: absolute;
+          top: -3px; right: -3px;
+          width: 9px; height: 9px;
+          border-radius: 9999px;
+          background: #34E8A5;
+          box-shadow: 0 0 10px rgba(52, 232, 165, 0.9);
+          animation: twinkle 3s ease-in-out infinite;
+        }
+        .logo-name {
+          font-size: 23px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          color: #F8FAFC;
+        }
+        .teal { color: #34E8A5; }
 
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-          }
-        `}</style>
-      </div>
+        /* ═══════════ HEADINGS ═══════════ */
+        h1 {
+          color: #F8FAFC;
+          font-size: 27px;
+          font-weight: 700;
+          margin: 0 0 6px;
+          letter-spacing: -0.02em;
+        }
+        .sub { color: #64748B; font-size: 14px; margin: 0 0 30px; }
+
+        /* ═══════════ FIELDS ═══════════ */
+        .field-label {
+          display: block;
+          color: #94A3B8;
+          font-size: 12.5px;
+          font-weight: 600;
+          margin-bottom: 7px;
+          letter-spacing: 0.01em;
+        }
+        .field {
+          position: relative;
+          margin-bottom: 18px;
+        }
+        .field :global(.field-icon) {
+          position: absolute;
+          left: 14px; top: 50%;
+          transform: translateY(-50%);
+          width: 16px; height: 16px;
+          color: #475569;
+          pointer-events: none;
+          transition: color 0.25s;
+        }
+        .field:focus-within :global(.field-icon) { color: #34E8A5; }
+        .field input {
+          width: 100%;
+          padding: 12.5px 42px 12.5px 42px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 12px;
+          color: #F1F5F9;
+          font-size: 14px;
+          outline: none;
+          transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+        }
+        .field input::placeholder { color: #3F4B5F; }
+        .field input:focus {
+          border-color: rgba(52, 232, 165, 0.55);
+          background: rgba(52, 232, 165, 0.035);
+          box-shadow: 0 0 0 3px rgba(52, 232, 165, 0.12);
+        }
+        .eye {
+          position: absolute;
+          right: 13px; top: 50%;
+          transform: translateY(-50%);
+          background: none; border: none;
+          color: #475569;
+          cursor: pointer;
+          display: flex;
+          padding: 2px;
+          transition: color 0.2s;
+        }
+        .eye:hover { color: #94A3B8; }
+
+        /* ═══════════ ERROR ═══════════ */
+        .err {
+          color: #F87171;
+          font-size: 13px;
+          font-weight: 500;
+          margin: -6px 0 10px;
+          animation: shake 0.4s ease;
+        }
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+
+        /* ═══════════ FORGOT ═══════════ */
+        .forgot-row { display: flex; justify-content: flex-end; margin-bottom: 22px; }
+        .forgot {
+          background: none; border: none;
+          color: #64748B;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: color 0.2s;
+        }
+        .forgot:hover { color: #34E8A5; }
+
+        /* ═══════════ LOGIN BUTTON ═══════════ */
+        .login-btn {
+          position: relative;
+          width: 100%;
+          padding: 14px;
+          border: none;
+          border-radius: 13px;
+          background: linear-gradient(90deg, #00B69B, #3B82F6);
+          color: #fff;
+          font-size: 14.5px;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          overflow: hidden;
+          box-shadow: 0 8px 28px rgba(0, 182, 155, 0.35);
+          transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+        }
+        .login-btn:hover:not(:disabled) {
+          transform: translateY(-1.5px);
+          box-shadow: 0 12px 34px rgba(0, 182, 155, 0.5);
+        }
+        .login-btn:active:not(:disabled) { transform: translateY(0); }
+        .login-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .login-btn :global(.btn-arrow) { transition: transform 0.25s; }
+        .login-btn:hover:not(:disabled) :global(.btn-arrow) { transform: translateX(4px); }
+        .login-btn :global(.spin) { animation: rotate 1s linear infinite; }
+        @keyframes rotate { to { transform: rotate(360deg) } }
+
+        /* shine sweep */
+        .btn-shine {
+          position: absolute;
+          top: 0; left: -80%;
+          width: 50%; height: 100%;
+          background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+          transform: skewX(-20deg);
+          animation: shine 4.5s ease-in-out infinite;
+        }
+        @keyframes shine {
+          0%, 70%  { left: -80%; }
+          85%, 100% { left: 130%; }
+        }
+
+        /* ═══════════ SUPPORT / FOOTER ═══════════ */
+        .support {
+          text-align: center;
+          color: #475569;
+          font-size: 13px;
+          margin: 24px 0 0;
+        }
+        .support span {
+          color: #94A3B8;
+          font-weight: 600;
+          cursor: pointer;
+          text-decoration: underline;
+          text-underline-offset: 3px;
+          transition: color 0.2s;
+        }
+        .support span:hover { color: #34E8A5; }
+
+        .footer {
+          position: absolute;
+          bottom: 18px;
+          left: 7%;
+          color: #2C3A50;
+          font-size: 11.5px;
+          z-index: 5;
+        }
+
+        /* ═══════════ RESPONSIVE ═══════════ */
+        @media (max-width: 1100px) {
+          .hex-core { right: -6%; opacity: 0.35; }
+          .hero-text { display: none; }
+        }
+        @media (max-width: 640px) {
+          .card { width: calc(100% - 40px); margin: 0 auto; padding: 34px 26px 28px; }
+          .footer { left: 50%; transform: translateX(-50%); }
+          .hex-core { display: none; }
+        }
+
+        /* ═══════════ REDUCED MOTION ═══════════ */
+        @media (prefers-reduced-motion: reduce) {
+          .aurora, .star, .hex, .orbit-ring, .hex-glow,
+          .card-border, .btn-shine, .logo-dot { animation: none !important; }
+          .card { transition: none; opacity: 1; transform: none; }
+        }
+      `}</style>
     </div>
   )
 }
