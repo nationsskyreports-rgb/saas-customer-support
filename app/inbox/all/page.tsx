@@ -1,12 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { ConversationList } from '@/components/conversation-list'
 import { ChatPanel } from '@/components/chat-panel'
 import { ConversationDetails } from '@/components/conversation-details'
 import { Search } from 'lucide-react'
 
 export default function AllConversationsPage() {
+  const searchParams = useSearchParams()
+  const tabParam = searchParams.get('tab') // 'open' | 'pending' | 'unassigned' | 'all'
+  const initialTab = ['open', 'pending', 'unassigned'].includes(tabParam || '') ? tabParam! : 'all'
+
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -30,7 +35,7 @@ export default function AllConversationsPage() {
           <ConversationList
             selectedId={selectedConversationId}
             onSelect={setSelectedConversationId}
-            defaultTab="all"
+            defaultTab={initialTab}
             searchTerm={searchTerm}
           />
         </div>
