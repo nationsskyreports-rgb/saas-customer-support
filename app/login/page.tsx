@@ -6,6 +6,18 @@ import { RefreshCw, Eye, EyeOff, ArrowRight, Mail, Lock } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { setAgent } from '@/lib/auth'
 
+// Rotating hero taglines
+const PHRASES = [
+  { pre: 'Unlock ',  hi: 'insights',    post: ' to optimize your WhatsApp strategy',
+    sub: 'Access comprehensive analytics to refine your strategy for better results.' },
+  { pre: 'Reply ',   hi: 'faster',      post: ' with one unified team inbox',
+    sub: 'Every customer conversation in one place, routed to the right agent.' },
+  { pre: 'Launch ',  hi: 'campaigns',   post: ' that actually convert',
+    sub: 'Send targeted broadcasts and track delivery, reads, and replies live.' },
+  { pre: 'Monitor ', hi: 'performance', post: ' across your entire team',
+    sub: 'Real-time dashboards and reports for every agent, team, and channel.' },
+]
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -13,9 +25,23 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [phraseIdx, setPhraseIdx] = useState(0)
+  const [phraseVisible, setPhraseVisible] = useState(true)
   const router = useRouter()
 
   useEffect(() => { setMounted(true) }, [])
+
+  // rotate hero taglines: fade out → swap → fade in
+  useEffect(() => {
+    const t = setInterval(() => {
+      setPhraseVisible(false)
+      setTimeout(() => {
+        setPhraseIdx(i => (i + 1) % PHRASES.length)
+        setPhraseVisible(true)
+      }, 450)
+    }, 5000)
+    return () => clearInterval(t)
+  }, [])
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) return
@@ -134,12 +160,21 @@ export default function LoginPage() {
         <div className="hex-glow" />
       </div>
 
-      {/* ═══ Headline (right side) ═══ */}
+      {/* ═══ Rotating headline (right side) ═══ */}
       <div className="hero-text">
-        <h2>
-          Unlock <span className="grad-text">insights</span> to optimize<br />your WhatsApp strategy
-        </h2>
-        <p>Access comprehensive analytics to refine your strategy for better results.</p>
+        <div className={`phrase ${phraseVisible ? 'phrase-in' : 'phrase-out'}`}>
+          <h2>
+            {PHRASES[phraseIdx].pre}
+            <span className="grad-text">{PHRASES[phraseIdx].hi}</span>
+            {PHRASES[phraseIdx].post}
+          </h2>
+          <p>{PHRASES[phraseIdx].sub}</p>
+        </div>
+        <div className="phrase-dots">
+          {PHRASES.map((_, i) => (
+            <span key={i} className={i === phraseIdx ? 'dot dot-on' : 'dot'} />
+          ))}
+        </div>
       </div>
 
       {/* ═══ Glass login card ═══ */}
@@ -228,7 +263,10 @@ export default function LoginPage() {
         .page {
           position: relative;
           min-height: 100vh;
-          background: #05080F;
+          background:
+            radial-gradient(1100px 700px at 78% 40%, rgba(34, 96, 120, 0.35), transparent 60%),
+            radial-gradient(900px 600px at 12% 75%, rgba(24, 74, 96, 0.3), transparent 60%),
+            linear-gradient(160deg, #16233E 0%, #101B33 55%, #0D1729 100%);
           overflow: hidden;
           display: flex;
           align-items: center;
@@ -240,7 +278,7 @@ export default function LoginPage() {
           position: absolute;
           border-radius: 9999px;
           filter: blur(110px);
-          opacity: 0.32;
+          opacity: 0.55;
           pointer-events: none;
         }
         .aurora-1 {
@@ -269,9 +307,9 @@ export default function LoginPage() {
         .stars { position: absolute; inset: 0; pointer-events: none; }
         .star {
           position: absolute;
-          background: #7DD3FC;
+          background: #A5E3FF;
           border-radius: 9999px;
-          opacity: 0.25;
+          opacity: 0.4;
           animation: twinkle 6s ease-in-out infinite;
         }
         @keyframes twinkle {
@@ -285,8 +323,8 @@ export default function LoginPage() {
           left: 0; right: 0; bottom: 0;
           height: 46vh;
           background-image:
-            linear-gradient(rgba(52, 232, 165, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(52, 232, 165, 0.05) 1px, transparent 1px);
+            linear-gradient(rgba(52, 232, 165, 0.09) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(52, 232, 165, 0.09) 1px, transparent 1px);
           background-size: 54px 54px;
           transform: perspective(600px) rotateX(58deg);
           transform-origin: bottom;
@@ -299,7 +337,7 @@ export default function LoginPage() {
         .hex-core {
           position: absolute;
           right: 12%;
-          top: 44%;
+          top: 40%;
           transform: translateY(-50%);
           width: 460px;
           height: 460px;
@@ -346,20 +384,29 @@ export default function LoginPage() {
           animation: breathe 7s ease-in-out infinite;
         }
 
-        /* ═══════════ HERO TEXT ═══════════ */
+        /* ═══════════ HERO TEXT (rotating) ═══════════ */
         .hero-text {
           position: absolute;
-          right: 6%;
-          bottom: 9%;
-          text-align: right;
-          max-width: 560px;
+          right: calc(12% + 230px);   /* center of the hexagon */
+          transform: translateX(50%);
+          bottom: 7%;
+          width: 620px;
+          max-width: 44vw;
+          text-align: center;
         }
+        .phrase {
+          min-height: 118px;          /* fixed height so dots never jump */
+          transition: opacity 0.45s ease, transform 0.45s ease;
+        }
+        .phrase-in  { opacity: 1; transform: translateY(0); }
+        .phrase-out { opacity: 0; transform: translateY(10px); }
         .hero-text h2 {
           color: #F1F5F9;
-          font-size: 28px;
+          font-size: 27px;
           font-weight: 700;
-          line-height: 1.35;
+          line-height: 1.4;
           margin: 0 0 10px;
+          letter-spacing: -0.01em;
         }
         .grad-text {
           background: linear-gradient(90deg, #34E8A5, #38BDF8);
@@ -368,9 +415,25 @@ export default function LoginPage() {
           color: transparent;
         }
         .hero-text p {
-          color: #64748B;
+          color: #8B9BB4;
           font-size: 13.5px;
           margin: 0;
+        }
+        .phrase-dots {
+          display: flex;
+          justify-content: center;
+          gap: 7px;
+          margin-top: 18px;
+        }
+        .dot {
+          width: 7px; height: 7px;
+          border-radius: 9999px;
+          background: rgba(255, 255, 255, 0.18);
+          transition: background 0.3s, width 0.3s;
+        }
+        .dot-on {
+          width: 22px;
+          background: linear-gradient(90deg, #34E8A5, #38BDF8);
         }
 
         /* ═══════════ GLASS CARD ═══════════ */
@@ -381,7 +444,7 @@ export default function LoginPage() {
           margin-left: 7%;
           padding: 42px 40px 34px;
           border-radius: 22px;
-          background: rgba(13, 20, 36, 0.55);
+          background: rgba(35, 48, 78, 0.5);
           backdrop-filter: blur(22px);
           -webkit-backdrop-filter: blur(22px);
           box-shadow:
@@ -448,12 +511,12 @@ export default function LoginPage() {
           margin: 0 0 6px;
           letter-spacing: -0.02em;
         }
-        .sub { color: #64748B; font-size: 14px; margin: 0 0 30px; }
+        .sub { color: #8B9BB4; font-size: 14px; margin: 0 0 30px; }
 
         /* ═══════════ FIELDS ═══════════ */
         .field-label {
           display: block;
-          color: #94A3B8;
+          color: #AEBDD4;
           font-size: 12.5px;
           font-weight: 600;
           margin-bottom: 7px;
@@ -476,15 +539,15 @@ export default function LoginPage() {
         .field input {
           width: 100%;
           padding: 12.5px 42px 12.5px 42px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.14);
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.18);
           border-radius: 12px;
           color: #F1F5F9;
           font-size: 14px;
           outline: none;
           transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
         }
-        .field input::placeholder { color: #3F4B5F; }
+        .field input::placeholder { color: #5B6B85; }
         .field input:focus {
           border-color: rgba(52, 232, 165, 0.55);
           background: rgba(52, 232, 165, 0.035);
@@ -593,8 +656,9 @@ export default function LoginPage() {
 
         .footer {
           position: absolute;
-          bottom: 18px;
-          left: 7%;
+          bottom: 16px;
+          left: 50%;
+          transform: translateX(-50%);
           color: #94A3B8;
           font-size: 12.5px;
           font-weight: 500;
@@ -615,7 +679,6 @@ export default function LoginPage() {
         }
         @media (max-width: 640px) {
           .card { width: calc(100% - 40px); margin: 0 auto; padding: 34px 26px 28px; }
-          .footer { left: 50%; transform: translateX(-50%); }
           .hex-core { display: none; }
         }
 
