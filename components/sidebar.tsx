@@ -70,6 +70,7 @@ export function Sidebar() {
       title: 'INBOX',
       items: [
         { href: '/inbox', label: 'My Chats', icon: MessageCircle },
+        { href: '/my-resolved', label: 'My Resolved', icon: CircleDot },
         { href: '/inbox/all', label: 'All Conversations', icon: Clock },
         { href: '/monitoring', label: 'Monitoring', icon: Eye },
       ],
