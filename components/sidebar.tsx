@@ -136,17 +136,16 @@ export function Sidebar() {
       style={{ background: 'linear-gradient(180deg, #00B69B 0%, #0E7A8F 55%, #1E5FA8 100%)', top: '3px' }}
     >
       {/* Logo/Header */}
-      <div className={cn('flex items-center border-b border-white/15 p-4', collapsed ? 'justify-center' : 'gap-2')}>
-        <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-bold text-xs flex-shrink-0" style={{ color: '#00B69B' }}>
-          <img
-            src="/logo-transparent.png"
-            alt="NOS"
-            width={24}
-            height={24}
-            style={{ filter: 'sepia(1) hue-rotate(125deg) saturate(4) brightness(0.85)', objectFit: 'contain' }}
-          />
-        </div>
-        {!collapsed && <span className="font-semibold text-sm text-white">Nations Of Sky</span>}
+      <div className={cn('flex items-center border-b border-white/15 p-4', collapsed ? 'justify-center' : 'gap-2.5')}>
+        <img
+          src="/logo-transparent.png"
+          alt="Nations Of Sky"
+          width={30}
+          height={30}
+          className="flex-shrink-0"
+          style={{ objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.25))' }}
+        />
+        {!collapsed && <span className="font-semibold text-sm text-white tracking-wide">Nations Of Sky</span>}
       </div>
 
       {/* Navigation */}
