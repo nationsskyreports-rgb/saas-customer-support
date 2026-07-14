@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, RefreshCw } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -12,11 +12,22 @@ interface InviteAgentModalProps {
 export function InviteAgentModal({ isOpen, onClose }: InviteAgentModalProps) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [role, setRole] = useState<'admin' | 'agent'>('agent')
+  const [role, setRole] = useState('NOS Agent')
+  const [roleOptions, setRoleOptions] = useState<string[]>([])
   const [maxChats, setMaxChats] = useState(5)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+
+  // Load roles from the Terms & Roles table so invites use real roles
+  useEffect(() => {
+    if (!isOpen) return
+    supabase.from('roles').select('name').order('name').then(({ data }) => {
+      const names = data?.map(r => r.name) || []
+      setRoleOptions(names)
+      if (names.length && !names.includes(role)) setRole(names[0])
+    })
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -122,19 +133,18 @@ export function InviteAgentModal({ isOpen, onClose }: InviteAgentModalProps) {
             />
           </div>
 
-          {/* Role */}
+          {/* Role — loaded from Terms & Roles */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Role</label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" checked={role === 'agent'} onChange={() => setRole('agent')} className="accent-emerald-500" />
-                <span className="text-sm text-gray-700">Agent</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" checked={role === 'admin'} onChange={() => setRole('admin')} className="accent-emerald-500" />
-                <span className="text-sm text-gray-700">Admin</span>
-              </label>
-            </div>
+            <select
+              value={role}
+              onChange={e => setRole(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            >
+              {roleOptions.length === 0 && <option value="NOS Agent">NOS Agent</option>}
+              {roleOptions.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <p className="text-xs text-gray-400 mt-1">Permissions come from Terms &amp; Roles</p>
           </div>
 
           {/* Max Chats */}
