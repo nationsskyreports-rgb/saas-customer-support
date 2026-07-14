@@ -19,6 +19,7 @@ import {
   Tag,
   ChevronLeft,
   ChevronRight,
+  Shield,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSidebar } from '@/lib/sidebar-context'
@@ -79,6 +80,7 @@ export function Sidebar() {
       title: 'ADMINISTRATION',
       items: [
         { href: '/agents', label: 'Agents', icon: Users },
+        { href: '/roles', label: 'Terms & Roles', icon: Shield },
         { href: '/teams', label: 'Teams', icon: Users },
         { href: '/groups', label: 'Groups', icon: LayoutGrid },
         { href: '/agent-statuses', label: 'Agent Statuses', icon: CircleDot },
