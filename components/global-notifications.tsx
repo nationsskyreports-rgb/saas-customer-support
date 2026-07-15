@@ -132,6 +132,39 @@ export function GlobalNotifications() {
   const dismiss = (id: number) => setToasts(prev => prev.filter(t => t.id !== id))
   const dismissAll = () => setToasts([])
 
+  // ─── Keep ringing while there are unseen alerts and the tab
+  //     is in the background — like a phone, until you come back ───
+  useEffect(() => {
+    if (toasts.length === 0) return
+    const iv = setInterval(() => {
+      if (document.hidden) playSound()
+    }, 9000)
+    return () => clearInterval(iv)
+  }, [toasts.length])
+
+  // ─── Flash the browser-tab title so it screams for attention
+  //     even from another tab: 🔴 (2) New message! ───
+  useEffect(() => {
+    if (toasts.length === 0) return
+    const original = document.title
+    let flip = false
+    const iv = setInterval(() => {
+      if (document.hidden) {
+        flip = !flip
+        document.title = flip ? `🔴 (${toasts.length}) New message!` : original
+      } else if (document.title !== original) {
+        document.title = original
+      }
+    }, 1200)
+    const onVis = () => { if (!document.hidden) document.title = original }
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      clearInterval(iv)
+      document.title = original
+      document.removeEventListener('visibilitychange', onVis)
+    }
+  }, [toasts.length])
+
   return (
     <>
       {/* Status indicator — bottom right corner */}
