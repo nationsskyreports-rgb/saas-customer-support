@@ -1,398 +1,193 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
+'use client'
 
-@custom-variant dark (&:is(.dark *));
+import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { MessageCircle, X, Bell } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
-@theme inline {
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+interface Toast {
+  id: number
+  title: string
+  body: string
+  time: string
 }
 
-:root {
-  color-scheme: light;
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.2 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0 0);
-  --primary: #00B69B;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0 0);
-  --secondary-foreground: oklch(0.2 0 0);
-  --muted: oklch(0.92 0 0);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.5 0.165 184);
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.93 0 0);
-  --input: oklch(0.95 0 0);
-  --ring: #00B69B;
-  --chart-1: #00B69B;
-  --chart-2: oklch(0.5 0.165 184);
-  --chart-3: oklch(0.75 0.05 190);
-  --chart-4: oklch(0.85 0 0);
-  --chart-5: oklch(0.6 0 0);
-  --radius: 0.5rem;
-  --sidebar: #00B69B;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: oklch(1 0 0);
-  --sidebar-primary-foreground: #00B69B;
-  --sidebar-accent: oklch(1 0 0);
-  --sidebar-accent-foreground: #00B69B;
-  --sidebar-border: rgba(255, 255, 255, 0.15);
-  --sidebar-ring: #00B69B;
-  --nos-gold: #00B69B;
-  --nos-teal: #00B69B;
-  --nos-light-gold: #EDFDF8;
-}
+export function GlobalNotifications() {
+  const [toasts, setToasts] = useState<Toast[]>([])
+  const [status, setStatus] = useState<'connecting' | 'live' | 'error'>('connecting')
+  const toastIdRef = useRef(0)
+  const audioCtxRef = useRef<AudioContext | null>(null)
+  const router = useRouter()
 
-/* ─── NOS Dark Mode ─── */
-.dark {
-  color-scheme: dark;
-  --background: #0A101E;
-  --foreground: #F3F4F6;
-  --card: #121B2E;
-  --card-foreground: #F3F4F6;
-  --popover: #121B2E;
-  --popover-foreground: #F3F4F6;
-  --primary: #34E8A5;
-  --primary-foreground: #0A101E;
-  --secondary: #1E2A42;
-  --secondary-foreground: #F3F4F6;
-  --muted: #1E2A42;
-  --muted-foreground: #9CA3AF;
-  --accent: #1E2A42;
-  --accent-foreground: #F3F4F6;
-  --destructive: #EF4444;
-  --border: #1E2A42;
-  --input: #1E2A42;
-  --ring: #34E8A5;
-  --chart-1: #34E8A5;
-  --chart-2: #00B69B;
-  --chart-3: #3B82F6;
-  --chart-4: #6B7280;
-  --chart-5: #2B3A55;
-  --sidebar: #00B69B;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: oklch(1 0 0);
-  --sidebar-primary-foreground: #00B69B;
-  --sidebar-accent: oklch(1 0 0);
-  --sidebar-accent-foreground: #00B69B;
-  --sidebar-border: rgba(255, 255, 255, 0.15);
-  --sidebar-ring: #34E8A5;
-  --nos-light-gold: #121B2E;
-}
+  // Browsers block audio until the user interacts with the page.
+  // Create ONE shared AudioContext and unlock it on the first
+  // click/keypress, then reuse it for every notification.
+  useEffect(() => {
+    const unlock = () => {
+      try {
+        if (!audioCtxRef.current) {
+          audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
+        }
+        if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume()
+      } catch {}
+    }
+    window.addEventListener('pointerdown', unlock)
+    window.addEventListener('keydown', unlock)
+    return () => {
+      window.removeEventListener('pointerdown', unlock)
+      window.removeEventListener('keydown', unlock)
+    }
+  }, [])
 
-/* ─── Dark Mode Global Overrides ─── */
-.dark body {
-  background-color: #0A101E;
-  color: #F3F4F6;
-}
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+  }, [])
 
-.dark main {
-  background-color: #0A101E !important;
-}
+  const playSound = async () => {
+    try {
+      let ctx = audioCtxRef.current
+      if (!ctx) {
+        ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+        audioCtxRef.current = ctx
+      }
+      if (ctx.state === 'suspended') await ctx.resume()
 
-/* Cards & Containers */
-.dark .bg-white {
-  background-color: #121B2E !important;
-}
-
-.dark .bg-gray-50,
-.dark .bg-gray-100 {
-  background-color: #0A101E !important;
-}
-
-.dark .bg-emerald-50 {
-  background-color: rgba(0, 182, 155, 0.1) !important;
-}
-
-/* Borders */
-.dark .border-gray-200,
-.dark .border-gray-100 {
-  border-color: #1E2A42 !important;
-}
-
-/* Text Colors */
-.dark .text-gray-900,
-.dark .text-gray-800 {
-  color: #F3F4F6 !important;
-}
-
-.dark .text-gray-700,
-.dark .text-gray-600 {
-  color: #D1D5DB !important;
-}
-
-.dark .text-gray-500 {
-  color: #9CA3AF !important;
-}
-
-.dark .text-gray-400 {
-  color: #6B7280 !important;
-}
-
-/* Table Headers */
-.dark thead[style] {
-  background-color: #0E1626 !important;
-}
-
-.dark .hover\:bg-emerald-50:hover {
-  background-color: rgba(0, 182, 155, 0.08) !important;
-}
-
-.dark .hover\:bg-gray-50:hover,
-.dark .hover\:bg-gray-100:hover {
-  background-color: #1E2A42 !important;
-}
-
-/* Inputs */
-.dark input,
-.dark textarea,
-.dark select {
-  background-color: #1E2A42 !important;
-  border-color: #2B3A55 !important;
-  color: #F3F4F6 !important;
-}
-
-.dark input::placeholder,
-.dark textarea::placeholder {
-  color: #6B7280 !important;
-}
-
-/* Dropdowns */
-.dark .bg-gray-100 {
-  background-color: #1E2A42 !important;
-}
-
-/* Shadow adjustments */
-.dark .shadow-sm,
-.dark .shadow-lg {
-  --tw-shadow-color: rgba(0, 0, 0, 0.3);
-}
-
-/* Topbar */
-.dark .bg-white.border-b {
-  background-color: #121B2E !important;
-  border-color: #1E2A42 !important;
-}
-
-/* Welcome Banner */
-.dark [style*="EDFDF8"] {
-  background-color: rgba(0, 182, 155, 0.08) !important;
-}
-
-/* Badge overrides — keep colored badges readable in dark */
-.dark .bg-green-100 { background-color: rgba(34, 197, 94, 0.2) !important; }
-.dark .bg-yellow-100 { background-color: rgba(234, 179, 8, 0.2) !important; }
-.dark .bg-red-100 { background-color: rgba(239, 68, 68, 0.2) !important; }
-.dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.2) !important; }
-.dark .bg-purple-100 { background-color: rgba(168, 85, 247, 0.2) !important; }
-.dark .bg-emerald-100 { background-color: rgba(245, 158, 11, 0.2) !important; }
-
-/* Badge text — force lighter colors in dark mode */
-.dark .text-green-800 { color: #4ADE80 !important; }
-.dark .text-green-700 { color: #4ADE80 !important; }
-.dark .text-green-600 { color: #4ADE80 !important; }
-.dark .text-yellow-800 { color: #FACC15 !important; }
-.dark .text-yellow-700 { color: #FACC15 !important; }
-.dark .text-yellow-600 { color: #FACC15 !important; }
-.dark .text-red-800 { color: #F87171 !important; }
-.dark .text-red-700 { color: #F87171 !important; }
-.dark .text-red-600 { color: #F87171 !important; }
-.dark .text-blue-800 { color: #60A5FA !important; }
-.dark .text-blue-700 { color: #60A5FA !important; }
-.dark .text-purple-800 { color: #C084FC !important; }
-.dark .text-purple-700 { color: #C084FC !important; }
-.dark .text-emerald-800 { color: #FCD34D !important; }
-
-/* Dark mode — table th/header text */
-.dark th {
-  color: #9CA3AF !important;
-}
-
-/* Rounded-full pill badges in dark */
-.dark .bg-gray-100.text-gray-700 {
-  background-color: rgba(107, 114, 128, 0.2) !important;
-  color: #D1D5DB !important;
-}
-
-/* Status indicator pills */
-.dark .bg-gray-100 {
-  background-color: #1E2A42 !important;
-}
-
-/* Top stats pills */
-.dark .bg-white.border.border-gray-200.rounded-full {
-  background-color: #121B2E !important;
-  border-color: #2B3A55 !important;
-}
-
-/* Dropdown menus */
-.dark .bg-white.border.border-gray-200.rounded-lg.shadow-lg {
-  background-color: #121B2E !important;
-  border-color: #2B3A55 !important;
-}
-
-/* Card borders */
-.dark .border.border-gray-200.rounded-xl {
-  border-color: #1E2A42 !important;
-}
-
-/* Dividers */
-.dark .divide-gray-100 > * + * {
-  border-color: #1E2A42 !important;
-}
-
-/* Ghost buttons */
-.dark .border-gray-200.rounded-lg {
-  border-color: #2B3A55 !important;
-  color: #D1D5DB !important;
-}
-
-.dark .hover\:bg-gray-50:hover {
-  background-color: #1E2A42 !important;
-}
-
-/* Topbar icons */
-.dark .text-gray-700 {
-  color: #D1D5DB !important;
-}
-
-/* Welcome banner in dark */
-.dark [style*="border-left"] {
-  border-color: #34E8A5 !important;
-}
-
-/* Chart tooltips */
-.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
-  background-color: #121B2E !important;
-  border-color: #1E2A42 !important;
-}
-
-/* Tab active — keep visible */
-.dark [style*="background-color: rgb(0, 182, 155)"] {
-  color: #FFFFFF !important;
-}
-
-/* Scrollbar */
-.dark ::-webkit-scrollbar { width: 6px; }
-.dark ::-webkit-scrollbar-track { background: #121B2E; }
-.dark ::-webkit-scrollbar-thumb { background: #2B3A55; border-radius: 3px; }
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
+      // pleasant two-tone "ding-dong" chime
+      const now = ctx.currentTime
+      const tone = (freq: number, t0: number, dur: number, vol: number) => {
+        const o = ctx!.createOscillator()
+        const g = ctx!.createGain()
+        o.type = 'sine'
+        o.frequency.value = freq
+        o.connect(g); g.connect(ctx!.destination)
+        g.gain.setValueAtTime(0.0001, now + t0)
+        g.gain.exponentialRampToValueAtTime(vol, now + t0 + 0.02)
+        g.gain.exponentialRampToValueAtTime(0.0001, now + t0 + dur)
+        o.start(now + t0); o.stop(now + t0 + dur + 0.05)
+      }
+      tone(740, 0,    0.35, 0.35)
+      tone(988, 0.13, 0.5,  0.35)
+    } catch {}
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
+  useEffect(() => {
+    console.log('[GlobalNotifications] mounting subscription...')
+    const ch = supabase
+      .channel('global-message-notifications')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
+        console.log('[GlobalNotifications] message received:', payload.new)
+        const msg = payload.new as any
+        if (msg.direction !== 'inbound') return
+
+        window.dispatchEvent(new CustomEvent('nos-new-message'))
+
+        let name = 'New message'
+        try {
+          const { data: conv } = await supabase
+            .from('conversations')
+            .select('contacts(name)')
+            .eq('id', msg.conversation_id)
+            .single()
+          const c = (conv as any)?.contacts
+          if (c?.name) name = c.name
+        } catch {}
+
+        playSound()
+
+        const id = ++toastIdRef.current
+        const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        setToasts(prev => [...prev, { id, title: name, body: msg.content || 'New message', time }])
+
+        if ('Notification' in window && Notification.permission === 'granted') {
+          const n = new Notification(name, {
+            body: msg.content || 'New message',
+            icon: '/icon-light-32x32.png',
+            requireInteraction: true,
+          })
+          n.onclick = () => { window.focus(); router.push('/inbox'); n.close() }
+        }
+      })
+      .subscribe((s) => {
+        console.log('[GlobalNotifications] subscription status:', s)
+        if (s === 'SUBSCRIBED') setStatus('live')
+        else if (s === 'CHANNEL_ERROR' || s === 'TIMED_OUT' || s === 'CLOSED') setStatus('error')
+      })
+    return () => { supabase.removeChannel(ch) }
+  }, [])
+
+  const dismiss = (id: number) => setToasts(prev => prev.filter(t => t.id !== id))
+  const dismissAll = () => setToasts([])
+
+  return (
+    <>
+      {/* Status indicator — bottom right corner */}
+      <div className="fixed bottom-4 right-4 z-[99] flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-lg text-xs font-medium">
+        <Bell className="w-3.5 h-3.5 text-gray-400" />
+        {status === 'live' && <><span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" /><span className="text-green-600">Notifications Live</span></>}
+        {status === 'connecting' && <><span className="w-2 h-2 rounded-full bg-yellow-500" /><span className="text-yellow-600">Connecting...</span></>}
+        {status === 'error' && <><span className="w-2 h-2 rounded-full bg-red-500" /><span className="text-red-600">Realtime Error</span></>}
+      </div>
+
+      {/* Toasts */}
+      <div className="fixed top-16 right-4 z-[100] space-y-2" style={{ maxWidth: '340px', width: '340px' }}>
+        {toasts.length > 1 && (
+          <button onClick={dismissAll} className="w-full text-center text-xs font-medium text-gray-500 bg-white/90 border border-gray-200 rounded-lg py-1.5 hover:bg-gray-50 shadow">
+            Clear all ({toasts.length})
+          </button>
+        )}
+        <div className="space-y-2.5 max-h-[70vh] overflow-y-auto">
+          {toasts.map(toast => (
+            <div key={toast.id}
+              onClick={() => { router.push('/inbox'); dismiss(toast.id) }}
+              className="relative overflow-hidden bg-white rounded-2xl border cursor-pointer transition-transform hover:scale-[1.02]"
+              style={{
+                animation: 'nosSlideIn 0.35s cubic-bezier(0.21, 1.02, 0.73, 1)',
+                borderColor: 'rgba(0, 182, 155, 0.35)',
+                boxShadow: '0 8px 30px -6px rgba(13, 35, 67, 0.25), 0 0 0 1px rgba(0, 182, 155, 0.08), 0 0 24px rgba(0, 182, 155, 0.12)',
+              }}>
+              {/* accent bar */}
+              <div className="absolute left-0 top-0 bottom-0 w-1.5"
+                style={{ background: 'linear-gradient(180deg, #00B69B, #3B82F6)' }} />
+
+              <div className="p-4 pl-5 flex items-start gap-3">
+                <div className="w-11 h-11 rounded-full flex items-center justify-center text-white flex-shrink-0 shadow-md"
+                  style={{ background: 'linear-gradient(135deg, #00B69B, #0E9F8A)' }}>
+                  <MessageCircle className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: '#00B69B' }}>
+                      New message
+                    </span>
+                    <span className="text-[10px] text-gray-400 ml-auto flex-shrink-0">{toast.time}</span>
+                  </div>
+                  <p className="font-bold text-[15px] text-gray-900 truncate">{toast.title}</p>
+                  <p className="text-sm text-gray-600 leading-snug" style={{
+                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                  }}>{toast.body}</p>
+                  <p className="text-[11px] font-medium mt-1.5" style={{ color: '#3B82F6' }}>
+                    Click to open in Inbox →
+                  </p>
+                </div>
+                <button onClick={(e) => { e.stopPropagation(); dismiss(toast.id) }}
+                  className="p-1.5 hover:bg-gray-100 rounded-lg flex-shrink-0 transition-colors">
+                  <X className="w-4 h-4 text-gray-400" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <style jsx global>{`
+          @keyframes nosSlideIn {
+            from { transform: translateX(110%) scale(0.96); opacity: 0; }
+            60%  { transform: translateX(-6px) scale(1); }
+            to   { transform: translateX(0) scale(1); opacity: 1; }
+          }
+        `}</style>
+      </div>
+    </>
+  )
 }
-
-/* ═══════════════════════════════════════════════════════
-   LIGHT MODE POLISH — "منوّر" ✨
-   Brighter, airier look with depth. Same logic & colors,
-   applied globally so every page gets it automatically.
-   ═══════════════════════════════════════════════════════ */
-
-/* 1 ─ Page background: soft cool gradient with faint teal/blue
-      glows instead of flat gray — makes white cards pop */
-html:not(.dark) body {
-  background:
-    radial-gradient(900px 500px at 88% -8%, rgba(0, 182, 155, 0.08), transparent 60%),
-    radial-gradient(750px 480px at -8% 22%, rgba(59, 130, 246, 0.06), transparent 55%),
-    linear-gradient(180deg, #F8FBFD 0%, #F1F6FA 100%);
-  background-attachment: fixed;
-}
-
-/* 2 ─ Cards: crisper cool border + layered soft shadow = depth */
-html:not(.dark) .bg-white.border {
-  border-color: #E3EAF3;
-  box-shadow:
-    0 1px 2px rgba(13, 35, 67, 0.04),
-    0 12px 32px -16px rgba(13, 35, 67, 0.14);
-}
-
-/* subtle lift on cards that already animate their shadow */
-html:not(.dark) .bg-white.transition-shadow:hover {
-  box-shadow:
-    0 2px 4px rgba(13, 35, 67, 0.05),
-    0 18px 40px -16px rgba(13, 35, 67, 0.2);
-}
-
-/* 3 ─ Top bar / white headers get a faint drop shadow */
-html:not(.dark) header.bg-white,
-html:not(.dark) .bg-white.border-b {
-  box-shadow: 0 1px 3px rgba(13, 35, 67, 0.05);
-}
-
-/* 4 ─ Text contrast: headings darker, secondary text clearer */
-html:not(.dark) .text-gray-900,
-html:not(.dark) .text-gray-800 { color: #0B1526 !important; }
-html:not(.dark) .text-gray-600 { color: #46586F !important; }
-html:not(.dark) .text-gray-500 { color: #5A6B82 !important; }
-html:not(.dark) .text-gray-400 { color: #7E8DA3 !important; }
-
-/* 5 ─ Teal buttons glow softly (Add Role, Save, etc.) */
-html:not(.dark) button[style*="00B69B"] {
-  box-shadow: 0 8px 18px -8px rgba(0, 182, 155, 0.5);
-}
-
-/* 6 ─ Inputs: white instead of gray + gentle inner definition */
-html:not(.dark) input.border,
-html:not(.dark) select.border,
-html:not(.dark) textarea.border,
-html:not(.dark) input[class*="border-gray-300"],
-html:not(.dark) select[class*="border-gray-300"],
-html:not(.dark) textarea[class*="border-gray-300"] {
-  background-color: #FFFFFF;
-  border-color: #DCE5F0;
-  box-shadow: inset 0 1px 2px rgba(13, 35, 67, 0.03);
-}
-
-/* 7 ─ Light scrollbar to match */
-html:not(.dark) ::-webkit-scrollbar { width: 8px; height: 8px; }
-html:not(.dark) ::-webkit-scrollbar-track { background: transparent; }
-html:not(.dark) ::-webkit-scrollbar-thumb {
-  background: #C9D6E6;
-  border-radius: 4px;
-}
-html:not(.dark) ::-webkit-scrollbar-thumb:hover { background: #AFC1D8; }
