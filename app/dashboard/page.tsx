@@ -142,7 +142,7 @@ export default function DashboardPage() {
     name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 
   return (
-    <div className="p-6 space-y-5 max-w-[1400px]">
+    <div className="p-6 space-y-5">
 
       {/* Header */}
       <div className="flex items-center justify-between">
