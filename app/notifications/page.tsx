@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, CheckCheck, MessageCircle } from 'lucide-react'
+import { Bell, CheckCheck, MessageCircle, Volume2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 interface NotifRow {
@@ -55,6 +55,33 @@ export default function NotificationsPage() {
 
   const unreadCount = notifs.filter(n => !n.is_read).length
 
+  // ─── Desktop notification self-test ───
+  const [perm, setPerm] = useState<string>('...')
+  const [testMsg, setTestMsg] = useState('')
+
+  useEffect(() => {
+    setPerm('Notification' in window ? Notification.permission : 'unsupported')
+  }, [])
+
+  const sendTest = async () => {
+    setTestMsg('')
+    try { new Audio('/notification.wav').play().catch(() => {}) } catch {}
+
+    if (!('Notification' in window)) { setTestMsg('❌ This browser does not support notifications'); return }
+    let p = Notification.permission
+    if (p === 'default') { p = await Notification.requestPermission(); setPerm(p) }
+    if (p === 'denied') {
+      setTestMsg('❌ Blocked in this browser — click the 🔒 lock next to the address bar → Notifications → Allow, then reload')
+      return
+    }
+    new Notification('🔔 SoloTec test notification', {
+      body: 'If you can see this on your screen, desktop alerts are working!',
+      icon: '/logo-transparent.png',
+      requireInteraction: true,
+    })
+    setTestMsg('✅ Test sent! If nothing appeared bottom-right of your screen, Windows is blocking it → Settings → System → Notifications: turn ON for this browser + turn OFF Do Not Disturb')
+  }
+
   const fmt = (iso: string) => new Date(iso).toLocaleString('en-US', {
     month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
   })
@@ -70,12 +97,28 @@ export default function NotificationsPage() {
           </h1>
           <p className="text-sm text-gray-500 mt-1">Every incoming message alert, saved so you never miss one</p>
         </div>
-        <button onClick={markAllRead}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
-          style={{ backgroundColor: '#00B69B' }}>
-          <CheckCheck className="w-4 h-4" /> Mark all read
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={sendTest}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50"
+            title={`Browser permission: ${perm}`}>
+            <Volume2 className="w-4 h-4" style={{ color: '#3B82F6' }} /> Test desktop alert
+          </button>
+          <button onClick={markAllRead}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
+            style={{ backgroundColor: '#00B69B' }}>
+            <CheckCheck className="w-4 h-4" /> Mark all read
+          </button>
+        </div>
       </div>
+
+      {testMsg && (
+        <div className="mb-4 px-4 py-3 rounded-xl border text-sm leading-relaxed"
+          style={testMsg.startsWith('✅')
+            ? { background: 'rgba(0,182,155,0.07)', borderColor: 'rgba(0,182,155,0.3)', color: '#0B5F52' }
+            : { background: 'rgba(239,68,68,0.06)', borderColor: 'rgba(239,68,68,0.3)', color: '#991B1B' }}>
+          {testMsg}
+        </div>
+      )}
 
       {/* Filter tabs */}
       <div className="flex gap-2 mb-4">
