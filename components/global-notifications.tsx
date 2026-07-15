@@ -96,11 +96,13 @@ export function GlobalNotifications() {
         // persist to Notification Center (unique message_id avoids
         // duplicates when several agents are online at once)
         supabase.from('notifications').upsert({
-          message_id: msg.id,
+          message_id: String(msg.id),
           conversation_id: msg.conversation_id,
           title: name,
           body: msg.content || 'New message',
-        }, { onConflict: 'message_id', ignoreDuplicates: true }).then(() => {})
+        }, { onConflict: 'message_id', ignoreDuplicates: true }).then(({ error }) => {
+          if (error) console.error('[Notifications] failed to save:', error.message)
+        })
 
         const id = ++toastIdRef.current
         const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
