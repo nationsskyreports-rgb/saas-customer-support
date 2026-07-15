@@ -16,20 +16,27 @@ export function GlobalNotifications() {
   const [toasts, setToasts] = useState<Toast[]>([])
   const [status, setStatus] = useState<'connecting' | 'live' | 'error'>('connecting')
   const toastIdRef = useRef(0)
-  const audioCtxRef = useRef<AudioContext | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const router = useRouter()
 
-  // Browsers block audio until the user interacts with the page.
-  // Create ONE shared AudioContext and unlock it on the first
-  // click/keypress, then reuse it for every notification.
+  // Real audio file — far more reliable than WebAudio oscillators.
+  // On the first user interaction we do a silent play/pause to unlock
+  // media playback for the rest of the session.
   useEffect(() => {
+    const a = new Audio('/notification.wav')
+    a.volume = 0.8
+    a.preload = 'auto'
+    audioRef.current = a
+
     const unlock = () => {
-      try {
-        if (!audioCtxRef.current) {
-          audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
-        }
-        if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume()
-      } catch {}
+      const el = audioRef.current
+      if (!el) return
+      el.muted = true
+      el.play().then(() => {
+        el.pause(); el.currentTime = 0; el.muted = false
+      }).catch(() => { el.muted = false })
+      window.removeEventListener('pointerdown', unlock)
+      window.removeEventListener('keydown', unlock)
     }
     window.addEventListener('pointerdown', unlock)
     window.addEventListener('keydown', unlock)
@@ -55,31 +62,11 @@ export function GlobalNotifications() {
     setNotifPerm(res)
   }
 
-  const playSound = async () => {
-    try {
-      let ctx = audioCtxRef.current
-      if (!ctx) {
-        ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
-        audioCtxRef.current = ctx
-      }
-      if (ctx.state === 'suspended') await ctx.resume()
-
-      // pleasant two-tone "ding-dong" chime
-      const now = ctx.currentTime
-      const tone = (freq: number, t0: number, dur: number, vol: number) => {
-        const o = ctx!.createOscillator()
-        const g = ctx!.createGain()
-        o.type = 'sine'
-        o.frequency.value = freq
-        o.connect(g); g.connect(ctx!.destination)
-        g.gain.setValueAtTime(0.0001, now + t0)
-        g.gain.exponentialRampToValueAtTime(vol, now + t0 + 0.02)
-        g.gain.exponentialRampToValueAtTime(0.0001, now + t0 + dur)
-        o.start(now + t0); o.stop(now + t0 + dur + 0.05)
-      }
-      tone(740, 0,    0.35, 0.35)
-      tone(988, 0.13, 0.5,  0.35)
-    } catch {}
+  const playSound = () => {
+    const a = audioRef.current
+    if (!a) return
+    try { a.currentTime = 0 } catch {}
+    a.play().catch(() => {})
   }
 
   useEffect(() => {
@@ -105,6 +92,15 @@ export function GlobalNotifications() {
         } catch {}
 
         playSound()
+
+        // persist to Notification Center (unique message_id avoids
+        // duplicates when several agents are online at once)
+        supabase.from('notifications').upsert({
+          message_id: msg.id,
+          conversation_id: msg.conversation_id,
+          title: name,
+          body: msg.content || 'New message',
+        }, { onConflict: 'message_id', ignoreDuplicates: true }).then(() => {})
 
         const id = ++toastIdRef.current
         const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
