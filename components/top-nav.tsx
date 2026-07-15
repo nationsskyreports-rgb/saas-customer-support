@@ -8,8 +8,19 @@ import { useTheme } from '@/lib/theme-context'
 import { getAgent, setAgent, clearAgent, AuthAgent } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 
+interface NotifRow {
+  id: string
+  title: string
+  body: string | null
+  is_read: boolean
+  created_at: string
+}
+
 export function TopNav() {
   const [statusOpen, setStatusOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifs, setNotifs] = useState<NotifRow[]>([])
+  const [unread, setUnread] = useState(0)
   const [agentStatus, setAgentStatus] = useState('Active')
   const [me, setMe] = useState<AuthAgent | null>(null)
   const { collapsed } = useSidebar()
@@ -41,6 +52,50 @@ export function TopNav() {
         }
       })
   }, [])
+
+  // ─── Notification Center: load + live updates ───
+  const loadNotifs = async () => {
+    const { data } = await supabase
+      .from('notifications')
+      .select('id, title, body, is_read, created_at')
+      .order('created_at', { ascending: false })
+      .limit(12)
+    if (data) setNotifs(data)
+    const { count } = await supabase
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_read', false)
+    setUnread(count || 0)
+  }
+
+  useEffect(() => {
+    loadNotifs()
+    const ch = supabase
+      .channel('topnav-notifications')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => loadNotifs())
+      .subscribe()
+    return () => { supabase.removeChannel(ch) }
+  }, [])
+
+  const markAllRead = async () => {
+    await supabase.from('notifications').update({ is_read: true }).eq('is_read', false)
+    loadNotifs()
+  }
+
+  const openNotif = async (n: NotifRow) => {
+    await supabase.from('notifications').update({ is_read: true }).eq('id', n.id)
+    setNotifOpen(false)
+    router.push('/inbox')
+  }
+
+  const timeAgo = (iso: string) => {
+    const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
+    if (mins < 1) return 'now'
+    if (mins < 60) return `${mins}m ago`
+    const hrs = Math.floor(mins / 60)
+    if (hrs < 24) return `${hrs}h ago`
+    return `${Math.floor(hrs / 24)}d ago`
+  }
 
   const getStatusColor = () => {
     const status = statuses.find(s => s.label === agentStatus)
@@ -91,9 +146,56 @@ export function TopNav() {
           )}
         </button>
 
-        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Notifications">
-          <Bell className="w-5 h-5 text-gray-700" />
-        </button>
+        {/* ─── Notification bell + dropdown ─── */}
+        <div className="relative">
+          <button onClick={() => setNotifOpen(!notifOpen)}
+            className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Notifications">
+            <Bell className="w-5 h-5 text-gray-700" />
+            {unread > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                {unread > 99 ? '99+' : unread}
+              </span>
+            )}
+          </button>
+
+          {notifOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
+              <div className="absolute right-0 mt-2 w-96 bg-white border border-gray-200 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                  <p className="font-bold text-sm text-gray-900">Notifications</p>
+                  {unread > 0 && (
+                    <button onClick={markAllRead} className="text-xs font-medium" style={{ color: '#00B69B' }}>
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+                <div className="max-h-[380px] overflow-y-auto">
+                  {notifs.length === 0 && (
+                    <p className="text-center text-sm text-gray-400 py-10">No notifications yet</p>
+                  )}
+                  {notifs.map(n => (
+                    <button key={n.id} onClick={() => openNotif(n)}
+                      className={`w-full text-left px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition-colors border-b border-gray-50 ${!n.is_read ? 'bg-emerald-50/60' : ''}`}>
+                      <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${!n.is_read ? 'bg-emerald-500' : 'bg-transparent'}`} />
+                      <span className="flex-1 min-w-0">
+                        <span className="flex items-center justify-between gap-2">
+                          <span className={`text-sm truncate ${!n.is_read ? 'font-bold text-gray-900' : 'font-medium text-gray-600'}`}>{n.title}</span>
+                          <span className="text-[10px] text-gray-400 flex-shrink-0">{timeAgo(n.created_at)}</span>
+                        </span>
+                        <span className="block text-xs text-gray-500 truncate">{n.body}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => { setNotifOpen(false); router.push('/notifications') }}
+                  className="w-full py-2.5 text-xs font-semibold border-t border-gray-100 hover:bg-gray-50" style={{ color: '#00B69B' }}>
+                  View all notifications
+                </button>
+              </div>
+            </>
+          )}
+        </div>
         <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Settings">
           <Settings className="w-5 h-5 text-gray-700" />
         </button>
