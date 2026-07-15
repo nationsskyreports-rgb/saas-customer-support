@@ -39,11 +39,21 @@ export function GlobalNotifications() {
     }
   }, [])
 
+  const [notifPerm, setNotifPerm] = useState<NotificationPermission | 'unsupported'>('default')
+
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission()
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      setNotifPerm('unsupported')
+      return
     }
+    setNotifPerm(Notification.permission)
   }, [])
+
+  const requestNotifPermission = async () => {
+    if (!('Notification' in window)) return
+    const res = await Notification.requestPermission()
+    setNotifPerm(res)
+  }
 
   const playSound = async () => {
     try {
@@ -101,11 +111,15 @@ export function GlobalNotifications() {
         setToasts(prev => [...prev, { id, title: name, body: msg.content || 'New message', time }])
 
         if ('Notification' in window && Notification.permission === 'granted') {
-          const n = new Notification(name, {
+          const n = new Notification(`💬 ${name}`, {
             body: msg.content || 'New message',
-            icon: '/icon-light-32x32.png',
-            requireInteraction: true,
-          })
+            icon: '/logo-transparent.png',
+            badge: '/logo-transparent.png',
+            tag: `nos-msg-${msg.conversation_id}`,  // group per conversation
+            renotify: true,                          // re-alert even with same tag
+            requireInteraction: true,                // stays until dismissed
+            silent: false,
+          } as NotificationOptions)
           n.onclick = () => { window.focus(); router.push('/inbox'); n.close() }
         }
       })
@@ -129,6 +143,38 @@ export function GlobalNotifications() {
         {status === 'connecting' && <><span className="w-2 h-2 rounded-full bg-yellow-500" /><span className="text-yellow-600">Connecting...</span></>}
         {status === 'error' && <><span className="w-2 h-2 rounded-full bg-red-500" /><span className="text-red-600">Realtime Error</span></>}
       </div>
+
+      {/* Enable-desktop-notifications banner */}
+      {notifPerm === 'default' && (
+        <div className="fixed top-16 right-4 z-[101] bg-white rounded-2xl border p-4 shadow-xl"
+          style={{ width: '340px', borderColor: 'rgba(59, 130, 246, 0.35)' }}>
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #3B82F6, #2563EB)' }}>
+              <Bell className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm text-gray-900">Enable desktop alerts</p>
+              <p className="text-xs text-gray-500 mt-0.5 leading-snug">
+                Get message popups on your screen even when this tab is in the background.
+              </p>
+              <button onClick={requestNotifPermission}
+                className="mt-2.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white"
+                style={{ background: 'linear-gradient(90deg, #00B69B, #3B82F6)' }}>
+                Enable now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {notifPerm === 'denied' && (
+        <div className="fixed top-16 right-4 z-[101] bg-white rounded-2xl border border-red-200 p-3.5 shadow-xl"
+          style={{ width: '340px' }}>
+          <p className="text-xs text-gray-600 leading-snug">
+            🔕 Desktop notifications are <b>blocked</b>. Click the lock icon 🔒 next to the address bar → Notifications → <b>Allow</b>, then reload.
+          </p>
+        </div>
+      )}
 
       {/* Toasts */}
       <div className="fixed top-16 right-4 z-[100] space-y-2" style={{ maxWidth: '340px', width: '340px' }}>
