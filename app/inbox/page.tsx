@@ -1,13 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { ConversationList } from '@/components/conversation-list'
 import { ChatPanel } from '@/components/chat-panel'
 import { AgentConversationPanel } from '@/components/agent-conversation-panel'
 import { Search } from 'lucide-react'
 
 export default function InboxPage() {
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const convParam = searchParams.get('conv') // deep-link support
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(convParam || null)
   const [searchTerm, setSearchTerm] = useState('')
 
   return (

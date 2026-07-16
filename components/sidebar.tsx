@@ -17,6 +17,7 @@ import {
   CircleDot,
   Zap,
   Tag,
+  Contact,
   ChevronLeft,
   ChevronRight,
   Shield,
@@ -77,6 +78,7 @@ export function Sidebar() {
       title: 'ADMINISTRATION',
       items: [
         { href: '/agents', label: 'Agents', icon: Users },
+        { href: '/customers', label: 'Customers', icon: Contact },
         { href: '/roles', label: 'Terms & Roles', icon: Shield },
         { href: '/teams', label: 'Teams', icon: Users },
         { href: '/groups', label: 'Groups', icon: LayoutGrid },

@@ -10,9 +10,10 @@ import { Search } from 'lucide-react'
 export default function AllConversationsPage() {
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab') // 'open' | 'pending' | 'unassigned' | 'all'
+  const convParam = searchParams.get('conv') // deep-link: open a specific conversation
   const initialTab = ['open', 'pending', 'unassigned'].includes(tabParam || '') ? tabParam! : 'all'
 
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(convParam || null)
   const [searchTerm, setSearchTerm] = useState('')
 
   return (

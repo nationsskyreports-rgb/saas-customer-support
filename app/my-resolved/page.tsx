@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { RefreshCw, CheckCircle2, Eye, Users } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getAgent } from '@/lib/auth'
+import { ConversationViewerModal } from '@/components/conversation-viewer-modal'
 
 interface ResolvedConv {
   id: string
@@ -22,7 +22,7 @@ export default function MyResolvedPage() {
   const [convs, setConvs] = useState<ResolvedConv[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'resolved' | 'closed'>('all')
-  const router = useRouter()
+  const [viewerId, setViewerId] = useState<string | null>(null)
   const me = getAgent()
 
   const fetchResolved = async () => {
@@ -99,7 +99,7 @@ export default function MyResolvedPage() {
               const team = conv.teams as any
               const completedAt = conv.resolved_at || conv.closed_at || conv.updated_at
               return (
-                <tr key={conv.id} className="hover:bg-emerald-50 transition-colors">
+                <tr key={conv.id} onClick={() => setViewerId(conv.id)} className="hover:bg-emerald-50 transition-colors cursor-pointer">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ backgroundColor: '#00B69B' }}>
@@ -131,10 +131,10 @@ export default function MyResolvedPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button
-                      onClick={() => router.push(`/inbox?conv=${conv.id}`)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      onClick={(e) => { e.stopPropagation(); setViewerId(conv.id) }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-[#00B69B] transition-colors"
                     >
-                      <Eye className="w-3.5 h-3.5" /> View
+                      <Eye className="w-3.5 h-3.5" /> View Chat
                     </button>
                   </td>
                 </tr>
@@ -146,6 +146,10 @@ export default function MyResolvedPage() {
           <div className="text-center py-12 text-gray-400">No {filter !== 'all' ? filter : ''} chats yet</div>
         )}
       </div>
+
+      {viewerId && (
+        <ConversationViewerModal conversationId={viewerId} onClose={() => setViewerId(null)} />
+      )}
     </div>
   )
 }

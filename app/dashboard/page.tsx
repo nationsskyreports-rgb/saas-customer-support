@@ -20,6 +20,48 @@ interface Conversation {
 
 const STALE_MS = 30 * 60 * 1000
 
+type Period = 'today' | 'yesterday' | '7d' | '30d' | 'month' | 'custom'
+
+const PERIOD_LABELS: Record<Period, string> = {
+  today: 'Today',
+  yesterday: 'Yesterday',
+  '7d': 'Last 7 Days',
+  '30d': 'Last 30 Days',
+  month: 'This Month',
+  custom: 'Custom',
+}
+
+function getPeriodRange(period: Period, customFrom: string, customTo: string): { from: Date; to: Date } {
+  const now = new Date()
+  const startOfDay = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x }
+  const endOfDay = (d: Date) => { const x = new Date(d); x.setHours(23, 59, 59, 999); return x }
+
+  switch (period) {
+    case 'today': return { from: startOfDay(now), to: endOfDay(now) }
+    case 'yesterday': {
+      const y = new Date(now); y.setDate(y.getDate() - 1)
+      return { from: startOfDay(y), to: endOfDay(y) }
+    }
+    case '7d': {
+      const f = new Date(now); f.setDate(f.getDate() - 6)
+      return { from: startOfDay(f), to: endOfDay(now) }
+    }
+    case '30d': {
+      const f = new Date(now); f.setDate(f.getDate() - 29)
+      return { from: startOfDay(f), to: endOfDay(now) }
+    }
+    case 'month': {
+      const f = new Date(now.getFullYear(), now.getMonth(), 1)
+      return { from: f, to: endOfDay(now) }
+    }
+    case 'custom': {
+      const f = customFrom ? new Date(customFrom + 'T00:00:00') : startOfDay(now)
+      const t = customTo ? new Date(customTo + 'T23:59:59') : endOfDay(now)
+      return { from: f, to: t }
+    }
+  }
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const [agents, setAgents] = useState<Agent[]>([])
@@ -30,10 +72,17 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
+  // ─── Period filter ───
+  const [period, setPeriod] = useState<Period>('today')
+  const [customFrom, setCustomFrom] = useState('')
+  const [customTo, setCustomTo] = useState('')
+  const periodLabel = period === 'custom' && customFrom
+    ? `${customFrom} → ${customTo || 'today'}`
+    : PERIOD_LABELS[period]
+
   const fetchData = useCallback(async () => {
     setLoading(true) // ← هذا يصلح زر Refresh
-    const todayStart = new Date()
-    todayStart.setHours(0, 0, 0, 0)
+    const { from, to } = getPeriodRange(period, customFrom, customTo)
 
     const [aRes, cRes, resolvedRes, todayCountRes, resolvedDetailRes] = await Promise.all([
       supabase.from('agents').select('*').eq('is_active', true).order('status').order('name'),
@@ -44,14 +93,17 @@ export default function DashboardPage() {
       supabase.from('conversations')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'resolved')
-        .gte('resolved_at', todayStart.toISOString()),
+        .gte('resolved_at', from.toISOString())
+        .lte('resolved_at', to.toISOString()),
       supabase.from('conversations')
         .select('id', { count: 'exact', head: true })
-        .gte('created_at', todayStart.toISOString()),
+        .gte('created_at', from.toISOString())
+        .lte('created_at', to.toISOString()),
       supabase.from('conversations')
         .select('created_at, resolved_at')
         .eq('status', 'resolved')
-        .gte('resolved_at', todayStart.toISOString())
+        .gte('resolved_at', from.toISOString())
+        .lte('resolved_at', to.toISOString())
         .not('resolved_at', 'is', null),
     ])
 
@@ -62,7 +114,7 @@ export default function DashboardPage() {
     if (resolvedDetailRes.data) setResolvedConvsToday(resolvedDetailRes.data as any)
     setLoading(false)
     setLastRefresh(new Date())
-  }, [])
+  }, [period, customFrom, customTo])
 
   useEffect(() => {
     fetchData()
@@ -145,11 +197,11 @@ export default function DashboardPage() {
     <div className="p-6 space-y-5">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Operations Dashboard</h1>
           <p className="text-sm text-gray-400 mt-0.5">
-            Live · Updated {lastRefresh.toLocaleTimeString('en-EG', { hour: '2-digit', minute: '2-digit' })}
+            Live · Updated {lastRefresh.toLocaleTimeString('en-EG', { hour: '2-digit', minute: '2-digit' })} · Showing: <span className="font-semibold text-gray-500">{periodLabel}</span>
           </p>
         </div>
         <button
@@ -160,6 +212,37 @@ export default function DashboardPage() {
           <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#00B69B]' : ''}`} />
           {loading ? 'Loading...' : 'Refresh'}
         </button>
+      </div>
+
+      {/* Period Filter */}
+      <div className="bg-white rounded-xl border border-gray-200 p-3 flex items-center gap-2 flex-wrap">
+        {(['today', 'yesterday', '7d', '30d', 'month', 'custom'] as Period[]).map(p => (
+          <button
+            key={p}
+            onClick={() => setPeriod(p)}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              period === p
+                ? 'text-white'
+                : 'text-gray-500 bg-gray-50 hover:bg-gray-100'
+            }`}
+            style={period === p ? { backgroundColor: '#00B69B' } : undefined}
+          >
+            {PERIOD_LABELS[p]}
+          </button>
+        ))}
+        {period === 'custom' && (
+          <div className="flex items-center gap-2 ml-2">
+            <input
+              type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+              className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            />
+            <span className="text-xs text-gray-400">to</span>
+            <input
+              type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+              className="px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            />
+          </div>
+        )}
       </div>
 
       {/* KPI Cards */}
@@ -176,7 +259,7 @@ export default function DashboardPage() {
           <p className="text-2xl font-bold text-gray-900">
             {loading ? '—' : todayConversations}
           </p>
-          <p className="text-xs text-gray-400 mt-1">Today's Conversations</p>
+          <p className="text-xs text-gray-400 mt-1">Conversations · {periodLabel}</p>
         </button>
 
         <button onClick={() => router.push('/monitoring')}
@@ -258,7 +341,7 @@ export default function DashboardPage() {
             <p className="text-2xl font-bold text-gray-900 mt-0.5">
               {loading ? '—' : formatMin(avgHandlingMin)}
             </p>
-            <p className="text-xs text-gray-400 mt-0.5">From {resolvedConvsToday.length} resolved today</p>
+            <p className="text-xs text-gray-400 mt-0.5">From {resolvedConvsToday.length} resolved · {periodLabel}</p>
           </div>
         </div>
       </div>
@@ -411,7 +494,7 @@ export default function DashboardPage() {
       {/* Resolved Today */}
       <div className="bg-gradient-to-r from-[#00B69B]/10 via-white to-[#00B69B]/10 border border-[#00B69B]/20 rounded-xl p-5 flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-500">Resolved Today</p>
+          <p className="text-sm text-gray-500">Resolved · {periodLabel}</p>
           <p className="text-3xl font-bold mt-0.5" style={{ color: '#00B69B' }}>
             {loading ? '—' : resolvedToday}
             <span className="text-base font-normal text-gray-400 ml-2">conversations closed</span>
