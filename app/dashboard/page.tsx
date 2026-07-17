@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   MessageCircle, Users, AlertTriangle, ChevronRight,
@@ -79,6 +79,12 @@ export default function DashboardPage() {
   const periodLabel = period === 'custom' && customFrom
     ? `${customFrom} → ${customTo || 'today'}`
     : PERIOD_LABELS[period]
+
+  // Stable ISO range for the selected period — drives the charts too (same filter, single source of truth)
+  const periodRange = useMemo(() => {
+    const { from, to } = getPeriodRange(period, customFrom, customTo)
+    return { fromIso: from.toISOString(), toIso: to.toISOString() }
+  }, [period, customFrom, customTo])
 
   const fetchData = useCallback(async () => {
     setLoading(true) // ← هذا يصلح زر Refresh
@@ -346,6 +352,9 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Charts — placed ABOVE the tables, driven by the SAME period filter at the top */}
+      <MetricsChart fromIso={periodRange.fromIso} toIso={periodRange.toIso} label={periodLabel} />
+
       {/* Main Grid: Agent Roster + Stale */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
@@ -487,9 +496,6 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
-
-      {/* Weekly Chart */}
-      <MetricsChart />
 
       {/* Resolved Today */}
       <div className="bg-gradient-to-r from-[#00B69B]/10 via-white to-[#00B69B]/10 border border-[#00B69B]/20 rounded-xl p-5 flex items-center justify-between">

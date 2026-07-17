@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Search, Upload, Download, RefreshCw, Trash2, Plus, X,
-  Users, FileSpreadsheet, CheckCircle2, AlertTriangle, Plug, Link2, Save
+  Users, FileSpreadsheet, CheckCircle2, AlertTriangle, Plug, Link2, Save,
+  ClipboardPaste
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -31,6 +32,7 @@ interface CrmSettings {
   last_sync_at: string | null
   last_sync_status: string | null
 }
+interface Toast { id: number; type: 'success' | 'error'; message: string }
 
 // ─────────────────────────────────────────────────────────────
 // Small CSV parser (handles quotes, commas inside quotes, BOM, \r\n)
@@ -59,6 +61,19 @@ function parseCSV(text: string): string[][] {
   return rows.filter(r => r.some(c => c.trim() !== ''))
 }
 
+// Parse pasted text: Excel copy/paste is tab-separated; also supports CSV or one value per line
+function parsePasted(text: string): string[][] {
+  const src = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  const lines = src.split('\n').filter(l => l.trim() !== '')
+  if (lines.length === 0) return []
+  const hasTabs = lines.some(l => l.includes('\t'))
+  if (hasTabs) return lines.map(l => l.split('\t').map(c => c.trim()))
+  const hasCommas = lines.some(l => l.includes(','))
+  if (hasCommas) return parseCSV(src)
+  // one column per line (e.g. list of phone numbers)
+  return lines.map(l => [l.trim()])
+}
+
 const normalizePhone = (raw: string) => {
   let p = raw.trim().replace(/[\s\-().]/g, '')
   if (p.startsWith('+')) p = '+' + p.slice(1).replace(/\D/g, '')
@@ -66,9 +81,29 @@ const normalizePhone = (raw: string) => {
   return p
 }
 
+const HEADER_KEYWORDS = ['name', 'phone', 'mobile', 'email', 'mail', 'tel', 'client', 'customer', 'الاسم', 'اسم', 'رقم', 'موبايل', 'تليفون', 'هاتف', 'ايميل', 'بريد']
+
+const looksLikeHeader = (row: string[]) =>
+  row.some(cell => HEADER_KEYWORDS.some(k => cell.toLowerCase().trim().includes(k)))
+
 const guessColumn = (headers: string[], candidates: string[]) => {
   const idx = headers.findIndex(h => candidates.some(c => h.toLowerCase().trim().includes(c)))
   return idx
+}
+
+// If there's no header row, guess which column holds phones by data shape
+const guessPhoneColByData = (rows: string[][]) => {
+  const sample = rows.slice(0, 10)
+  const colCount = Math.max(...sample.map(r => r.length))
+  let best = -1, bestScore = 0
+  for (let c = 0; c < colCount; c++) {
+    const score = sample.filter(r => {
+      const p = normalizePhone(r[c] || '')
+      return p.length >= 7
+    }).length
+    if (score > bestScore) { bestScore = score; best = c }
+  }
+  return bestScore > 0 ? best : -1
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -86,6 +121,14 @@ export default function CustomersPage() {
   const [newTypeName, setNewTypeName] = useState('')
   const [addingType, setAddingType] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Contact | null>(null)
+  const [savingTypeIds, setSavingTypeIds] = useState<Set<string>>(new Set())
+  const [toasts, setToasts] = useState<Toast[]>([])
+
+  const showToast = useCallback((type: Toast['type'], message: string) => {
+    const id = Date.now() + Math.random()
+    setToasts(prev => [...prev, { id, type, message }])
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000)
+  }, [])
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -94,11 +137,12 @@ export default function CustomersPage() {
       supabase.from('customer_types').select('id, name, color').order('name'),
       supabase.from('crm_settings').select('*').limit(1).maybeSingle(),
     ])
+    if (cRes.error) showToast('error', `Failed to load customers: ${cRes.error.message}`)
     if (cRes.data) setContacts(cRes.data as any)
     if (tRes.data) setTypes(tRes.data)
     if (crmRes.data) setCrm(crmRes.data as any)
     setLoading(false)
-  }, [])
+  }, [showToast])
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
@@ -114,25 +158,62 @@ export default function CustomersPage() {
 
   const typeColor = (name: string | null) => types.find(t => t.name === name)?.color || '#9CA3AF'
 
+  // ── FIX #1: verify the DB actually saved, revert + surface the error if not ──
   const updateType = async (contactId: string, type: string) => {
-    await supabase.from('contacts').update({ customer_type: type || null }).eq('id', contactId)
-    setContacts(prev => prev.map(c => c.id === contactId ? { ...c, customer_type: type || null } : c))
+    const previous = contacts.find(c => c.id === contactId)?.customer_type ?? null
+    const nextValue = type || null
+
+    // Optimistic UI + spinner on the row
+    setContacts(prev => prev.map(c => c.id === contactId ? { ...c, customer_type: nextValue } : c))
+    setSavingTypeIds(prev => new Set(prev).add(contactId))
+
+    const { data, error } = await supabase
+      .from('contacts')
+      .update({ customer_type: nextValue })
+      .eq('id', contactId)
+      .select('id, customer_type')   // ← returns the updated row; empty array = nothing was saved (RLS / permissions)
+
+    setSavingTypeIds(prev => { const n = new Set(prev); n.delete(contactId); return n })
+
+    if (error || !data || data.length === 0) {
+      // Revert the optimistic change — the database did NOT save it
+      setContacts(prev => prev.map(c => c.id === contactId ? { ...c, customer_type: previous } : c))
+      const reason = error?.message
+        || 'The database rejected the change (0 rows updated). Run the "customers-fix.sql" script to add the missing permissions on the contacts table.'
+      showToast('error', `Customer type was NOT saved: ${reason}`)
+      return
+    }
+    showToast('success', nextValue ? `Saved — customer marked as "${nextValue}"` : 'Saved — type removed')
   }
 
   const deleteContact = async () => {
     if (!deleteTarget) return
-    await supabase.from('contacts').delete().eq('id', deleteTarget.id)
-    setContacts(prev => prev.filter(c => c.id !== deleteTarget.id))
+    const target = deleteTarget
+    const { data, error } = await supabase.from('contacts').delete().eq('id', target.id).select('id')
+    if (error || !data || data.length === 0) {
+      showToast('error', `Delete failed: ${error?.message || 'no rows deleted (check permissions)'}`)
+      setDeleteTarget(null)
+      return
+    }
+    setContacts(prev => prev.filter(c => c.id !== target.id))
     setDeleteTarget(null)
+    showToast('success', `Deleted ${target.name}`)
   }
 
   const addType = async () => {
     if (!newTypeName.trim()) return
     setAddingType(true)
-    const { data } = await supabase.from('customer_types').insert({ name: newTypeName.trim() }).select().single()
-    if (data) setTypes(prev => [...prev, data as any].sort((a, b) => a.name.localeCompare(b.name)))
-    setNewTypeName('')
+    const { data, error } = await supabase.from('customer_types').insert({ name: newTypeName.trim() }).select().single()
     setAddingType(false)
+    if (error) {
+      showToast('error', error.code === '23505' ? 'This type already exists' : `Could not add type: ${error.message}`)
+      return
+    }
+    if (data) {
+      setTypes(prev => [...prev, data as any].sort((a, b) => a.name.localeCompare(b.name)))
+      setNewTypeName('')
+      showToast('success', `Type "${(data as any).name}" added`)
+    }
   }
 
   const exportCSV = () => {
@@ -157,6 +238,24 @@ export default function CustomersPage() {
 
   return (
     <div className="p-8 space-y-6">
+      {/* Toasts */}
+      <div className="fixed top-4 right-4 z-[100] space-y-2 w-96 max-w-[calc(100vw-2rem)]">
+        {toasts.map(t => (
+          <div key={t.id}
+            className={`flex items-start gap-2.5 rounded-xl px-4 py-3 shadow-lg border text-sm animate-in ${
+              t.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-700'
+            }`}>
+            {t.type === 'success'
+              ? <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-500" />
+              : <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-500" />}
+            <span className="flex-1">{t.message}</span>
+            <button onClick={() => setToasts(prev => prev.filter(x => x.id !== t.id))} className="flex-shrink-0 opacity-50 hover:opacity-100">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
@@ -281,15 +380,19 @@ export default function CustomersPage() {
                 </td>
                 <td className="px-6 py-3.5 text-sm text-gray-600">{c.email || <span className="text-gray-300">—</span>}</td>
                 <td className="px-6 py-3.5">
-                  <select
-                    value={c.customer_type || ''}
-                    onChange={e => updateType(c.id, e.target.value)}
-                    className="text-xs font-semibold px-2 py-1.5 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
-                    style={{ color: c.customer_type ? typeColor(c.customer_type) : '#9CA3AF' }}
-                  >
-                    <option value="">No Type</option>
-                    {types.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
-                  </select>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={c.customer_type || ''}
+                      onChange={e => updateType(c.id, e.target.value)}
+                      disabled={savingTypeIds.has(c.id)}
+                      className="text-xs font-semibold px-2 py-1.5 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300 disabled:opacity-50"
+                      style={{ color: c.customer_type ? typeColor(c.customer_type) : '#9CA3AF' }}
+                    >
+                      <option value="">No Type</option>
+                      {types.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                    </select>
+                    {savingTypeIds.has(c.id) && <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#00B69B]" />}
+                  </div>
                 </td>
                 <td className="px-6 py-3.5">
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.source === 'crm' ? 'bg-blue-100 text-blue-700' : c.source === 'import' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -377,25 +480,85 @@ function CrmSyncButton({ onDone }: { onDone: () => void }) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Customer Type chips (shared between import steps)
+// ─────────────────────────────────────────────────────────────
+function TypeChips({ types, value, onChange }: { types: CustomerType[]; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      <button onClick={() => onChange('')}
+        className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${value === '' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'}`}>
+        No Type
+      </button>
+      {types.map(t => (
+        <button key={t.id} onClick={() => onChange(t.name)}
+          className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
+          style={value === t.name
+            ? { backgroundColor: t.color, color: '#FFF', borderColor: t.color }
+            : { backgroundColor: '#FFF', color: t.color, borderColor: t.color + '55' }}>
+          {t.name}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
 // Import Customers Modal
+//  Step 1: pick customer type FIRST, then choose source (file upload OR copy/paste)
+//  Step 2: map columns + preview
 // ─────────────────────────────────────────────────────────────
 function ImportCustomersModal({ types, onClose, onImported }: {
   types: CustomerType[]
   onClose: () => void
   onImported: () => void
 }) {
-  const [step, setStep] = useState<'upload' | 'map' | 'importing' | 'done'>('upload')
+  const [step, setStep] = useState<'source' | 'map' | 'importing' | 'done'>('source')
+  const [method, setMethod] = useState<'file' | 'paste'>('file')
+  const [pasteText, setPasteText] = useState('')
   const [fileName, setFileName] = useState('')
   const [rows, setRows] = useState<string[][]>([])
   const [headers, setHeaders] = useState<string[]>([])
+  const [hasHeader, setHasHeader] = useState(true)
+  const [rawParsed, setRawParsed] = useState<string[][]>([])
   const [nameCol, setNameCol] = useState(-1)
   const [phoneCol, setPhoneCol] = useState(-1)
   const [emailCol, setEmailCol] = useState(-1)
   const [batchType, setBatchType] = useState('')
   const [progress, setProgress] = useState(0)
   const [summary, setSummary] = useState({ inserted: 0, updated: 0, skipped: 0 })
+  const [importError, setImportError] = useState('')
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // Apply parsed data → set headers/rows depending on header presence, auto-detect columns
+  const applyParsed = (parsed: string[][], headerPresent: boolean) => {
+    setRawParsed(parsed)
+    setHasHeader(headerPresent)
+    if (headerPresent) {
+      const hdr = parsed[0].map(h => h.trim())
+      setHeaders(hdr)
+      setRows(parsed.slice(1))
+      setNameCol(guessColumn(hdr, ['name', 'الاسم', 'اسم', 'client', 'customer']))
+      setPhoneCol(guessColumn(hdr, ['phone', 'mobile', 'رقم', 'موبايل', 'تليفون', 'هاتف', 'tel']))
+      setEmailCol(guessColumn(hdr, ['email', 'mail', 'ايميل', 'بريد']))
+    } else {
+      const colCount = Math.max(...parsed.map(r => r.length))
+      setHeaders(Array.from({ length: colCount }, (_, i) => `Column ${i + 1}`))
+      setRows(parsed)
+      const pc = guessPhoneColByData(parsed)
+      setPhoneCol(pc)
+      // name = first non-phone column, if any
+      const nc = Array.from({ length: colCount }, (_, i) => i).find(i => i !== pc)
+      setNameCol(nc !== undefined ? nc : -1)
+      setEmailCol(-1)
+    }
+    setStep('map')
+  }
+
+  const toggleHeader = (headerPresent: boolean) => {
+    if (rawParsed.length === 0) return
+    applyParsed(rawParsed, headerPresent)
+  }
 
   const handleFile = async (file: File) => {
     setError('')
@@ -409,23 +572,29 @@ function ImportCustomersModal({ types, onClose, onImported }: {
       setError('File must contain a header row plus at least one data row')
       return
     }
-    const hdr = parsed[0].map(h => h.trim())
     setFileName(file.name)
-    setHeaders(hdr)
-    setRows(parsed.slice(1))
-    // Auto-detect columns (English + Arabic headers)
-    setNameCol(guessColumn(hdr, ['name', 'الاسم', 'اسم', 'client', 'customer']))
-    setPhoneCol(guessColumn(hdr, ['phone', 'mobile', 'رقم', 'موبايل', 'تليفون', 'هاتف', 'tel']))
-    setEmailCol(guessColumn(hdr, ['email', 'mail', 'ايميل', 'بريد']))
-    setStep('map')
+    applyParsed(parsed, true)
+  }
+
+  const handlePaste = () => {
+    setError('')
+    const parsed = parsePasted(pasteText)
+    if (parsed.length === 0) {
+      setError('Paste at least one row of data (copy cells directly from Excel / Google Sheets)')
+      return
+    }
+    setFileName('Pasted data')
+    const headerPresent = looksLikeHeader(parsed[0]) && parsed.length > 1
+    applyParsed(parsed, headerPresent)
   }
 
   const startImport = async () => {
     if (phoneCol === -1) { setError('Phone column is required'); return }
     setStep('importing')
     setError('')
+    setImportError('')
 
-    // Build clean records, dedupe within file by phone
+    // Build clean records, dedupe within data by phone
     const seen = new Set<string>()
     const records: { name: string; phone: string; email: string | null }[] = []
     let skipped = 0
@@ -442,13 +611,15 @@ function ImportCustomersModal({ types, onClose, onImported }: {
     }
 
     let inserted = 0, updated = 0
+    let firstError = ''
     const CHUNK = 200
     for (let i = 0; i < records.length; i += CHUNK) {
       const chunk = records.slice(i, i + CHUNK)
       const phones = chunk.map(c => c.phone)
 
       // find existing contacts by phone
-      const { data: existing } = await supabase.from('contacts').select('id, phone').in('phone', phones)
+      const { data: existing, error: exErr } = await supabase.from('contacts').select('id, phone').in('phone', phones)
+      if (exErr && !firstError) firstError = exErr.message
       const existingMap = new Map((existing || []).map(e => [e.phone, e.id]))
 
       const toInsert = chunk.filter(c => !existingMap.has(c.phone))
@@ -462,24 +633,26 @@ function ImportCustomersModal({ types, onClose, onImported }: {
           }))
         )
         if (!insErr) inserted += toInsert.length
-        else skipped += toInsert.length
+        else { skipped += toInsert.length; if (!firstError) firstError = insErr.message }
       }
       for (const c of toUpdate) {
         const upd: any = { name: c.name, source: 'import' }
         if (c.email) upd.email = c.email
         if (batchType) upd.customer_type = batchType
-        const { error: updErr } = await supabase.from('contacts').update(upd).eq('id', existingMap.get(c.phone)!)
-        if (!updErr) updated++
-        else skipped++
+        const { data: updData, error: updErr } = await supabase.from('contacts').update(upd).eq('id', existingMap.get(c.phone)!).select('id')
+        if (!updErr && updData && updData.length > 0) updated++
+        else { skipped++; if (!firstError && updErr) firstError = updErr.message }
       }
       setProgress(Math.round(((i + chunk.length) / records.length) * 100))
     }
 
     setSummary({ inserted, updated, skipped })
+    if (firstError) setImportError(firstError)
     setStep('done')
   }
 
   const previewRows = rows.slice(0, 6)
+  const selectedType = types.find(t => t.name === batchType)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
@@ -492,7 +665,7 @@ function ImportCustomersModal({ types, onClose, onImported }: {
             </div>
             <div>
               <h3 className="font-bold text-gray-900">Import Customers</h3>
-              <p className="text-xs text-gray-400">Upload a CSV file and assign a customer type</p>
+              <p className="text-xs text-gray-400">Choose a customer type, then upload a CSV or paste your data</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5 text-gray-500" /></button>
@@ -505,29 +678,90 @@ function ImportCustomersModal({ types, onClose, onImported }: {
             </div>
           )}
 
-          {/* STEP 1: Upload */}
-          {step === 'upload' && (
-            <div
-              onClick={() => fileRef.current?.click()}
-              onDragOver={e => e.preventDefault()}
-              onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f) }}
-              className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center cursor-pointer hover:border-[#00B69B] hover:bg-emerald-50/40 transition-colors"
-            >
-              <Upload className="w-10 h-10 text-gray-300 mx-auto mb-4" />
-              <p className="text-sm font-semibold text-gray-700">Click to upload or drag & drop</p>
-              <p className="text-xs text-gray-400 mt-1">CSV files only — columns: Name, Phone (required), Email</p>
-              <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
+          {/* STEP 1: Choose type first + source (upload or paste) */}
+          {step === 'source' && (
+            <div className="space-y-5">
+              {/* 1) Customer type — chosen BEFORE uploading */}
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase block mb-1.5">
+                  1 · Customer Type <span className="normal-case font-normal text-gray-400">(applied to all imported customers)</span>
+                </label>
+                <TypeChips types={types} value={batchType} onChange={setBatchType} />
+              </div>
+
+              {/* 2) Source tabs */}
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase block mb-1.5">2 · Data Source</label>
+                <div className="flex gap-2 mb-3">
+                  <button onClick={() => { setMethod('file'); setError('') }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${method === 'file' ? 'border-[#00B69B] text-[#00B69B] bg-emerald-50' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
+                    <Upload className="w-4 h-4" /> Upload CSV File
+                  </button>
+                  <button onClick={() => { setMethod('paste'); setError('') }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${method === 'paste' ? 'border-[#00B69B] text-[#00B69B] bg-emerald-50' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
+                    <ClipboardPaste className="w-4 h-4" /> Copy / Paste
+                  </button>
+                </div>
+
+                {method === 'file' ? (
+                  <div
+                    onClick={() => fileRef.current?.click()}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files?.[0]; if (f) handleFile(f) }}
+                    className="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center cursor-pointer hover:border-[#00B69B] hover:bg-emerald-50/40 transition-colors"
+                  >
+                    <Upload className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+                    <p className="text-sm font-semibold text-gray-700">Click to upload or drag &amp; drop</p>
+                    <p className="text-xs text-gray-400 mt-1">CSV files only — columns: Name, Phone (required), Email</p>
+                    <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = '' }} />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <textarea
+                      value={pasteText}
+                      onChange={e => setPasteText(e.target.value)}
+                      placeholder={'Paste rows copied from Excel / Google Sheets, e.g.:\nAhmed Ali\t+201001234567\tahmed@mail.com\nSara Hassan\t+201009876543\n\nOr simply one phone number per line.'}
+                      rows={8}
+                      dir="ltr"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-y"
+                    />
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-400">Supports Excel copy/paste (tab-separated), CSV text, or a plain list of phone numbers</p>
+                      <button onClick={handlePaste} disabled={!pasteText.trim()}
+                        className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-40" style={{ backgroundColor: '#00B69B' }}>
+                        Continue <span aria-hidden>→</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* STEP 2: Map columns + choose type */}
+          {/* STEP 2: Map columns + preview */}
           {step === 'map' && (
             <div className="space-y-5">
-              <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg px-4 py-2.5">
-                <FileSpreadsheet className="w-4 h-4 text-[#00B69B]" />
-                <b>{fileName}</b> · {rows.length} rows detected
+              <div className="flex items-center justify-between gap-3 flex-wrap bg-gray-50 rounded-lg px-4 py-2.5">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <FileSpreadsheet className="w-4 h-4 text-[#00B69B]" />
+                  <b>{fileName}</b> · {rows.length} rows detected
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-xs text-gray-400">Type:</span>
+                  {selectedType ? (
+                    <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white" style={{ backgroundColor: selectedType.color }}>{selectedType.name}</span>
+                  ) : (
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-200 text-gray-500">No Type</span>
+                  )}
+                </div>
               </div>
+
+              {/* Header toggle (mainly useful for pasted data) */}
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-600">
+                <input type="checkbox" checked={hasHeader} onChange={e => toggleHeader(e.target.checked)} className="w-4 h-4 accent-[#00B69B]" />
+                First row is a header row
+              </label>
 
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -548,21 +782,7 @@ function ImportCustomersModal({ types, onClose, onImported }: {
 
               <div>
                 <label className="text-xs font-semibold text-gray-500 uppercase block mb-1.5">Customer Type (applied to all imported customers)</label>
-                <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setBatchType('')}
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${batchType === '' ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'}`}>
-                    No Type
-                  </button>
-                  {types.map(t => (
-                    <button key={t.id} onClick={() => setBatchType(t.name)}
-                      className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                      style={batchType === t.name
-                        ? { backgroundColor: t.color, color: '#FFF', borderColor: t.color }
-                        : { backgroundColor: '#FFF', color: t.color, borderColor: t.color + '55' }}>
-                      {t.name}
-                    </button>
-                  ))}
-                </div>
+                <TypeChips types={types} value={batchType} onChange={setBatchType} />
               </div>
 
               {/* Preview */}
@@ -591,7 +811,7 @@ function ImportCustomersModal({ types, onClose, onImported }: {
               </div>
 
               <div className="flex justify-between items-center pt-2">
-                <button onClick={() => { setStep('upload'); setRows([]); setError('') }} className="text-sm text-gray-500 hover:underline">← Choose another file</button>
+                <button onClick={() => { setStep('source'); setRows([]); setRawParsed([]); setError('') }} className="text-sm text-gray-500 hover:underline">← Back</button>
                 <button onClick={startImport} disabled={phoneCol === -1}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-40" style={{ backgroundColor: '#00B69B' }}>
                   <Upload className="w-4 h-4" /> Import {rows.length} Customers
@@ -614,8 +834,19 @@ function ImportCustomersModal({ types, onClose, onImported }: {
           {/* STEP 4: Done */}
           {step === 'done' && (
             <div className="py-8 text-center">
-              <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
-              <h3 className="font-bold text-gray-900 text-lg">Import Complete</h3>
+              {importError && summary.inserted === 0 && summary.updated === 0 ? (
+                <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              ) : (
+                <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-4" />
+              )}
+              <h3 className="font-bold text-gray-900 text-lg">
+                {importError && summary.inserted === 0 && summary.updated === 0 ? 'Import Failed' : 'Import Complete'}
+              </h3>
+              {importError && (
+                <p className="text-xs text-red-500 mt-2 max-w-md mx-auto">
+                  {summary.skipped > 0 ? `${summary.skipped} rows failed: ` : ''}{importError}
+                </p>
+              )}
               <div className="flex justify-center gap-6 mt-4 text-sm">
                 <div><p className="text-2xl font-bold text-green-600">{summary.inserted}</p><p className="text-gray-400 text-xs">New</p></div>
                 <div><p className="text-2xl font-bold text-blue-600">{summary.updated}</p><p className="text-gray-400 text-xs">Updated</p></div>
@@ -647,11 +878,13 @@ function CrmSettingsModal({ settings, types, onClose, onSaved }: {
   const [enabled, setEnabled] = useState(settings?.is_enabled || false)
   const [defaultType, setDefaultType] = useState(settings?.default_customer_type || '')
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; message: string } | null>(null)
 
   const save = async () => {
     setSaving(true)
+    setSaveError('')
     const payload = {
       provider: provider.trim(),
       api_url: apiUrl.trim(),
@@ -660,12 +893,14 @@ function CrmSettingsModal({ settings, types, onClose, onSaved }: {
       default_customer_type: defaultType || null,
       updated_at: new Date().toISOString(),
     }
-    let saved: CrmSettings
+    let saved: CrmSettings | null = null
     if (settings?.id) {
-      const { data } = await supabase.from('crm_settings').update(payload).eq('id', settings.id).select().single()
+      const { data, error } = await supabase.from('crm_settings').update(payload).eq('id', settings.id).select().single()
+      if (error) setSaveError(error.message)
       saved = data as any
     } else {
-      const { data } = await supabase.from('crm_settings').insert(payload).select().single()
+      const { data, error } = await supabase.from('crm_settings').insert(payload).select().single()
+      if (error) setSaveError(error.message)
       saved = data as any
     }
     setSaving(false)
@@ -733,6 +968,11 @@ function CrmSettingsModal({ settings, types, onClose, onSaved }: {
             <span className="text-sm text-gray-700 font-medium">Enable CRM integration</span>
           </label>
 
+          {saveError && (
+            <div className="flex items-center gap-2 text-sm rounded-lg px-4 py-3 border bg-red-50 border-red-200 text-red-600">
+              <AlertTriangle className="w-4 h-4" /> Save failed: {saveError}
+            </div>
+          )}
           {testResult && (
             <div className={`flex items-center gap-2 text-sm rounded-lg px-4 py-3 border ${testResult.ok ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-600'}`}>
               {testResult.ok ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />} {testResult.message}
