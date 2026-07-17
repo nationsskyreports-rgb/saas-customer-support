@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, Zap, Smile, Paperclip, RefreshCw } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getAgent } from '@/lib/auth'
+import { logActivity } from '@/lib/report-utils'
 
 interface Message {
   id: string
@@ -104,13 +105,15 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
 
   const resolveConversation = async () => {
     if (!conversationId) return
-    await supabase.from('conversations').update({ status: 'resolved', resolved_at: new Date().toISOString() }).eq('id', conversationId)
+    const { error } = await supabase.from('conversations').update({ status: 'resolved', resolved_at: new Date().toISOString() }).eq('id', conversationId)
+    if (!error) logActivity(me?.name || 'Agent', 'resolved a conversation', 'conversation', { contact: convInfo?.contacts?.name || '' })
     fetchMessages()
   }
 
   const closeConversation = async () => {
     if (!conversationId) return
-    await supabase.from('conversations').update({ status: 'closed', closed_at: new Date().toISOString() }).eq('id', conversationId)
+    const { error } = await supabase.from('conversations').update({ status: 'closed', closed_at: new Date().toISOString() }).eq('id', conversationId)
+    if (!error) logActivity(me?.name || 'Agent', 'closed a conversation', 'conversation', { contact: convInfo?.contacts?.name || '' })
     fetchMessages()
   }
 

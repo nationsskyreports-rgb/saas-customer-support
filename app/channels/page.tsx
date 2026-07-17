@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Settings, RefreshCw, MessageCircle, X, Save } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useToasts, Toasts } from '@/components/ui/toasts'
 
 interface Channel {
   id: string
@@ -18,6 +19,7 @@ interface Channel {
 }
 
 export default function ChannelsPage() {
+  const { toasts, showToast, dismissToast } = useToasts()
   const [channels, setChannels] = useState<Channel[]>([])
   const [loading, setLoading] = useState(true)
   const [showSettings, setShowSettings] = useState(false)
@@ -39,7 +41,12 @@ export default function ChannelsPage() {
   useEffect(() => { fetchChannels() }, [])
 
   const toggleAvailability = async (ch: Channel) => {
-    await supabase.from('channels').update({ availability: !ch.availability }).eq('id', ch.id)
+    const { data, error } = await supabase.from('channels').update({ availability: !ch.availability }).eq('id', ch.id).select('id')
+    if (error || !data || data.length === 0) {
+      showToast('error', `Could not change availability: ${error?.message || 'no rows updated (check permissions)'}`)
+      return
+    }
+    showToast('success', `Channel ${!ch.availability ? 'enabled' : 'disabled'}`)
     fetchChannels()
   }
 
@@ -56,15 +63,20 @@ export default function ChannelsPage() {
   const saveSettings = async () => {
     if (!selected) return
     setSaving(true)
-    await supabase.from('channels').update({
+    const { data, error } = await supabase.from('channels').update({
       name: editName,
       welcome_message: editWelcome,
       away_message: editAway,
       assign_mode: editAssign,
       max_chats_per_agent: editMaxChats,
-    }).eq('id', selected.id)
+    }).eq('id', selected.id).select('id')
     setSaving(false)
+    if (error || !data || data.length === 0) {
+      showToast('error', `Save failed: ${error?.message || 'no rows updated (check permissions)'}`)
+      return
+    }
     setShowSettings(false)
+    showToast('success', 'Channel settings saved')
     fetchChannels()
   }
 
@@ -74,6 +86,7 @@ export default function ChannelsPage() {
 
   return (
     <div className="p-8">
+      <Toasts toasts={toasts} dismiss={dismissToast} />
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Meta Channels</h1>
         <p className="text-gray-500 mt-1">Manage your WhatsApp Business channels</p>

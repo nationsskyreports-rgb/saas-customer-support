@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Edit2, RefreshCw, X, Save } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useToasts, Toasts } from '@/components/ui/toasts'
 
 interface LogCategory {
   id: string
@@ -12,6 +13,7 @@ interface LogCategory {
 }
 
 export default function LogCategoriesPage() {
+  const { toasts, showToast, dismissToast } = useToasts()
   const [categories, setCategories] = useState<LogCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -50,19 +52,29 @@ export default function LogCategoriesPage() {
   const handleSave = async () => {
     if (!name.trim()) return
     setSaving(true)
+    let err = null
     if (editItem) {
-      await supabase.from('log_categories').update({ name: name.trim(), description: description.trim() }).eq('id', editItem.id)
+      const { data, error } = await supabase.from('log_categories').update({ name: name.trim(), description: description.trim() }).eq('id', editItem.id).select('id')
+      err = error?.message || (!data || data.length === 0 ? 'no rows updated (check permissions)' : null)
     } else {
-      await supabase.from('log_categories').insert({ name: name.trim(), description: description.trim() })
+      const { error } = await supabase.from('log_categories').insert({ name: name.trim(), description: description.trim() })
+      err = error?.message || null
     }
     setSaving(false)
+    if (err) { showToast('error', `Save failed: ${err}`); return }
     setShowModal(false)
+    showToast('success', editItem ? 'Category updated' : 'Category created')
     fetchCategories()
   }
 
   const handleDelete = async (id: string) => {
-    await supabase.from('log_categories').delete().eq('id', id)
+    const { data, error } = await supabase.from('log_categories').delete().eq('id', id).select('id')
     setConfirmDelete(null)
+    if (error || !data || data.length === 0) {
+      showToast('error', `Delete failed: ${error?.message || 'no rows deleted (check permissions)'}`)
+      return
+    }
+    showToast('success', 'Category deleted')
     fetchCategories()
   }
 
@@ -77,6 +89,7 @@ export default function LogCategoriesPage() {
 
   return (
     <div className="p-8 space-y-8">
+      <Toasts toasts={toasts} dismiss={dismissToast} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Log Category Types</h1>

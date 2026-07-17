@@ -50,7 +50,8 @@ export default function NotificationsPage() {
 
   const open = async (n: NotifRow) => {
     if (!n.is_read) await supabase.from('notifications').update({ is_read: true }).eq('id', n.id)
-    router.push('/inbox')
+    // Deep-link straight to the conversation when we know which one it is
+    router.push(n.conversation_id ? `/inbox?conv=${n.conversation_id}` : '/inbox')
   }
 
   const unreadCount = notifs.filter(n => !n.is_read).length

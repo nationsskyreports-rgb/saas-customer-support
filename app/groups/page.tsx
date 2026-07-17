@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Users, Search, RefreshCw, X, Save, UserPlus, UserMinus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useToasts, Toasts } from '@/components/ui/toasts'
 
 interface Group { id: string; name: string; description: string; created_at: string }
 interface Agent { id: string; name: string; email: string }
 interface AgentGroup { agent_id: string; group_id: string }
 
 export default function GroupsPage() {
+  const { toasts, showToast, dismissToast } = useToasts()
   const [groups, setGroups] = useState<Group[]>([])
   const [agents, setAgents] = useState<Agent[]>([])
   const [agentGroups, setAgentGroups] = useState<AgentGroup[]>([])
@@ -53,30 +55,42 @@ export default function GroupsPage() {
   const handleSave = async () => {
     if (!gName.trim()) return
     setSaving(true)
+    let err = null
     if (editItem) {
-      await supabase.from('groups').update({ name: gName.trim(), description: gDesc.trim() }).eq('id', editItem.id)
+      const { data, error } = await supabase.from('groups').update({ name: gName.trim(), description: gDesc.trim() }).eq('id', editItem.id).select('id')
+      err = error?.message || (!data || data.length === 0 ? 'no rows updated (check permissions)' : null)
     } else {
-      await supabase.from('groups').insert({ name: gName.trim(), description: gDesc.trim() })
+      const { error } = await supabase.from('groups').insert({ name: gName.trim(), description: gDesc.trim() })
+      err = error?.message || null
     }
     setSaving(false)
+    if (err) { showToast('error', `Save failed: ${err}`); return }
     setShowModal(false)
+    showToast('success', editItem ? 'Group updated' : 'Group created')
     fetchData()
   }
 
   const handleDelete = async (id: string) => {
-    await supabase.from('agent_groups').delete().eq('group_id', id)
-    await supabase.from('groups').delete().eq('id', id)
+    const { error: linkErr } = await supabase.from('agent_groups').delete().eq('group_id', id)
+    const { data, error } = await supabase.from('groups').delete().eq('id', id).select('id')
     setConfirmDelete(null)
+    if (linkErr || error || !data || data.length === 0) {
+      showToast('error', `Delete failed: ${(linkErr || error)?.message || 'no rows deleted (check permissions)'}`)
+      return
+    }
+    showToast('success', 'Group deleted')
     fetchData()
   }
 
   const addAgent = async (agentId: string, groupId: string) => {
-    await supabase.from('agent_groups').insert({ agent_id: agentId, group_id: groupId })
+    const { error } = await supabase.from('agent_groups').insert({ agent_id: agentId, group_id: groupId })
+    if (error) { showToast('error', `Could not add member: ${error.message}`); return }
     fetchData()
   }
 
   const removeAgent = async (agentId: string, groupId: string) => {
-    await supabase.from('agent_groups').delete().eq('agent_id', agentId).eq('group_id', groupId)
+    const { error } = await supabase.from('agent_groups').delete().eq('agent_id', agentId).eq('group_id', groupId)
+    if (error) { showToast('error', `Could not remove member: ${error.message}`); return }
     fetchData()
   }
 
@@ -86,6 +100,7 @@ export default function GroupsPage() {
 
   return (
     <div className="p-8">
+      <Toasts toasts={toasts} dismiss={dismissToast} />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Groups</h1>

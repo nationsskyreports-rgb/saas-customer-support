@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, Target, Zap, RefreshCw, Plus, Edit2, Trash2, X, Save } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useToasts, Toasts } from '@/components/ui/toasts'
 
 interface Agent {
   id: string
@@ -22,6 +23,7 @@ interface AgentStatus {
 }
 
 export default function AgentStatusesPage() {
+  const { toasts, showToast, dismissToast } = useToasts()
   const [agents, setAgents] = useState<Agent[]>([])
   const [statuses, setStatuses] = useState<AgentStatus[]>([])
   const [loading, setLoading] = useState(true)
@@ -75,19 +77,29 @@ export default function AgentStatusesPage() {
   const handleSave = async () => {
     if (!statusName.trim()) return
     setSaving(true)
+    let err = null
     if (editItem) {
-      await supabase.from('agent_statuses').update({ name: statusName.trim(), color: statusColor }).eq('id', editItem.id)
+      const { data, error } = await supabase.from('agent_statuses').update({ name: statusName.trim(), color: statusColor }).eq('id', editItem.id).select('id')
+      err = error?.message || (!data || data.length === 0 ? 'no rows updated (check permissions)' : null)
     } else {
-      await supabase.from('agent_statuses').insert({ name: statusName.trim(), color: statusColor })
+      const { error } = await supabase.from('agent_statuses').insert({ name: statusName.trim(), color: statusColor })
+      err = error?.message || null
     }
     setSaving(false)
+    if (err) { showToast('error', `Save failed: ${err}`); return }
     setShowModal(false)
+    showToast('success', editItem ? 'Status updated' : 'Status created')
     fetchData()
   }
 
   const handleDelete = async (id: string) => {
-    await supabase.from('agent_statuses').delete().eq('id', id)
+    const { data, error } = await supabase.from('agent_statuses').delete().eq('id', id).select('id')
     setConfirmDelete(null)
+    if (error || !data || data.length === 0) {
+      showToast('error', `Delete failed: ${error?.message || 'no rows deleted (check permissions)'}`)
+      return
+    }
+    showToast('success', 'Status deleted')
     fetchData()
   }
 
@@ -102,6 +114,7 @@ export default function AgentStatusesPage() {
 
   return (
     <div className="p-8">
+      <Toasts toasts={toasts} dismiss={dismissToast} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Agent Statuses</h1>

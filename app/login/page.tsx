@@ -48,38 +48,45 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
-    const { data, error: dbErr } = await supabase
-      .from('agents')
-      .select('id, name, email, role, status, max_chats, password, is_active')
-      .eq('email', email.trim().toLowerCase())
-      .maybeSingle()
+    // SECURITY: password verification happens INSIDE the database (bcrypt via pgcrypto).
+    // The password hash never reaches the browser, and we never compare in JS.
+    const { data, error: dbErr } = await supabase.rpc('agent_login', {
+      p_email: email.trim().toLowerCase(),
+      p_password: password,
+    })
 
-    if (dbErr || !data) {
-      setError('Email not found')
+    if (dbErr) {
+      // RPC missing = the security migration SQL was not run yet
+      setError(dbErr.message.includes('agent_login')
+        ? 'Login system not initialized — run the security SQL migration'
+        : `Login failed: ${dbErr.message}`)
       setLoading(false)
       return
     }
-    if (!data.is_active) {
+
+    const agent = Array.isArray(data) ? data[0] : data
+    if (!agent) {
+      // Deliberately generic — never reveal whether the email exists
+      setError('Invalid email or password')
+      setLoading(false)
+      return
+    }
+    if (!agent.is_active) {
       setError('This account is deactivated')
-      setLoading(false)
-      return
-    }
-    if (data.password !== password) {
-      setError('Wrong password')
       setLoading(false)
       return
     }
 
     const lastStatus = localStorage.getItem('nos_last_status') || 'online'
-    await supabase.from('agents').update({ status: lastStatus }).eq('id', data.id)
+    await supabase.from('agents').update({ status: lastStatus }).eq('id', agent.id)
 
     setAgent({
-      id: data.id,
-      name: data.name,
-      email: data.email,
-      role: data.role,
+      id: agent.id,
+      name: agent.name,
+      email: agent.email,
+      role: agent.role,
       status: lastStatus,
-      max_chats: data.max_chats,
+      max_chats: agent.max_chats,
     })
     router.replace('/dashboard')
   }
@@ -236,7 +243,10 @@ export default function LoginPage() {
         {error && <p className="err">{error}</p>}
 
         <div className="forgot-row">
-          <button className="forgot">Forgot password?</button>
+          <button className="forgot" type="button"
+            onClick={() => setError('Password reset: ask your administrator to reset your password from the Agents page')}>
+            Forgot password?
+          </button>
         </div>
 
         <button

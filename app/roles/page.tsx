@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Edit, Trash2, RefreshCw, X, Save, Shield, CheckSquare } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useToasts, Toasts } from '@/components/ui/toasts'
 import { cn } from '@/lib/utils'
 
 // ─── Pages + Operations ───────────────────────────────────────
@@ -35,6 +36,7 @@ interface Role { id: string; name: string; created_at: string }
 interface RolePermission { page: string; can_add: boolean; can_search: boolean; can_delete: boolean; can_update: boolean; can_export: boolean }
 
 export default function RolesPage() {
+  const { toasts, showToast, dismissToast } = useToasts()
   const [roles, setRoles] = useState<Role[]>([])
   const [loading, setLoading] = useState(true)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -118,11 +120,26 @@ export default function RolesPage() {
     let roleId = editRole?.id
 
     if (editRole) {
-      await supabase.from('roles').update({ name: roleName }).eq('id', editRole.id)
-      await supabase.from('role_permissions').delete().eq('role_id', editRole.id)
+      const { data: upd, error: updErr } = await supabase.from('roles').update({ name: roleName }).eq('id', editRole.id).select('id')
+      if (updErr || !upd || upd.length === 0) {
+        setSaving(false)
+        showToast('error', `Save failed: ${updErr?.message || 'no rows updated (check permissions)'}`)
+        return
+      }
+      const { error: permDelErr } = await supabase.from('role_permissions').delete().eq('role_id', editRole.id)
+      if (permDelErr) {
+        setSaving(false)
+        showToast('error', `Could not update permissions: ${permDelErr.message}`)
+        return
+      }
     } else {
-      const { data } = await supabase.from('roles').insert({ name: roleName }).select().single()
-      roleId = data?.id
+      const { data, error: insErr } = await supabase.from('roles').insert({ name: roleName }).select().single()
+      if (insErr || !data) {
+        setSaving(false)
+        showToast('error', `Create failed: ${insErr?.message || 'unknown error'}`)
+        return
+      }
+      roleId = data.id
     }
 
     if (roleId) {
@@ -131,26 +148,38 @@ export default function RolesPage() {
         page,
         ...perms[page],
       }))
-      await supabase.from('role_permissions').insert(rows)
+      const { error: permErr } = await supabase.from('role_permissions').insert(rows)
+      if (permErr) {
+        setSaving(false)
+        showToast('error', `Permissions save failed: ${permErr.message}`)
+        return
+      }
     }
 
     setSaving(false)
     setDrawerOpen(false)
+    showToast('success', editRole ? 'Role updated' : 'Role created')
     fetchRoles()
   }
 
   // ─── Delete ───────────────────────────────────────────────
   const deleteRole = async () => {
     if (!confirmDelete) return
-    await supabase.from('role_permissions').delete().eq('role_id', confirmDelete.id)
-    await supabase.from('roles').delete().eq('id', confirmDelete.id)
+    const { error: permErr } = await supabase.from('role_permissions').delete().eq('role_id', confirmDelete.id)
+    const { data, error } = await supabase.from('roles').delete().eq('id', confirmDelete.id).select('id')
     setConfirmDelete(null)
+    if (permErr || error || !data || data.length === 0) {
+      showToast('error', `Delete failed: ${(permErr || error)?.message || 'no rows deleted (check permissions)'}`)
+      return
+    }
+    showToast('success', 'Role deleted')
     fetchRoles()
   }
 
   // ─── Render ───────────────────────────────────────────────
   return (
     <div className="p-8 space-y-6">
+      <Toasts toasts={toasts} dismiss={dismissToast} />
 
       {/* Header */}
       <div className="flex items-center justify-between">

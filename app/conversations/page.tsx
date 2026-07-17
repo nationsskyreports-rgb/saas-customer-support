@@ -18,17 +18,44 @@ export default function ConversationsPage() {
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [moreOpen, setMoreOpen] = useState(false)
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [agentFilter, setAgentFilter] = useState('')
   const [teamFilter, setTeamFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+
+  // Debounce the search box so we don't hit the DB on every keystroke
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 400)
+    return () => clearTimeout(t)
+  }, [searchQuery])
 
   const activeExtraFilters = [dateFrom, dateTo, agentFilter, teamFilter].filter(Boolean).length
 
   const fetchConversations = useCallback(async (pageNum: number, append = false) => {
     setLoading(true)
+
+    // ── Server-side search: find matching contacts first, then filter by contact_id ──
+    // (searches the WHOLE database, not just the rows already loaded)
+    let searchContactIds: string[] | null = null
+    if (debouncedSearch) {
+      const like = `%${debouncedSearch.replace(/[%_]/g, '\\$&')}%`
+      const { data: matches } = await supabase
+        .from('contacts')
+        .select('id')
+        .or(`name.ilike.${like},phone.ilike.${like}`)
+        .limit(1000)
+      searchContactIds = (matches || []).map(m => m.id)
+      if (searchContactIds.length === 0) {
+        // No contact matches → no conversations can match; skip the second query
+        if (!append) setConversations([])
+        setHasMore(false)
+        setLoading(false)
+        return
+      }
+    }
 
     let q = supabase
       .from('conversations')
@@ -36,6 +63,7 @@ export default function ConversationsPage() {
       .order('updated_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, pageNum * PAGE_SIZE + PAGE_SIZE - 1)
 
+    if (searchContactIds) q = q.in('contact_id', searchContactIds)
     if (statusFilter !== 'all') q = q.eq('status', statusFilter)
     if (agentFilter) q = agentFilter === 'unassigned' ? q.is('assigned_agent_id', null) : q.eq('assigned_agent_id', agentFilter)
     if (teamFilter) q = q.eq('team_id', teamFilter)
@@ -47,7 +75,7 @@ export default function ConversationsPage() {
     setConversations(prev => append ? [...prev, ...rows] : rows)
     setHasMore(rows.length === PAGE_SIZE)
     setLoading(false)
-  }, [statusFilter, agentFilter, teamFilter, dateFrom, dateTo])
+  }, [statusFilter, agentFilter, teamFilter, dateFrom, dateTo, debouncedSearch])
 
   useEffect(() => {
     Promise.all([
@@ -70,13 +98,8 @@ export default function ConversationsPage() {
     fetchConversations(next, true)
   }
 
-  // Client-side search on the loaded set (name / phone)
-  const filtered = conversations.filter(c => {
-    if (!searchQuery.trim()) return true
-    const s = searchQuery.toLowerCase()
-    const contact = c.contacts as any
-    return (contact?.name || '').toLowerCase().includes(s) || (contact?.phone || '').includes(s)
-  })
+  // Search is applied server-side inside fetchConversations — rows are already filtered
+  const filtered = conversations
 
   const clearExtraFilters = () => {
     setDateFrom(''); setDateTo(''); setAgentFilter(''); setTeamFilter('')

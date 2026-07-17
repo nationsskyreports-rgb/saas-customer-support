@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { ConversationList } from '@/components/conversation-list'
 import { ChatPanel } from '@/components/chat-panel'
@@ -15,6 +15,11 @@ export default function AllConversationsPage() {
 
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(convParam || null)
   const [searchTerm, setSearchTerm] = useState('')
+
+  // Keep selection in sync when a notification deep-links while we're already on this page
+  useEffect(() => {
+    if (convParam) setSelectedConversationId(convParam)
+  }, [convParam])
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 3px - 4rem)' }}>

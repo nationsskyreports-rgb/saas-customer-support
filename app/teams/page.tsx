@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Users, RefreshCw, X, Save, UserPlus, UserMinus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useToasts, Toasts } from '@/components/ui/toasts'
 
 interface Team {
   id: string
@@ -27,6 +28,7 @@ interface AgentTeam {
 }
 
 export default function TeamsPage() {
+  const { toasts, showToast, dismissToast } = useToasts()
   const [teams, setTeams] = useState<Team[]>([])
   const [agents, setAgents] = useState<Agent[]>([])
   const [agentTeams, setAgentTeams] = useState<AgentTeam[]>([])
@@ -71,30 +73,42 @@ export default function TeamsPage() {
   const handleSave = async () => {
     if (!teamName.trim()) return
     setSaving(true)
+    let err = null
     if (editItem) {
-      await supabase.from('teams').update({ name: teamName.trim(), description: teamDesc.trim(), status: teamStatus }).eq('id', editItem.id)
+      const { data, error } = await supabase.from('teams').update({ name: teamName.trim(), description: teamDesc.trim(), status: teamStatus }).eq('id', editItem.id).select('id')
+      err = error?.message || (!data || data.length === 0 ? 'no rows updated (check permissions)' : null)
     } else {
-      await supabase.from('teams').insert({ name: teamName.trim(), description: teamDesc.trim(), status: teamStatus })
+      const { error } = await supabase.from('teams').insert({ name: teamName.trim(), description: teamDesc.trim(), status: teamStatus })
+      err = error?.message || null
     }
     setSaving(false)
+    if (err) { showToast('error', `Save failed: ${err}`); return }
     setShowModal(false)
+    showToast('success', editItem ? 'Team updated' : 'Team created')
     fetchData()
   }
 
   const handleDelete = async (id: string) => {
-    await supabase.from('agent_teams').delete().eq('team_id', id)
-    await supabase.from('teams').delete().eq('id', id)
+    const { error: linkErr } = await supabase.from('agent_teams').delete().eq('team_id', id)
+    const { data, error } = await supabase.from('teams').delete().eq('id', id).select('id')
     setConfirmDelete(null)
+    if (linkErr || error || !data || data.length === 0) {
+      showToast('error', `Delete failed: ${(linkErr || error)?.message || 'no rows deleted (check permissions)'}`)
+      return
+    }
+    showToast('success', 'Team deleted')
     fetchData()
   }
 
   const addAgentToTeam = async (agentId: string, teamId: string, role: string = 'member') => {
-    await supabase.from('agent_teams').insert({ agent_id: agentId, team_id: teamId, role })
+    const { error } = await supabase.from('agent_teams').insert({ agent_id: agentId, team_id: teamId, role })
+    if (error) { showToast('error', `Could not add member: ${error.message}`); return }
     fetchData()
   }
 
   const removeAgentFromTeam = async (agentId: string, teamId: string) => {
-    await supabase.from('agent_teams').delete().eq('agent_id', agentId).eq('team_id', teamId)
+    const { error } = await supabase.from('agent_teams').delete().eq('agent_id', agentId).eq('team_id', teamId)
+    if (error) { showToast('error', `Could not remove member: ${error.message}`); return }
     fetchData()
   }
 
@@ -103,9 +117,11 @@ export default function TeamsPage() {
     const newRole = current?.role === 'supervisor' ? 'member' : 'supervisor'
     // Remove existing supervisor if setting new one
     if (newRole === 'supervisor') {
-      await supabase.from('agent_teams').update({ role: 'member' }).eq('team_id', teamId).eq('role', 'supervisor')
+      const { error: demoteErr } = await supabase.from('agent_teams').update({ role: 'member' }).eq('team_id', teamId).eq('role', 'supervisor')
+      if (demoteErr) { showToast('error', `Could not change supervisor: ${demoteErr.message}`); return }
     }
-    await supabase.from('agent_teams').update({ role: newRole }).eq('agent_id', agentId).eq('team_id', teamId)
+    const { error } = await supabase.from('agent_teams').update({ role: newRole }).eq('agent_id', agentId).eq('team_id', teamId)
+    if (error) { showToast('error', `Could not change role: ${error.message}`); return }
     fetchData()
   }
 
@@ -120,6 +136,7 @@ export default function TeamsPage() {
 
   return (
     <div className="p-8">
+      <Toasts toasts={toasts} dismiss={dismissToast} />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Teams Management</h1>

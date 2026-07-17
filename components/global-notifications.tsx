@@ -10,6 +10,7 @@ interface Toast {
   title: string
   body: string
   time: string
+  conversationId?: string | null
 }
 
 export function GlobalNotifications() {
@@ -106,7 +107,7 @@ export function GlobalNotifications() {
 
         const id = ++toastIdRef.current
         const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-        setToasts(prev => [...prev, { id, title: name, body: msg.content || 'New message', time }])
+        setToasts(prev => [...prev, { id, title: name, body: msg.content || 'New message', time, conversationId: msg.conversation_id }])
 
         if ('Notification' in window && Notification.permission === 'granted') {
           const n = new Notification(`💬 ${name}`, {
@@ -118,7 +119,11 @@ export function GlobalNotifications() {
             requireInteraction: true,                // stays until dismissed
             silent: false,
           } as NotificationOptions)
-          n.onclick = () => { window.focus(); router.push('/inbox'); n.close() }
+          n.onclick = () => {
+            window.focus()
+            router.push(msg.conversation_id ? `/inbox?conv=${msg.conversation_id}` : '/inbox')
+            n.close()
+          }
         }
       })
       .subscribe((s) => {
@@ -217,7 +222,7 @@ export function GlobalNotifications() {
         <div className="space-y-2.5 max-h-[70vh] overflow-y-auto">
           {toasts.map(toast => (
             <div key={toast.id}
-              onClick={() => { router.push('/inbox'); dismiss(toast.id) }}
+              onClick={() => { router.push(toast.conversationId ? `/inbox?conv=${toast.conversationId}` : '/inbox'); dismiss(toast.id) }}
               className="relative overflow-hidden bg-white rounded-2xl border cursor-pointer transition-transform hover:scale-[1.02]"
               style={{
                 animation: 'nosSlideIn 0.35s cubic-bezier(0.21, 1.02, 0.73, 1)',

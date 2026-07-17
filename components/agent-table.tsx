@@ -45,6 +45,7 @@ export function AgentTable() {
   const [editMaxChats, setEditMaxChats] = useState(5)
   const [editStatus, setEditStatus] = useState<'online' | 'busy' | 'away' | 'offline'>('online')
   const [editMobile, setEditMobile] = useState('')
+  const [editNewPassword, setEditNewPassword] = useState('')
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
 
@@ -98,19 +99,24 @@ export function AgentTable() {
     setEditMaxChats(agent.max_chats)
     setEditStatus(agent.status)
     setEditMobile(agent.mobile_number || '')
+    setEditNewPassword('')
     setOpenMenuId(null)
   }
 
   const saveEdit = async () => {
     if (!editAgent) return
     setSaving(true)
-    await supabase.from('agents').update({
+    const payload: any = {
       name: editName,
       role: editRole,
       max_chats: editMaxChats,
       status: editStatus,
       mobile_number: editMobile,
-    }).eq('id', editAgent.id)
+    }
+    // Optional password reset — the database trigger bcrypt-hashes it on write,
+    // so plaintext never gets stored (see security SQL migration)
+    if (editNewPassword.trim()) payload.password = editNewPassword.trim()
+    await supabase.from('agents').update(payload).eq('id', editAgent.id)
     setSaving(false)
     setEditAgent(null)
     fetchAgents()
@@ -425,6 +431,13 @@ export function AgentTable() {
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Max Concurrent Chats</label>
                 <input type="number" value={editMaxChats} onChange={e => setEditMaxChats(Number(e.target.value))} min={1} max={20}
                   className="w-32 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+              </div>
+              <div className="pt-2 border-t border-gray-100">
+                <label className="block text-sm font-semibold text-gray-700 mb-1.5">Reset Password</label>
+                <input type="text" value={editNewPassword} onChange={e => setEditNewPassword(e.target.value)}
+                  placeholder="Leave empty to keep current password" dir="ltr" autoComplete="new-password"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300" />
+                <p className="text-xs text-gray-400 mt-1">Stored securely as a bcrypt hash — the agent can change it later from Settings</p>
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-200 flex gap-3">
