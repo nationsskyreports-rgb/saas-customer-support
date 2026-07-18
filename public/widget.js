@@ -1,4 +1,23 @@
-
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * NOS Web Chat Widget — Loader
+ * ═══════════════════════════════════════════════════════════════
+ * Add this ONE line to any website to get a floating live-chat:
+ *
+ *   <script src="https://YOUR-APP-DOMAIN/widget.js" async></script>
+ *
+ * Optional customization via data attributes:
+ *
+ *   <script src="https://YOUR-APP-DOMAIN/widget.js" async
+ *           data-color="#00B69B"          (brand color)
+ *           data-position="right"          (right | left)
+ *           data-title="Nations Of Sky"    (header title)
+ *   ></script>
+ *
+ * The loader creates a floating button + an iframe pointing to
+ * /widget on the same domain this script was loaded from.
+ * ═══════════════════════════════════════════════════════════════
+ */
 (function () {
   'use strict'
   if (window.__NOS_WIDGET_LOADED__) return
@@ -14,6 +33,9 @@
   var autoOpenRaw = (script && script.getAttribute('data-auto-open')) || '15'
   var autoOpenSec = autoOpenRaw === 'off' ? 0 : Math.max(0, parseInt(autoOpenRaw, 10) || 0)
   var promptText = (script && script.getAttribute('data-prompt')) || ''
+  // Quick-topic buttons for contracted-customer support, separated by |
+  // e.g. data-topics="استفسار عن الأقساط|موعد التسليم|طلب صيانة|استفسار آخر"
+  var topics = (script && script.getAttribute('data-topics')) || ''
 
   // Origin = wherever widget.js was served from
   var origin = ''
@@ -26,7 +48,8 @@
     origin + '/widget?title=' + encodeURIComponent(title) + '&color=' + encodeURIComponent(color) +
     '&page=' + encodeURIComponent(document.title || '') +
     '&pageurl=' + encodeURIComponent(window.location.href) +
-    (promptText ? '&prompt=' + encodeURIComponent(promptText) : '')
+    (promptText ? '&prompt=' + encodeURIComponent(promptText) : '') +
+    (topics ? '&topics=' + encodeURIComponent(topics) : '')
 
   // ── Styles ──
   var css = [
