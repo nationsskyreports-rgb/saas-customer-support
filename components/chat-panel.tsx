@@ -56,6 +56,52 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
   const fileInputRef = useRef<HTMLInputElement>(null)
   const me = getAgent()
 
+  // ── AVAILABILITY GATE ──
+  // Agents must be ONLINE to reply. An offline agent replying causes a loop:
+  // they claim the chat → customer replies → routing sees an offline assignee
+  // and sends it back to the queue. Blocking the composer fixes it at the root.
+  const [myStatus, setMyStatus] = useState<string>('online')
+  const [goingOnline, setGoingOnline] = useState(false)
+  const amOnline = myStatus === 'online'
+
+  useEffect(() => {
+    if (!me?.id) return
+    let cancelled = false
+    // read the REAL status from the database (not the cached login copy)
+    supabase.from('agents').select('status').eq('id', me.id).maybeSingle().then(({ data }) => {
+      if (!cancelled && data?.status) setMyStatus(data.status)
+    })
+    // stay in sync with the top-nav status dropdown (and any other tab)
+    const onEvt = (e: Event) => {
+      const s = (e as CustomEvent).detail
+      if (typeof s === 'string') setMyStatus(s)
+    }
+    window.addEventListener('nos-status-changed', onEvt)
+    const ch = supabase
+      .channel(`agent-status-${me.id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'agents', filter: `id=eq.${me.id}` },
+        (payload) => { const s = (payload.new as any)?.status; if (s) setMyStatus(s) })
+      .subscribe()
+    return () => {
+      cancelled = true
+      window.removeEventListener('nos-status-changed', onEvt)
+      supabase.removeChannel(ch)
+    }
+  }, [me?.id])
+
+  const goOnline = async () => {
+    if (!me?.id || goingOnline) return
+    setGoingOnline(true)
+    const { error } = await supabase.from('agents').update({ status: 'online' }).eq('id', me.id)
+    if (!error) {
+      setMyStatus('online')
+      try { localStorage.setItem('nos_last_status', 'online') } catch {}
+      // tell the top-nav badge (and other components) immediately
+      window.dispatchEvent(new CustomEvent('nos-status-changed', { detail: 'online' }))
+    }
+    setGoingOnline(false)
+  }
+
   const flashError = (msg: string) => {
     setComposerError(msg)
     setTimeout(() => setComposerError(''), 6000)
@@ -107,6 +153,7 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
 
   const handleSend = async () => {
     if (lockedBy) return // assigned to another agent — read-only
+    if (!amOnline) { flashError('You are Offline — go Online to reply to customers'); return }
     if (!message.trim() || !conversationId) return
     setSending(true)
     const { error: msgErr } = await supabase.from('messages').insert({
@@ -145,6 +192,7 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
   // ── Attachments: upload to Supabase Storage, then send as image/file message ──
   const handleAttach = async (file: File) => {
     if (!conversationId || lockedBy) return
+    if (!amOnline) { flashError('You are Offline — go Online to reply to customers'); return }
     if (file.size > 5 * 1024 * 1024) {
       flashError('File is too large — maximum size is 5 MB')
       return
@@ -315,7 +363,19 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
           </p>
         </div>
       )}
-      {!lockedBy && convInfo?.status !== 'closed' && convInfo?.status !== 'resolved' && (
+      {!lockedBy && !amOnline && convInfo?.status !== 'closed' && convInfo?.status !== 'resolved' && (
+        <div className="flex items-center justify-center gap-3 border-t border-amber-200 bg-amber-50" style={{ height: '64px', padding: '0 16px' }}>
+          <p className="text-sm text-amber-800">
+            🔴 You are <b className="capitalize">{myStatus}</b> — you must be Online to reply
+          </p>
+          <button onClick={goOnline} disabled={goingOnline}
+            className="px-4 py-1.5 text-sm font-semibold text-white rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
+            style={{ backgroundColor: '#00B69B' }}>
+            {goingOnline ? <RefreshCw className="w-4 h-4 animate-spin" /> : '🟢'} Go Online to reply
+          </button>
+        </div>
+      )}
+      {!lockedBy && amOnline && convInfo?.status !== 'closed' && convInfo?.status !== 'resolved' && (
         <div className="border-t border-gray-200 bg-white" style={{ height: '64px', padding: '0 16px' }}>
           <div className="flex items-center gap-3 h-full">
             <div className="relative">
