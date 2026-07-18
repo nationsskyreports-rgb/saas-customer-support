@@ -7,6 +7,7 @@ import { useSidebar } from '@/lib/sidebar-context'
 import { useTheme } from '@/lib/theme-context'
 import { getAgent, setAgent, clearAgent, AuthAgent, isAdmin } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { drainQueueToAgent, releaseAgentChats } from '@/lib/routing'
 
 interface NotifRow {
   id: string
@@ -138,11 +139,18 @@ export function TopNav() {
       await supabase.from('agents').update({ status: status.value }).eq('id', me.id)
       setAgent({ ...me, status: status.value })
       window.dispatchEvent(new CustomEvent('nos-status-changed', { detail: status.value }))
+      // ── ROUTING LIFECYCLE ──
+      if (status.value === 'online') {
+        drainQueueToAgent(me.id)      // pull waiting chats from the queue (FIFO)
+      } else if (status.value === 'offline') {
+        releaseAgentChats(me.id)      // hand my open chats to online colleagues / queue
+      }
     }
   }
 
   const signOut = async () => {
     if (me) {
+      await releaseAgentChats(me.id) // hand over my chats before leaving
       await supabase.from('agents').update({ status: 'offline' }).eq('id', me.id)
     }
     clearAgent()
