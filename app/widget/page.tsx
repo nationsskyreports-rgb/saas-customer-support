@@ -5,25 +5,12 @@ import { useSearchParams } from 'next/navigation'
 import { Send, RefreshCw, X, MessageCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * /widget — the chat UI that lives inside the embeddable iframe
- * (loaded by public/widget.js on any external website)
- *
- * - Visitor identity (name/phone/conversation) persists in
- *   localStorage, so returning visitors continue the same chat
- * - New conversations reuse the platform's auto-assignment
- *   (least-loaded online agent with free capacity)
- * - Realtime: agent replies appear instantly; if the widget is
- *   closed, the parent page shows an unread badge (postMessage)
- * ═══════════════════════════════════════════════════════════════
- */
-
 interface Message {
   id: string
   direction: string
   content: string
   created_at: string
+  type?: string | null
 }
 
 interface Visitor {
@@ -114,7 +101,7 @@ function WidgetInner() {
     const fetchMessages = async () => {
       const { data } = await supabase
         .from('messages')
-        .select('id, direction, content, created_at')
+        .select('id, direction, content, created_at, type')
         .eq('conversation_id', visitor.conversationId)
         .order('created_at', { ascending: true })
         .limit(200)
@@ -159,9 +146,18 @@ function WidgetInner() {
       if (existing) {
         contactId = existing.id
       } else {
+        // Brand-new visitor → give them a default classification automatically
+        // (uses the "New Customer" type if it exists — rename/manage from Customers page)
+        let defaultType: string | null = null
+        try {
+          const { data: t } = await supabase
+            .from('customer_types').select('name').ilike('name', 'new customer').limit(1).maybeSingle()
+          defaultType = t?.name || null
+        } catch {}
+
         const { data: created, error: cErr } = await supabase
           .from('contacts')
-          .insert({ name: vName, phone: vPhone, source: 'webchat' })
+          .insert({ name: vName, phone: vPhone, source: 'webchat', customer_type: defaultType })
           .select('id').single()
         if (cErr || !created) throw new Error(cErr?.message || 'Could not create contact')
         contactId = created.id
@@ -340,9 +336,20 @@ function WidgetInner() {
                   }`}
                   style={m.direction === 'inbound' ? { backgroundColor: color } : undefined}
                 >
-                  <p className={`text-sm whitespace-pre-wrap ${m.direction === 'inbound' ? 'text-white' : 'text-gray-700'}`}>
-                    {m.content}
-                  </p>
+                  {m.type === 'image' ? (
+                    <a href={m.content} target="_blank" rel="noopener noreferrer">
+                      <img src={m.content} alt="attachment" className="rounded-lg max-w-full" style={{ maxHeight: '200px', objectFit: 'cover' }} />
+                    </a>
+                  ) : m.type === 'file' ? (
+                    <a href={m.content} target="_blank" rel="noopener noreferrer"
+                      className={`text-sm font-medium underline underline-offset-2 break-all ${m.direction === 'inbound' ? 'text-white' : 'text-gray-700'}`}>
+                      📎 {decodeURIComponent(m.content.split('/').pop() || 'file').replace(/^\d+_/, '')}
+                    </a>
+                  ) : (
+                    <p className={`text-sm whitespace-pre-wrap ${m.direction === 'inbound' ? 'text-white' : 'text-gray-700'}`}>
+                      {m.content}
+                    </p>
+                  )}
                   <p className={`text-[10px] mt-1 ${m.direction === 'inbound' ? 'text-white/70' : 'text-gray-300'}`}>
                     {fmtTime(m.created_at)}
                   </p>
