@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { ChevronDown, ChevronUp, RefreshCw, Save, StickyNote, Search, PhoneCall, MessageCircle, Globe } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getAgent } from '@/lib/auth'
+import { useRouter } from 'next/navigation'
 import { phoneCandidates, phoneTail } from '@/lib/phone'
 
 interface Team { id: string; name: string }
@@ -26,6 +27,7 @@ interface LookupResult {
 }
 
 function CustomerLookup() {
+  const router = useRouter()
   const [q, setQ] = useState('')
   const [busy, setBusy] = useState(false)
   const [open, setOpen] = useState(true)
@@ -127,7 +129,10 @@ function CustomerLookup() {
               {res.conversations.length > 0 && (
                 <div className="space-y-1.5 max-h-44 overflow-y-auto">
                   {res.conversations.map(c => (
-                    <div key={c.id} className="flex items-center gap-2 px-2.5 py-2 rounded-lg border border-gray-100 bg-white">
+                    <button key={c.id}
+                      onClick={() => router.push(`/inbox?conv=${c.id}`)}
+                      title="Open this chat"
+                      className="w-full text-left flex items-center gap-2 px-2.5 py-2 rounded-lg border border-gray-100 bg-white hover:border-emerald-300 hover:bg-emerald-50/50 transition-colors cursor-pointer">
                       {isWA(c)
                         ? <MessageCircle className="w-3.5 h-3.5 flex-shrink-0 text-green-600" />
                         : <Globe className="w-3.5 h-3.5 flex-shrink-0 text-blue-500" />}
@@ -138,7 +143,7 @@ function CustomerLookup() {
                       <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${c.status === 'open' ? 'bg-blue-100 text-blue-700' : c.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
                         {c.status}
                       </span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
