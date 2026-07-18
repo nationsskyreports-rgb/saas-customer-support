@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Widget Demo — Nations Of Sky</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; color: #1a2332; background: #fff; }
+    .nav { display: flex; justify-content: space-between; align-items: center; padding: 18px 6vw; border-bottom: 1px solid #eef1f4; }
+    .logo { font-weight: 800; font-size: 20px; color: #00B69B; }
+    .nav a { color: #64748b; text-decoration: none; margin-left: 28px; font-size: 14px; }
+    .hero { text-align: center; padding: 90px 6vw 70px; background: linear-gradient(180deg, #f4fbf9 0%, #fff 100%); }
+    .hero h1 { font-size: 42px; font-weight: 800; letter-spacing: -1px; }
+    .hero h1 span { color: #00B69B; }
+    .hero p { color: #64748b; margin: 18px auto 0; max-width: 520px; font-size: 17px; line-height: 1.6; }
+    .cta { display: inline-block; margin-top: 30px; background: #00B69B; color: #fff; font-weight: 700; padding: 13px 32px; border-radius: 12px; text-decoration: none; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; padding: 40px 6vw 90px; }
+    .card { border: 1px solid #eef1f4; border-radius: 16px; padding: 26px; }
+    .card b { display: block; margin-bottom: 8px; }
+    .card p { color: #64748b; font-size: 14px; line-height: 1.6; }
+    .hint { position: fixed; bottom: 26px; right: 100px; background: #0d2343; color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 13px; box-shadow: 0 8px 24px rgba(13,35,67,.3); animation: bob 2s ease-in-out infinite; }
+    .hint::after { content: ''; position: absolute; right: -7px; top: 50%; transform: translateY(-50%); border: 7px solid transparent; border-left-color: #0d2343; }
+    @keyframes bob { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-6px); } }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="logo">✳ Nations Of Sky</div>
+    <div><a href="#">Products</a><a href="#">Pricing</a><a href="#">About</a><a href="#">Contact</a></div>
+  </nav>
+
+  <section class="hero">
+    <h1>This is <span>your website</span>.<br>And that's your new live chat →</h1>
+    <p>This demo page simulates any external website with the NOS chat widget installed.
+       Click the floating button in the corner, start a conversation, and watch it land
+       in your agents' Inbox instantly.</p>
+    <a class="cta" href="#">Fake CTA Button</a>
+  </section>
+
+  <section class="cards">
+    <div class="card"><b>⚡ One line install</b><p>A single &lt;script&gt; tag added to any site. No Meta, no templates, no 24-hour window — you own this channel completely.</p></div>
+    <div class="card"><b>🧠 Smart routing</b><p>New chats are auto-assigned to the least-busy online agent, exactly like the rest of the platform.</p></div>
+    <div class="card"><b>🔁 Persistent visitors</b><p>Returning visitors continue their previous conversation automatically — identity is remembered per browser.</p></div>
+  </section>
+
+  <div class="hint">جرّب الشات من هنا 👉</div>
+
+  <!-- ════════════════════════════════════════════════════
+       THE WIDGET — this is the only line a real website needs
+       ════════════════════════════════════════════════════ -->
+  <script src="/widget.js" async
+          data-title="Nations Of Sky"
+          data-color="#00B69B"
+          data-position="right"></script>
+</body>
+</html>
