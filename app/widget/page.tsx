@@ -5,20 +5,6 @@ import { useSearchParams } from 'next/navigation'
 import { Send, RefreshCw, X, MessageCircle, Paperclip } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * /widget — the chat UI that lives inside the embeddable iframe
- * (loaded by public/widget.js on any external website)
- *
- * - Visitor identity (name/phone/conversation) persists in
- *   localStorage, so returning visitors continue the same chat
- * - New conversations reuse the platform's auto-assignment
- *   (least-loaded online agent with free capacity)
- * - Realtime: agent replies appear instantly; if the widget is
- *   closed, the parent page shows an unread badge (postMessage)
- * ═══════════════════════════════════════════════════════════════
- */
-
 interface Message {
   id: string
   direction: string
@@ -85,6 +71,8 @@ function WidgetInner() {
   const promptText = params.get('prompt') || ''
   const pageTitle = params.get('page') || ''
   const pageUrl = params.get('pageurl') || ''
+  // Quick topics for contracted customers (from data-topics on the loader)
+  const topics = (params.get('topics') || '').split('|').map(t => t.trim()).filter(Boolean)
 
   const [phase, setPhase] = useState<'boot' | 'form' | 'chat'>('boot')
   const [name, setName] = useState('')
@@ -189,6 +177,7 @@ function WidgetInner() {
       // 1) Find the contact — matching EVERY format the number may be stored in
       //    (so a VIP saved as "01…" is recognized even if they type "+20…")
       let contactId: string
+      let knownName = ''
       const { data: matches } = await supabase
         .from('contacts').select('id, name')
         .in('phone', phoneCandidates(phone))
@@ -196,6 +185,7 @@ function WidgetInner() {
       const existing = matches?.[0]
       if (existing) {
         contactId = existing.id
+        knownName = existing.name || '' // contracted customer → greet them by their real name
       } else {
         // Brand-new visitor → default classification + normalized phone
         let defaultType: string | null = null
@@ -282,7 +272,7 @@ function WidgetInner() {
         }).eq('id', conversationId)
       }
 
-      const v: Visitor = { name: vName, phone: vPhone, contactId, conversationId }
+      const v: Visitor = { name: knownName || vName, phone: vPhone, contactId, conversationId }
       saveVisitor(v)
       setVisitor(v)
       setPhase('chat')
@@ -293,8 +283,7 @@ function WidgetInner() {
   }, [name, phone, pageTitle, pageUrl])
 
   // ── Send a message (identical to the platform's inbound flow) ──
-  const send = useCallback(async () => {
-    const text = draft.trim()
+  const sendText = useCallback(async (text: string) => {
     if (!text || !visitor || busy) return
     setBusy(true)
     const { error: msgErr } = await supabase.from('messages').insert({
@@ -316,7 +305,12 @@ function WidgetInner() {
       setError(`Message failed: ${msgErr.message}`)
     }
     setBusy(false)
-  }, [draft, visitor, busy])
+  }, [visitor, busy])
+
+  const send = useCallback(() => sendText(draft.trim()), [sendText, draft])
+
+  // Quick topic (contracted-customer support): one tap sends a classified request
+  const sendTopic = useCallback((topic: string) => sendText(`📋 ${topic}`), [sendText])
 
   // ── Customer attachments: upload to storage, send as image/file message ──
   const attach = useCallback(async (file: File) => {
@@ -439,13 +433,16 @@ function WidgetInner() {
       {phase === 'chat' && (
         <>
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3" style={{ backgroundColor: '#F8FAFB' }}>
-            {welcome && (
-              <div className="flex justify-start">
-                <div className="max-w-[80%] px-3.5 py-2.5 rounded-2xl rounded-bl-md bg-white border border-gray-100 shadow-sm">
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{welcome}</p>
-                </div>
+            {/* Personalized greeting for the recognized customer (display-only) */}
+            <div className="flex justify-start">
+              <div className="max-w-[85%] px-3.5 py-2.5 rounded-2xl rounded-bl-md bg-white border border-gray-100 shadow-sm">
+                <p className="text-sm text-gray-700 whitespace-pre-wrap" dir="auto">
+                  {visitor?.name && visitor.name !== visitor.phone
+                    ? `أهلًا ${visitor.name.split(' ')[0]} 👋 ${welcome || 'إزاي نقدر نساعدك؟'}`
+                    : (welcome || 'أهلًا بيك 👋 إزاي نقدر نساعدك؟')}
+                </p>
               </div>
-            )}
+            </div>
             {messages.map(m => (
               <div key={m.id} className={`flex ${m.direction === 'inbound' ? 'justify-end' : 'justify-start'}`}>
                 <div
@@ -480,6 +477,21 @@ function WidgetInner() {
           </div>
 
           {error && <p className="text-xs text-red-500 text-center py-1">{error}</p>}
+
+          {/* Quick topics — one tap sends a classified request (contracted customers) */}
+          {topics.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 px-3 pt-2 pb-1 bg-white border-t border-gray-100" dir="rtl">
+              {topics.map(t => (
+                <button key={t} onClick={() => sendTopic(t)} disabled={busy}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors disabled:opacity-40 hover:text-white"
+                  style={{ borderColor: color, color }}
+                  onMouseEnter={e => { (e.target as HTMLElement).style.backgroundColor = color; (e.target as HTMLElement).style.color = '#fff' }}
+                  onMouseLeave={e => { (e.target as HTMLElement).style.backgroundColor = 'transparent'; (e.target as HTMLElement).style.color = color }}>
+                  {t}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Composer */}
           <div className="flex items-end gap-2 p-3 border-t border-gray-100 flex-shrink-0 bg-white">
