@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Send, RefreshCw, X, MessageCircle, Paperclip } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { isWithinWorkingHours, reassignIfAgentUnavailable, WORKING_HOURS, OUT_OF_HOURS_MESSAGE } from '@/lib/routing'
 
 interface Message {
   id: string
@@ -85,12 +86,21 @@ function WidgetInner() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [widgetOpen, setWidgetOpen] = useState(true)
+  // ── Official working hours (10:00 → 22:00 Cairo) — refreshed every minute ──
+  const [inHours, setInHours] = useState(true)
   const openRef = useRef(true)
   const endRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const scrollDown = () =>
     setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 80)
+
+  // ── Keep the working-hours flag fresh ──
+  useEffect(() => {
+    setInHours(isWithinWorkingHours())
+    const t = setInterval(() => setInHours(isWithinWorkingHours()), 60_000)
+    return () => clearInterval(t)
+  }, [])
 
   // ── Track open/closed state reported by the parent loader ──
   useEffect(() => {
@@ -113,6 +123,9 @@ function WidgetInner() {
         const { data: conv } = await supabase
           .from('conversations').select('id').eq('id', saved.conversationId).maybeSingle()
         if (conv) {
+          // FIX: the old conversation may be assigned to an agent who is now
+          // OFFLINE — re-route it before the customer starts typing.
+          reassignIfAgentUnavailable(saved.conversationId)
           setVisitor(saved)
           setName(saved.name)
           setPhone(saved.phone)
@@ -217,6 +230,8 @@ function WidgetInner() {
       let isNewConversation = false
       if (activeConv) {
         conversationId = activeConv.id
+        // FIX: reused conversation may point at an offline agent — re-route it
+        await reassignIfAgentUnavailable(conversationId)
       } else {
         // 3) Channel is required
         const { data: channel } = await supabase.from('channels').select('id').limit(1).maybeSingle()
@@ -300,6 +315,8 @@ function WidgetInner() {
         last_message_at: new Date().toISOString(),
         status: 'open', // reopen if it was resolved/closed
       }).eq('id', visitor.conversationId)
+      // FIX: a reopened chat must never stay stuck on an offline agent
+      reassignIfAgentUnavailable(visitor.conversationId)
       setDraft('')
     } else {
       setError(`Message failed: ${msgErr.message}`)
@@ -353,6 +370,7 @@ function WidgetInner() {
         last_message_at: new Date().toISOString(),
         status: 'open',
       }).eq('id', visitor.conversationId)
+      reassignIfAgentUnavailable(visitor.conversationId)
     }
     setUploading(false)
   }, [visitor, uploading])
@@ -378,7 +396,8 @@ function WidgetInner() {
           <div>
             <p className="text-white font-bold text-sm leading-tight">{title}</p>
             <p className="text-white/75 text-[11px] flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-300 inline-block" /> We reply as fast as we can
+              <span className={`w-1.5 h-1.5 rounded-full inline-block ${inHours ? 'bg-green-300' : 'bg-amber-300'}`} />
+              {inHours ? 'We reply as fast as we can' : `Working hours: ${WORKING_HOURS.label}`}
             </p>
           </div>
         </div>
@@ -416,6 +435,11 @@ function WidgetInner() {
             className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2"
             style={{ ['--tw-ring-color' as any]: color + '66' }}
           />
+          {!inHours && (
+            <div className="rounded-xl px-3.5 py-2.5 text-center" style={{ backgroundColor: '#FFFBEB', border: '1px solid #FDE68A' }}>
+              <p className="text-xs text-amber-800 whitespace-pre-wrap" dir="rtl">{OUT_OF_HOURS_MESSAGE}</p>
+            </div>
+          )}
           {error && <p className="text-xs text-red-500 text-center">{error}</p>}
           <button
             onClick={startChat} disabled={busy}
@@ -473,6 +497,14 @@ function WidgetInner() {
                 </div>
               </div>
             ))}
+            {!inHours && (
+              <div className="flex justify-start">
+                <div className="max-w-[85%] px-3.5 py-2.5 rounded-2xl rounded-bl-md shadow-sm" style={{ backgroundColor: '#FFFBEB', border: '1px solid #FDE68A' }}>
+                  <p className="text-[11px] font-bold text-amber-700 mb-1">⏰ Auto-reply</p>
+                  <p className="text-sm text-amber-900 whitespace-pre-wrap" dir="rtl">{OUT_OF_HOURS_MESSAGE}</p>
+                </div>
+              </div>
+            )}
             <div ref={endRef} />
           </div>
 
