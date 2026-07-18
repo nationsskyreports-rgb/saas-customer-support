@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, CheckCheck, MessageCircle, Volume2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { isAdmin } from '@/lib/auth'
+import { isAdmin, getAgent } from '@/lib/auth'
 
 interface NotifRow {
   id: string
@@ -30,7 +30,26 @@ export default function NotificationsPage() {
       .limit(200)
     if (filter === 'unread') q = q.eq('is_read', false)
     const { data } = await q
-    if (data) setNotifs(data)
+
+    // Per-viewer filtering: an agent only sees notifications for conversations
+    // assigned to THEM or still unassigned. Admins see everything.
+    let visible = data || []
+    const me = getAgent()
+    if (!isAdmin() && me?.id && visible.length > 0) {
+      const convIds = [...new Set(visible.map(n => n.conversation_id).filter(Boolean))]
+      if (convIds.length > 0) {
+        const { data: convs } = await supabase
+          .from('conversations').select('id, assigned_agent_id').in('id', convIds)
+        const assignedMap = new Map((convs || []).map(c => [c.id, c.assigned_agent_id]))
+        visible = visible.filter(n => {
+          if (!n.conversation_id) return true
+          const a = assignedMap.get(n.conversation_id)
+          return !a || a === me.id
+        })
+      }
+    }
+
+    setNotifs(visible)
     setLoading(false)
   }
 
