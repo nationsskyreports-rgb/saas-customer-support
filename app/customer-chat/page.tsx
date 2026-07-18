@@ -76,14 +76,31 @@ export default function CustomerChatPage() {
     if (!contactName.trim() || !contactPhone.trim()) return
     setSending(true)
 
+    // Normalized phone matching — recognizes 01…, 201… and +20… as the same number
+    const normalizePhone = (raw: string): string => {
+      let p = raw.trim().replace(/[\s\-().]/g, '')
+      const hadPlus = p.startsWith('+')
+      let d = p.replace(/\D/g, '')
+      if (d.startsWith('00')) d = d.slice(2)
+      if (!hadPlus && d.startsWith('0') && d.length === 11) return '+20' + d.slice(1)
+      if (d.startsWith('20') && d.length >= 12) return '+' + d
+      if (hadPlus && d.length >= 7) return '+' + d
+      return d
+    }
+    const norm = normalizePhone(contactPhone)
+    const candidates = [...new Set([
+      contactPhone.trim(), norm,
+      ...(norm.startsWith('+20') ? ['0' + norm.slice(3), norm.slice(1)] : norm.startsWith('+') ? [norm.slice(1)] : []),
+    ])].filter(Boolean)
+
     // Find or create contact
     let contactId: string | null = null
-    const { data: existing } = await supabase
+    const { data: matches } = await supabase
       .from('contacts')
       .select('id')
-      .eq('phone', contactPhone.trim())
+      .in('phone', candidates)
       .limit(1)
-      .maybeSingle()
+    const existing = matches?.[0]
 
     if (existing) {
       contactId = existing.id
@@ -98,7 +115,7 @@ export default function CustomerChatPage() {
 
       const { data: newContact, error: contactErr } = await supabase
         .from('contacts')
-        .insert({ name: contactName.trim(), phone: contactPhone.trim(), source: 'webchat', customer_type: defaultType })
+        .insert({ name: contactName.trim(), phone: norm, source: 'webchat', customer_type: defaultType })
         .select('id')
         .single()
       if (contactErr) {
