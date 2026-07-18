@@ -7,6 +7,7 @@ import {
   ClipboardPaste
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { usePermissions } from '@/lib/permissions'
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -124,6 +125,12 @@ export default function CustomersPage() {
   const [savingTypeIds, setSavingTypeIds] = useState<Set<string>>(new Set())
   const [toasts, setToasts] = useState<Toast[]>([])
 
+  // ── Customer Type is a CLASSIFICATION, not a chat field ──
+  // Agents see it read-only; only Super Admin (or a role explicitly granted
+  // can_update on "Customers" in Terms & Roles) may change it.
+  const { isSuperAdmin, can } = usePermissions()
+  const canEditType = isSuperAdmin || can('Customers', 'can_update')
+
   const showToast = useCallback((type: Toast['type'], message: string) => {
     const id = Date.now() + Math.random()
     setToasts(prev => [...prev, { id, type, message }])
@@ -160,6 +167,10 @@ export default function CustomersPage() {
 
   // ── FIX #1: verify the DB actually saved, revert + surface the error if not ──
   const updateType = async (contactId: string, type: string) => {
+    if (!canEditType) {
+      showToast('error', 'Customer Type is read-only for your role — contact an admin to change it')
+      return
+    }
     const previous = contacts.find(c => c.id === contactId)?.customer_type ?? null
     const nextValue = type || null
 
@@ -333,18 +344,20 @@ export default function CustomersPage() {
           {types.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
           <option value="none">No Type</option>
         </select>
-        <div className="flex items-center gap-2">
-          <input
-            type="text" value={newTypeName} onChange={e => setNewTypeName(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addType()}
-            placeholder="New type name..."
-            className="w-36 px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
-          />
-          <button onClick={addType} disabled={addingType || !newTypeName.trim()}
-            className="p-2 rounded-lg text-white disabled:opacity-40" style={{ backgroundColor: '#00B69B' }} title="Add customer type">
-            {addingType ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-          </button>
-        </div>
+        {canEditType && (
+          <div className="flex items-center gap-2">
+            <input
+              type="text" value={newTypeName} onChange={e => setNewTypeName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addType()}
+              placeholder="New type name..."
+              className="w-36 px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-300"
+            />
+            <button onClick={addType} disabled={addingType || !newTypeName.trim()}
+              className="p-2 rounded-lg text-white disabled:opacity-40" style={{ backgroundColor: '#00B69B' }} title="Add customer type">
+              {addingType ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Table */}
@@ -381,17 +394,33 @@ export default function CustomersPage() {
                 <td className="px-6 py-3.5 text-sm text-gray-600">{c.email || <span className="text-gray-300">—</span>}</td>
                 <td className="px-6 py-3.5">
                   <div className="flex items-center gap-2">
-                    <select
-                      value={c.customer_type || ''}
-                      onChange={e => updateType(c.id, e.target.value)}
-                      disabled={savingTypeIds.has(c.id)}
-                      className="text-xs font-semibold px-2 py-1.5 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300 disabled:opacity-50"
-                      style={{ color: c.customer_type ? typeColor(c.customer_type) : '#9CA3AF' }}
-                    >
-                      <option value="">No Type</option>
-                      {types.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
-                    </select>
-                    {savingTypeIds.has(c.id) && <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#00B69B]" />}
+                    {canEditType ? (
+                      <>
+                        <select
+                          value={c.customer_type || ''}
+                          onChange={e => updateType(c.id, e.target.value)}
+                          disabled={savingTypeIds.has(c.id)}
+                          className="text-xs font-semibold px-2 py-1.5 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300 disabled:opacity-50"
+                          style={{ color: c.customer_type ? typeColor(c.customer_type) : '#9CA3AF' }}
+                        >
+                          <option value="">No Type</option>
+                          {types.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                        </select>
+                        {savingTypeIds.has(c.id) && <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#00B69B]" />}
+                      </>
+                    ) : (
+                      /* Read-only badge — agents can SEE the type (VIP etc.) but never change it */
+                      <span
+                        className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                        title="Read-only — only admins can change Customer Type"
+                        style={{
+                          color: c.customer_type ? typeColor(c.customer_type) : '#9CA3AF',
+                          backgroundColor: (c.customer_type ? typeColor(c.customer_type) : '#9CA3AF') + '1A',
+                        }}
+                      >
+                        {c.customer_type || 'No Type'} 🔒
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-3.5">
