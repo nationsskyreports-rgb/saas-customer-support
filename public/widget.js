@@ -1,23 +1,4 @@
-/**
- * ═══════════════════════════════════════════════════════════════
- * NOS Web Chat Widget — Loader
- * ═══════════════════════════════════════════════════════════════
- * Add this ONE line to any website to get a floating live-chat:
- *
- *   <script src="https://YOUR-APP-DOMAIN/widget.js" async></script>
- *
- * Optional customization via data attributes:
- *
- *   <script src="https://YOUR-APP-DOMAIN/widget.js" async
- *           data-color="#00B69B"          (brand color)
- *           data-position="right"          (right | left)
- *           data-title="Nations Of Sky"    (header title)
- *   ></script>
- *
- * The loader creates a floating button + an iframe pointing to
- * /widget on the same domain this script was loaded from.
- * ═══════════════════════════════════════════════════════════════
- */
+
 (function () {
   'use strict'
   if (window.__NOS_WIDGET_LOADED__) return
@@ -28,6 +9,11 @@
   var color = (script && script.getAttribute('data-color')) || '#00B69B'
   var position = (script && script.getAttribute('data-position')) === 'left' ? 'left' : 'right'
   var title = (script && script.getAttribute('data-title')) || 'Nations Of Sky'
+  // Smart auto-open: seconds before the widget opens by itself with a teaser
+  // prompt (lead capture). data-auto-open="off" disables it. Default: 15s.
+  var autoOpenRaw = (script && script.getAttribute('data-auto-open')) || '15'
+  var autoOpenSec = autoOpenRaw === 'off' ? 0 : Math.max(0, parseInt(autoOpenRaw, 10) || 0)
+  var promptText = (script && script.getAttribute('data-prompt')) || ''
 
   // Origin = wherever widget.js was served from
   var origin = ''
@@ -37,7 +23,10 @@
     origin = window.location.origin
   }
   var frameUrl =
-    origin + '/widget?title=' + encodeURIComponent(title) + '&color=' + encodeURIComponent(color)
+    origin + '/widget?title=' + encodeURIComponent(title) + '&color=' + encodeURIComponent(color) +
+    '&page=' + encodeURIComponent(document.title || '') +
+    '&pageurl=' + encodeURIComponent(window.location.href) +
+    (promptText ? '&prompt=' + encodeURIComponent(promptText) : '')
 
   // ── Styles ──
   var css = [
@@ -124,4 +113,20 @@
     if (e.data.type === 'nos-widget:unread' && !open) setUnread(unread + 1)
     if (e.data.type === 'nos-widget:close') toggle(false)
   })
+
+  // ── Smart auto-open (lead capture) ──
+  // Opens the widget by itself after N seconds — once per 24h per browser,
+  // and never if the visitor already opened it themselves.
+  if (autoOpenSec > 0) {
+    var KEY = 'nosw_auto_shown'
+    var last = 0
+    try { last = parseInt(localStorage.getItem(KEY) || '0', 10) } catch (e) {}
+    if (Date.now() - last > 24 * 60 * 60 * 1000) {
+      setTimeout(function () {
+        if (open) return // visitor already opened it — don't interfere
+        try { localStorage.setItem(KEY, String(Date.now())) } catch (e) {}
+        toggle(true)
+      }, autoOpenSec * 1000)
+    }
+  }
 })()
