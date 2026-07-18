@@ -5,6 +5,7 @@ import { Send, Zap, Smile, Paperclip, RefreshCw } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getAgent, isAdmin } from '@/lib/auth'
 import { logActivity } from '@/lib/report-utils'
+import { drainQueueToAgent } from '@/lib/routing'
 
 interface Message {
   id: string
@@ -98,6 +99,7 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
       try { localStorage.setItem('nos_last_status', 'online') } catch {}
       // tell the top-nav badge (and other components) immediately
       window.dispatchEvent(new CustomEvent('nos-status-changed', { detail: 'online' }))
+      drainQueueToAgent(me.id) // pull waiting chats from the queue right away
     }
     setGoingOnline(false)
   }
