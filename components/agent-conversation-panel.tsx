@@ -61,13 +61,21 @@ export function AgentConversationPanel({ conversationId }: { conversationId: str
   const addNote = async () => {
     if (!newNote.trim() || !conversationId || !me?.id) return
     setAddingNote(true)
-    await supabase.from('conversation_notes').insert({
+    const { data, error } = await supabase.from('conversation_notes').insert({
       conversation_id: conversationId,
       agent_id: me.id,
       content: newNote.trim(),
-    })
-    setNewNote('')
+    }).select('id')
     setAddingNote(false)
+    if (error || !data || data.length === 0) {
+      alert(
+        'Note was NOT saved: ' +
+        (error?.message || 'the database rejected it (missing permissions)') +
+        '\n\nRun the "attachments-and-fixes.sql" script in Supabase to fix this.'
+      )
+      return // keep the text so the agent doesn't lose what they wrote
+    }
+    setNewNote('')
     fetchAll()
   }
 
