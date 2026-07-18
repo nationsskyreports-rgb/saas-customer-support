@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Bell, Settings, ChevronDown, LogOut, Moon, Sun } from 'lucide-react'
 import { useSidebar } from '@/lib/sidebar-context'
 import { useTheme } from '@/lib/theme-context'
-import { getAgent, setAgent, clearAgent, AuthAgent } from '@/lib/auth'
+import { getAgent, setAgent, clearAgent, AuthAgent, isAdmin } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
 
 interface NotifRow {
@@ -14,6 +14,7 @@ interface NotifRow {
   body: string | null
   is_read: boolean
   created_at: string
+  conversation_id?: string | null
 }
 
 export function TopNav() {
@@ -57,15 +58,29 @@ export function TopNav() {
   const loadNotifs = async () => {
     const { data } = await supabase
       .from('notifications')
-      .select('id, title, body, is_read, created_at')
+      .select('id, title, body, is_read, created_at, conversation_id')
       .order('created_at', { ascending: false })
-      .limit(12)
-    if (data) setNotifs(data)
-    const { count } = await supabase
-      .from('notifications')
-      .select('id', { count: 'exact', head: true })
-      .eq('is_read', false)
-    setUnread(count || 0)
+      .limit(50)
+
+    // Per-viewer filtering: agents only see their own / unassigned conversations
+    let visible = data || []
+    const me = getAgent()
+    if (!isAdmin() && me?.id && visible.length > 0) {
+      const convIds = [...new Set(visible.map((n: any) => n.conversation_id).filter(Boolean))]
+      if (convIds.length > 0) {
+        const { data: convs } = await supabase
+          .from('conversations').select('id, assigned_agent_id').in('id', convIds)
+        const assignedMap = new Map((convs || []).map(c => [c.id, c.assigned_agent_id]))
+        visible = visible.filter((n: any) => {
+          if (!n.conversation_id) return true
+          const a = assignedMap.get(n.conversation_id)
+          return !a || a === me.id
+        })
+      }
+    }
+
+    setNotifs(visible.slice(0, 12))
+    setUnread(visible.filter((n: any) => !n.is_read).length)
   }
 
   useEffect(() => {
@@ -85,7 +100,8 @@ export function TopNav() {
   const openNotif = async (n: NotifRow) => {
     await supabase.from('notifications').update({ is_read: true }).eq('id', n.id)
     setNotifOpen(false)
-    router.push('/inbox')
+    const base = isAdmin() ? '/inbox/all' : '/inbox'
+    router.push((n as any).conversation_id ? `${base}?conv=${(n as any).conversation_id}` : base)
   }
 
   const timeAgo = (iso: string) => {
