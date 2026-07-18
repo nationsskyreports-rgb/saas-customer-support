@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { MessageCircle, X, Bell } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { isAdmin } from '@/lib/auth'
+import { isAdmin, getAgent } from '@/lib/auth'
 
 interface Toast {
   id: number
@@ -80,23 +80,29 @@ export function GlobalNotifications() {
         const msg = payload.new as any
         if (msg.direction !== 'inbound') return
 
+        // Refresh open lists everywhere (harmless for all viewers)
         window.dispatchEvent(new CustomEvent('nos-new-message'))
 
+        const me = getAgent()
+        if (!me?.id) return
+
+        // Who is this conversation for — and am I even on duty?
         let name = 'New message'
+        let assignedTo: string | null = null
+        let myStatus = 'offline'
         try {
-          const { data: conv } = await supabase
-            .from('conversations')
-            .select('contacts(name)')
-            .eq('id', msg.conversation_id)
-            .single()
-          const c = (conv as any)?.contacts
+          const [convRes, meRes] = await Promise.all([
+            supabase.from('conversations').select('assigned_agent_id, contacts(name)').eq('id', msg.conversation_id).single(),
+            supabase.from('agents').select('status').eq('id', me.id).single(),
+          ])
+          assignedTo = (convRes.data as any)?.assigned_agent_id ?? null
+          const c = (convRes.data as any)?.contacts
           if (c?.name) name = c.name
+          myStatus = (meRes.data as any)?.status || 'offline'
         } catch {}
 
-        playSound()
-
-        // persist to Notification Center (unique message_id avoids
-        // duplicates when several agents are online at once)
+        // Record in the Notification Center regardless (event log; per-viewer
+        // filtering happens where notifications are displayed)
         supabase.from('notifications').upsert({
           message_id: String(msg.id),
           conversation_id: msg.conversation_id,
@@ -105,6 +111,15 @@ export function GlobalNotifications() {
         }, { onConflict: 'message_id', ignoreDuplicates: true }).then(({ error }) => {
           if (error) console.error('[Notifications] failed to save:', error.message)
         })
+
+        // ── TARGETING RULES ──
+        // 1) Off-duty agents get nothing — offline means offline.
+        if (myStatus === 'offline') return
+        // 2) Assigned to somebody else → not my notification (admins see all).
+        if (assignedTo && assignedTo !== me.id && !isAdmin()) return
+        // (unassigned → everyone on duty is notified so someone picks it up)
+
+        playSound()
 
         const id = ++toastIdRef.current
         const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
