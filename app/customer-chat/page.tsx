@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Send, RefreshCw, MessageCircle, Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { reassignIfAgentUnavailable } from '@/lib/routing'
 
 interface Message {
   id: string
@@ -193,6 +194,8 @@ export default function CustomerChatPage() {
   }
 
   const joinChat = (conv: Conversation) => {
+    // FIX: old conversation may be assigned to an offline agent — re-route it
+    reassignIfAgentUnavailable(conv.id)
     setConversationId(conv.id)
     const c = conv.contacts as any
     setContactName(c?.name || '—')
@@ -221,6 +224,8 @@ export default function CustomerChatPage() {
       last_message_at: new Date().toISOString(),
       status: 'open', // reopen if it was closed/resolved
     }).eq('id', conversationId)
+    // FIX: a reopened chat must never stay stuck on an offline agent
+    reassignIfAgentUnavailable(conversationId)
     setMessage('')
     setSending(false)
   }
