@@ -118,6 +118,18 @@ export function TopNav() {
     return status?.color || 'bg-green-500'
   }
 
+  // ── Sync the badge when status changes elsewhere (e.g. "Go Online" in the chat panel) ──
+  useEffect(() => {
+    const onEvt = (e: Event) => {
+      const v = (e as CustomEvent).detail
+      const s = statuses.find(x => x.value === v)
+      if (s) setAgentStatus(s.label)
+    }
+    window.addEventListener('nos-status-changed', onEvt)
+    return () => window.removeEventListener('nos-status-changed', onEvt)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const changeStatus = async (status: { label: string; value: string }) => {
     setAgentStatus(status.label)
     setStatusOpen(false)
@@ -125,6 +137,7 @@ export function TopNav() {
     if (me) {
       await supabase.from('agents').update({ status: status.value }).eq('id', me.id)
       setAgent({ ...me, status: status.value })
+      window.dispatchEvent(new CustomEvent('nos-status-changed', { detail: status.value }))
     }
   }
 
