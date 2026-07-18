@@ -11,7 +11,7 @@ import { getAgent } from '@/lib/auth'
 import { PermissionsProvider, usePermissions, pageForRoute, AccessDenied } from '@/lib/permissions'
 
 // Pages that don't need login and don't show the sidebar/topnav
-const PUBLIC_PATHS = ['/login', '/customer-chat']
+const PUBLIC_PATHS = ['/login', '/customer-chat', '/widget']
 
 function LayoutInner({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar()
