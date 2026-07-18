@@ -79,11 +79,14 @@ export function ConversationList({ selectedId, onSelect, defaultTab, mineOnly = 
   }
 
   const searched = conversations.filter(matchesSearch)
+  const isActive = (c: Conversation) => c.status !== 'closed' && c.status !== 'resolved'
 
   const getFiltered = () => {
     switch (activeTab) {
-      case 'mine':       return searched.filter(c => c.assigned_agent_id === me?.id)
-      case 'unassigned': return searched.filter(c => !c.assigned_agent_id)
+      // My Chats is a WORK QUEUE — closed/resolved conversations (e.g. campaign
+      // broadcasts) don't belong in it. They remain visible in All Conversations.
+      case 'mine':       return searched.filter(c => c.assigned_agent_id === me?.id && isActive(c))
+      case 'unassigned': return searched.filter(c => !c.assigned_agent_id && isActive(c))
       case 'pending':    return searched.filter(c => c.status === 'pending')
       case 'open':       return searched.filter(c => c.status === 'open' || c.status === 'pending')
       default:           return searched
@@ -94,8 +97,8 @@ export function ConversationList({ selectedId, onSelect, defaultTab, mineOnly = 
 
   const tabs = mineOnly
     ? [
-        { id: 'mine',       label: 'Mine',       count: searched.filter(c => c.assigned_agent_id === me?.id).length },
-        { id: 'unassigned', label: 'Unassigned', count: searched.filter(c => !c.assigned_agent_id).length },
+        { id: 'mine',       label: 'Mine',       count: searched.filter(c => c.assigned_agent_id === me?.id && isActive(c)).length },
+        { id: 'unassigned', label: 'Unassigned', count: searched.filter(c => !c.assigned_agent_id && isActive(c)).length },
         { id: 'pending',    label: 'Pending',    count: searched.filter(c => c.status === 'pending').length },
       ]
     : [

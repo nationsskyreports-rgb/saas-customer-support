@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { MessageCircle, X, Bell } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { isAdmin } from '@/lib/auth'
 
 interface Toast {
   id: number
@@ -121,7 +122,8 @@ export function GlobalNotifications() {
           } as NotificationOptions)
           n.onclick = () => {
             window.focus()
-            router.push(msg.conversation_id ? `/inbox?conv=${msg.conversation_id}` : '/inbox')
+            const base = isAdmin() ? '/inbox/all' : '/inbox'
+            router.push(msg.conversation_id ? `${base}?conv=${msg.conversation_id}` : base)
             n.close()
           }
         }
@@ -222,7 +224,11 @@ export function GlobalNotifications() {
         <div className="space-y-2.5 max-h-[70vh] overflow-y-auto">
           {toasts.map(toast => (
             <div key={toast.id}
-              onClick={() => { router.push(toast.conversationId ? `/inbox?conv=${toast.conversationId}` : '/inbox'); dismiss(toast.id) }}
+              onClick={() => {
+                const base = isAdmin() ? '/inbox/all' : '/inbox'
+                router.push(toast.conversationId ? `${base}?conv=${toast.conversationId}` : base)
+                dismiss(toast.id)
+              }}
               className="relative overflow-hidden bg-white rounded-2xl border cursor-pointer transition-transform hover:scale-[1.02]"
               style={{
                 animation: 'nosSlideIn 0.35s cubic-bezier(0.21, 1.02, 0.73, 1)',
