@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Zap, Smile, Paperclip, RefreshCw } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { getAgent } from '@/lib/auth'
+import { getAgent, isAdmin } from '@/lib/auth'
 import { logActivity } from '@/lib/report-utils'
 
 interface Message {
@@ -48,6 +48,7 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
   const [sending, setSending] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [composerError, setComposerError] = useState('')
+  const [lockedBy, setLockedBy] = useState<string | null>(null)
   const [predefined, setPredefined] = useState<any[]>([])
   const [predefinedOpen, setPredefinedOpen] = useState(false)
   const [emojiOpen, setEmojiOpen] = useState(false)
@@ -74,7 +75,18 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
       supabase.from('conversations').select('id, status, assigned_agent_id, contacts(name, phone)').eq('id', conversationId).single(),
       supabase.from('messages').select('id, direction, content, created_at, status, type').eq('conversation_id', conversationId).order('created_at', { ascending: true }),
     ])
-    if (convRes.data) setConvInfo(convRes.data as any)
+    if (convRes.data) {
+      setConvInfo(convRes.data as any)
+      // ── ASSIGNMENT GUARD: a conversation assigned to another agent is
+      //    read-only for everyone except that agent and admins ──
+      const assignedTo = (convRes.data as any).assigned_agent_id
+      if (assignedTo && me?.id && assignedTo !== me.id && !isAdmin()) {
+        const { data: owner } = await supabase.from('agents').select('name').eq('id', assignedTo).maybeSingle()
+        setLockedBy(owner?.name || 'another agent')
+      } else {
+        setLockedBy(null)
+      }
+    }
     if (msgRes.data) setMessages(msgRes.data)
     setLoading(false)
     setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
@@ -94,6 +106,7 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
   }, [conversationId])
 
   const handleSend = async () => {
+    if (lockedBy) return // assigned to another agent — read-only
     if (!message.trim() || !conversationId) return
     setSending(true)
     const { error: msgErr } = await supabase.from('messages').insert({
@@ -131,7 +144,7 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
 
   // ── Attachments: upload to Supabase Storage, then send as image/file message ──
   const handleAttach = async (file: File) => {
-    if (!conversationId) return
+    if (!conversationId || lockedBy) return
     if (file.size > 5 * 1024 * 1024) {
       flashError('File is too large — maximum size is 5 MB')
       return
@@ -295,7 +308,14 @@ export function ChatPanel({ conversationId, hideActions = false }: ChatPanelProp
       {composerError && (
         <p className="text-xs text-red-500 text-center py-1.5 bg-red-50 border-t border-red-100">{composerError}</p>
       )}
-      {convInfo?.status !== 'closed' && convInfo?.status !== 'resolved' && (
+      {lockedBy && (
+        <div className="flex items-center justify-center gap-2 py-3 border-t border-gray-100 bg-amber-50">
+          <p className="text-sm text-amber-700">
+            🔒 This conversation is assigned to <b>{lockedBy}</b> — view only
+          </p>
+        </div>
+      )}
+      {!lockedBy && convInfo?.status !== 'closed' && convInfo?.status !== 'resolved' && (
         <div className="border-t border-gray-200 bg-white" style={{ height: '64px', padding: '0 16px' }}>
           <div className="flex items-center gap-3 h-full">
             <div className="relative">
