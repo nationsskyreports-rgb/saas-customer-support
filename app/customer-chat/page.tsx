@@ -88,9 +88,17 @@ export default function CustomerChatPage() {
     if (existing) {
       contactId = existing.id
     } else {
+      // New contact → default classification ("New Customer" type if it exists)
+      let defaultType: string | null = null
+      try {
+        const { data: t } = await supabase
+          .from('customer_types').select('name').ilike('name', 'new customer').limit(1).maybeSingle()
+        defaultType = t?.name || null
+      } catch {}
+
       const { data: newContact, error: contactErr } = await supabase
         .from('contacts')
-        .insert({ name: contactName.trim(), phone: contactPhone.trim() })
+        .insert({ name: contactName.trim(), phone: contactPhone.trim(), source: 'webchat', customer_type: defaultType })
         .select('id')
         .single()
       if (contactErr) {
