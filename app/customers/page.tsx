@@ -130,6 +130,10 @@ export default function CustomersPage() {
   // can_update on "Customers" in Terms & Roles) may change it.
   const { isSuperAdmin, can } = usePermissions()
   const canEditType = isSuperAdmin || can('Customers', 'can_update')
+  // Agents: read-only customer base — no adding, no deleting, no CRM settings
+  const canAddCustomers = isSuperAdmin || can('Customers', 'can_add')
+  const canDeleteCustomers = isSuperAdmin || can('Customers', 'can_delete')
+  const canManageCRM = isSuperAdmin || can('Customers', 'can_update')
 
   const showToast = useCallback((type: Toast['type'], message: string) => {
     const id = Date.now() + Math.random()
@@ -198,6 +202,11 @@ export default function CustomersPage() {
   }
 
   const deleteContact = async () => {
+    if (!canDeleteCustomers) {
+      showToast('error', 'Deleting customers is not allowed for your role')
+      setDeleteTarget(null)
+      return
+    }
     if (!deleteTarget) return
     const target = deleteTarget
     const { data, error } = await supabase.from('contacts').delete().eq('id', target.id).select('id')
@@ -277,9 +286,11 @@ export default function CustomersPage() {
           <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
             <Download className="w-4 h-4" /> Export
           </button>
-          <button onClick={() => setImportOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ backgroundColor: '#00B69B' }}>
-            <Upload className="w-4 h-4" /> Import Customers
-          </button>
+          {canAddCustomers && (
+            <button onClick={() => setImportOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ backgroundColor: '#00B69B' }}>
+              <Upload className="w-4 h-4" /> Import Customers
+            </button>
+          )}
         </div>
       </div>
 
@@ -300,7 +311,8 @@ export default function CustomersPage() {
         ))}
       </div>
 
-      {/* CRM Integration card */}
+      {/* CRM Integration card — admin-level configuration, hidden from agents */}
+      {canManageCRM && (
       <div className="bg-white rounded-xl border p-5 flex items-center justify-between flex-wrap gap-4" style={{ borderColor: crm?.is_enabled ? '#00B69B' : '#E5E7EB' }}>
         <div className="flex items-center gap-4">
           <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${crm?.is_enabled ? 'bg-emerald-50' : 'bg-gray-100'}`}>
@@ -327,6 +339,7 @@ export default function CustomersPage() {
           </button>
         </div>
       </div>
+      )}
 
       {/* Search + filters */}
       <div className="flex gap-3 flex-wrap items-center">
@@ -377,7 +390,7 @@ export default function CustomersPage() {
             {loading ? (
               <tr><td colSpan={6} className="px-6 py-16 text-center text-gray-400"><RefreshCw className="w-5 h-5 animate-spin inline mr-2" /> Loading customers...</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={6} className="px-6 py-16 text-center text-gray-400">No customers found — use <b>Import Customers</b> to upload your data</td></tr>
+              <tr><td colSpan={6} className="px-6 py-16 text-center text-gray-400">{canAddCustomers ? <>No customers found — use <b>Import Customers</b> to upload your data</> : 'No customers found'}</td></tr>
             ) : filtered.map(c => (
               <tr key={c.id} className="hover:bg-emerald-50/50 transition-colors">
                 <td className="px-6 py-3.5">
@@ -430,9 +443,13 @@ export default function CustomersPage() {
                 </td>
                 <td className="px-6 py-3.5 text-xs text-gray-500">{c.created_at ? new Date(c.created_at).toLocaleDateString() : '—'}</td>
                 <td className="px-6 py-3.5 text-right">
-                  <button onClick={() => setDeleteTarget(c)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Delete customer">
-                    <Trash2 className="w-4 h-4 text-red-400" />
-                  </button>
+                  {canDeleteCustomers ? (
+                    <button onClick={() => setDeleteTarget(c)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Delete customer">
+                      <Trash2 className="w-4 h-4 text-red-400" />
+                    </button>
+                  ) : (
+                    <span className="text-xs text-gray-300 select-none" title="Read-only for your role">—</span>
+                  )}
                 </td>
               </tr>
             ))}
